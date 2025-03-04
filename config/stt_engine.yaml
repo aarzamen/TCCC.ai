@@ -1,0 +1,109 @@
+# Speech-to-Text Engine Configuration
+
+# Model settings
+model:
+  # Model type (whisper, nemo, riva)
+  type: "whisper"
+  
+  # Model size (tiny, base, small, medium, large)
+  size: "medium"
+  
+  # Model file path (if local model is used)
+  path: "models/whisper-medium-en/"
+  
+  # Batch size for inference
+  batch_size: 1
+  
+  # Use mixed precision (FP16)
+  mixed_precision: true
+  
+  # Language
+  language: "en"
+  
+  # Beam size for decoding
+  beam_size: 5
+
+# Diarization settings
+diarization:
+  # Enable speaker diarization
+  enabled: true
+  
+  # Number of speakers (0 for auto-detection)
+  num_speakers: 0
+  
+  # Minimum speakers to detect
+  min_speakers: 1
+  
+  # Maximum speakers to detect
+  max_speakers: 10
+  
+  # Clustering method (spectral, umap)
+  clustering_method: "spectral"
+  
+  # Speaker embeddings model
+  embeddings_model: "speechbrain/spkrec-ecapa-voxceleb"
+
+# Transcription settings
+transcription:
+  # Minimum confidence threshold for word inclusion
+  confidence_threshold: 0.6
+  
+  # Include word timestamps
+  word_timestamps: true
+  
+  # Include punctuation
+  include_punctuation: true
+  
+  # Include capitalization
+  include_capitalization: true
+  
+  # Include numeric formatting
+  format_numbers: true
+  
+  # Segment length in seconds
+  segment_length: 30
+
+# Custom vocabulary
+vocabulary:
+  # Enable custom vocabulary
+  enabled: true
+  
+  # Path to vocabulary file
+  path: "config/vocabulary/custom_terms.txt"
+  
+  # Vocabulary boost factor (higher value gives more weight)
+  boost: 10.0
+
+# Hardware acceleration for Jetson Orin Nano
+hardware:
+  # Enable hardware acceleration
+  enable_acceleration: true
+  
+  # CUDA device ID (-1 for CPU only)
+  cuda_device: 0
+  
+  # Enable TensorRT optimization
+  use_tensorrt: true
+  
+  # CUDA stream configuration
+  cuda_streams: 2
+  
+  # Memory limit in MB
+  memory_limit_mb: 4096
+  
+  # Quantization (INT8, FP16, FP32)
+  quantization: "FP16"
+
+# Streaming settings
+streaming:
+  # Enable streaming transcription
+  enabled: true
+  
+  # Partial results interval in milliseconds
+  partial_results_interval_ms: 500
+  
+  # Maximum context length in seconds
+  max_context_length_sec: 60
+  
+  # Stability threshold for streaming results
+  stability_threshold: 0.8
