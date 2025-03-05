@@ -1,0 +1,46 @@
+name: Security Scan
+
+on:
+  push:
+    branches: [ main ]
+  pull_request:
+    branches: [ main ]
+  schedule:
+    - cron: '0 0 * * 0'  # Run weekly on Sundays
+
+jobs:
+  security-scan:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v3
+
+      - name: Set up Python
+        uses: actions/setup-python@v4
+        with:
+          python-version: '3.10'
+          
+      - name: Install dependencies
+        run: |
+          python -m pip install --upgrade pip
+          pip install bandit safety detect-secrets
+
+      - name: Run Bandit (SAST)
+        run: |
+          bandit -r src/ -x tests/ -lll
+          
+      - name: Check dependencies for vulnerabilities
+        run: |
+          safety check -r requirements.txt
+
+      - name: Check for secrets
+        run: |
+          detect-secrets scan --all-files > secrets_report.json
+          if grep -q '"is_secret": true' secrets_report.json; then
+            echo "Potential secrets found in the codebase! Check secrets_report.json for details."
+            exit 1
+          fi
+          
+      - name: Run credential scanner
+        run: |
+          git ls-files | xargs grep -l "api_key\|apikey\|password\|passwd\|secret\|token\|credential" || echo "No hardcoded credentials found"
