@@ -1152,30 +1152,78 @@ class ContextIntegrator:
         """
         self.document_library = document_library
         self.config = config
+        
+        # Default maximum context length (in characters)
+        self.max_context_length = config.get("max_context_length", 1500)
+        logger.info(f"ContextIntegrator initialized with max_context_length={self.max_context_length}")
     
-    def get_relevant_context(self, query: str, n_results: int = 3) -> List[Dict[str, Any]]:
+    def get_relevant_context(self, query: str, n_results: int = 3, 
+                           max_context_length: Optional[int] = None) -> List[Dict[str, Any]]:
         """Get relevant context from document library.
         
         Args:
             query: Query string
             n_results: Number of results to return
+            max_context_length: Optional override for maximum context length
             
         Returns:
             List of context snippets
         """
         try:
-            # Query document library
+            # Use override if provided
+            context_length = max_context_length if max_context_length is not None else self.max_context_length
+            
+            # Query document library with context length constraint
+            if hasattr(self.document_library, 'generate_llm_prompt'):
+                # Use the more advanced prompt generation which handles context length constraints
+                prompt = self.document_library.generate_llm_prompt(
+                    query=query, 
+                    limit=n_results,
+                    max_context_length=context_length
+                )
+                
+                # Extract structured context from prompt (simplified implementation)
+                context = [{
+                    "text": prompt,
+                    "score": 1.0,
+                    "source": "Generated prompt",
+                    "document_id": "prompt"
+                }]
+                
+                return context
+            
+            # Fall back to basic query if advanced prompt generation not available
             results = self.document_library.query(query, n_results=n_results)
             
             # Format results
             context = []
+            total_length = 0
+            
             for result in results.get("results", []):
+                text = result["text"]
+                
+                # Check if adding this text would exceed max length
+                if total_length + len(text) > context_length and context:
+                    # Skip if we already have some context
+                    continue
+                    
+                # If this is first result and still too long, truncate it
+                if total_length == 0 and len(text) > context_length:
+                    text = text[:context_length - 50] + "... [truncated]"
+                
+                # Add to context
                 context.append({
-                    "text": result["text"],
+                    "text": text,
                     "score": result["score"],
                     "source": result["metadata"].get("file_name", "Unknown source"),
                     "document_id": result["document_id"]
                 })
+                
+                total_length += len(text)
+                
+                # Break if we've reached the maximum context length
+                if total_length >= context_length:
+                    break
                 
             return context
             
@@ -1183,32 +1231,70 @@ class ContextIntegrator:
             logger.error(f"Error getting context: {str(e)}")
             return []
     
-    def enhance_with_context(self, events: List[Dict[str, Any]]) -> List[Dict[str, Any]]:
+    def enhance_with_context(self, events: List[Dict[str, Any]], 
+                             max_context_length: Optional[int] = None) -> List[Dict[str, Any]]:
         """Enhance events with relevant medical context.
         
         Args:
             events: List of medical events
+            max_context_length: Optional maximum context length per event
             
         Returns:
             Enhanced events with context
         """
         enhanced_events = []
         
-        for event in events:
+        # Calculate budget per event to avoid exceeding context constraints
+        # Reserve 30% of the total context length for the most important events
+        total_context_budget = max_context_length or self.max_context_length
+        per_event_budget = min(
+            total_context_budget // max(len(events), 1),  # Equal distribution
+            total_context_budget // 3  # Cap at 1/3 of total budget
+        )
+        
+        # Sort events by importance (placeholder implementation)
+        # In a real implementation, prioritize critical events like severe injuries
+        def event_priority(event):
+            # Higher priority (lower number) for critical events
+            if event.get("type") in ["procedure", "medication"]:
+                return 0
+            elif event.get("category") in ["vitals", "temporal"]:
+                return 1
+            else:
+                return 2
+                
+        sorted_events = sorted(events, key=event_priority)
+        
+        for event in sorted_events:
             # Create query from event
+            query = ""
             if "type" in event and "value" in event:
                 query = f"{event['type']} {event['value']}"
-                
-                # Get relevant context
-                context = self.get_relevant_context(query, n_results=1)
+            elif "name" in event:
+                query = event["name"]
+            elif "event" in event:
+                query = event["event"]
+            
+            if query:
+                # Get relevant context with individual budget
+                context = self.get_relevant_context(
+                    query=query, 
+                    n_results=1,
+                    max_context_length=per_event_budget
+                )
                 
                 # Add context to event
                 enhanced_event = event.copy()
                 enhanced_event["context_reference"] = context[0] if context else None
                 
+                # Track how much context we've used
+                if context and "text" in context[0]:
+                    context_used = len(context[0]["text"])
+                    logger.debug(f"Used {context_used} chars of context for event: {query[:30]}...")
+                
                 enhanced_events.append(enhanced_event)
             else:
-                # No type/value, just copy the event
+                # No query available, just copy the event
                 enhanced_events.append(event.copy())
                 
         return enhanced_events
@@ -1393,6 +1479,7 @@ class LLMAnalysis:
             transcription: Dictionary with transcription data
                 Must contain either 'text' or 'transcript' field
             context: Optional context dictionary
+                May include max_context_length to override default
                 
         Returns:
             List of extracted medical events
@@ -1415,10 +1502,18 @@ class LLMAnalysis:
             logger.error("Transcription missing 'text' or 'transcript' field")
             return []
             
-        # Check cache first
-        cached_results = self._check_cache(transcription)
-        if cached_results is not None:
-            return cached_results
+        # Check cache first (unless context overrides caching)
+        if not context or not context.get("skip_cache", False):
+            cached_results = self._check_cache(transcription)
+            if cached_results is not None:
+                logger.info("Using cached analysis results")
+                return cached_results
+            
+        # Get context length constraints if available
+        max_context_length = None
+        if context and "max_context_length" in context:
+            max_context_length = context.get("max_context_length")
+            logger.info(f"Using provided context length constraint: {max_context_length}")
             
         try:
             # Extract entities from transcription
@@ -1440,12 +1535,17 @@ class LLMAnalysis:
             # Enhance with document context if available
             if self.context_integrator and context and context.get("enhance_with_context", True):
                 logger.info("Enhancing events with document context")
-                enhanced_events = self.context_integrator.enhance_with_context(sequenced_events)
+                # Pass context length constraint if provided
+                enhanced_events = self.context_integrator.enhance_with_context(
+                    sequenced_events,
+                    max_context_length=max_context_length
+                )
             else:
                 enhanced_events = sequenced_events
                 
-            # Update cache
-            self._update_cache(transcription, enhanced_events)
+            # Update cache (unless specifically disabled)
+            if not context or not context.get("skip_cache_update", False):
+                self._update_cache(transcription, enhanced_events)
             
             return enhanced_events
             

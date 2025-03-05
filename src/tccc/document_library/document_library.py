@@ -52,6 +52,10 @@ class DocumentLibrary:
         # Will be initialized in initialize()
         self.document_processor = None
         self.cache_manager = None
+        self.vector_store = None
+        self.query_engine = None
+        self.response_generator = None
+        self.medical_vocabulary = None
     
     def initialize(self, config):
         """Initialize the document library with configuration.
@@ -71,21 +75,46 @@ class DocumentLibrary:
             os.makedirs(config["storage"]["cache_dir"], exist_ok=True)
             os.makedirs(config["embedding"]["cache_dir"], exist_ok=True)
             
-            # Load embedding model
-            logger.info(f"Loading embedding model: {config['embedding']['model_name']}")
-            self.model = SentenceTransformer(
-                config["embedding"]["model_name"],
-                cache_folder=config["embedding"]["cache_dir"]
-            )
-            
             # Initialize document processor
             self.document_processor = DocumentProcessor(config)
             
             # Initialize cache manager
             self.cache_manager = CacheManager(config)
             
-            # Initialize FAISS index
-            self._initialize_index()
+            # Import components (done here to avoid circular imports)
+            from tccc.document_library.vector_store import VectorStore
+            from tccc.document_library.query_engine import QueryEngine
+            from tccc.document_library.response_generator import ResponseGenerator
+            from tccc.document_library.medical_vocabulary import MedicalVocabularyManager
+            
+            # Initialize vector store (replaces direct FAISS usage)
+            self.vector_store = VectorStore(config)
+            success = self.vector_store.initialize()
+            if not success:
+                logger.error("Failed to initialize Vector Store")
+                return False
+            
+            # Initialize medical vocabulary
+            try:
+                self.medical_vocabulary = MedicalVocabularyManager(config)
+                self.medical_vocabulary.initialize()
+                logger.info("Medical vocabulary initialized successfully")
+            except Exception as vocab_error:
+                logger.warning(f"Medical vocabulary initialization failed: {str(vocab_error)}")
+                self.medical_vocabulary = None
+            
+            # Initialize query engine
+            self.query_engine = QueryEngine(config, self.vector_store, self.cache_manager)
+            
+            # Initialize response generator
+            self.response_generator = ResponseGenerator(config, self.query_engine)
+            
+            # Load embedding model (for backward compatibility)
+            logger.info(f"Loading embedding model: {config['embedding']['model_name']}")
+            self.model = self.vector_store.embedding_model
+            
+            # Initialize FAISS index (for backward compatibility)
+            self.index = self.vector_store.index
             
             # Load existing documents if available
             self._load_documents()
@@ -458,6 +487,192 @@ class DocumentLibrary:
             logger.error(f"Failed to get document metadata: {str(e)}")
             return None
     
+    def advanced_query(self, 
+                  query_text: str, 
+                  strategy: str = "hybrid",
+                  limit: int = None, 
+                  min_similarity: float = None,
+                  filter_metadata: Dict[str, Any] = None) -> Dict[str, Any]:
+        """
+        Perform an advanced query against the document library.
+        
+        Args:
+            query_text: Query text
+            strategy: Query strategy (semantic, keyword, hybrid, expanded)
+            limit: Maximum number of results
+            min_similarity: Minimum similarity threshold
+            filter_metadata: Metadata filters
+            
+        Returns:
+            Query result dictionary
+        """
+        if not self.initialized:
+            return {
+                "error": "Document Library not initialized",
+                "results": []
+            }
+        
+        # Use the query engine for advanced querying
+        if self.query_engine:
+            return self.query_engine.query(
+                query_text=query_text,
+                strategy=strategy,
+                limit=limit,
+                min_similarity=min_similarity,
+                filter_metadata=filter_metadata
+            )
+        else:
+            # Fall back to basic query if query engine not available
+            return self.query(query_text, limit or 5)
+    
+    def generate_llm_prompt(self, 
+                          query: str, 
+                          strategy: str = "hybrid",
+                          limit: int = 3,
+                          max_context_length: int = None) -> str:
+        """
+        Generate a prompt for the LLM with relevant context.
+        
+        Args:
+            query: User query
+            strategy: Query strategy
+            limit: Maximum number of results to include
+            max_context_length: Override for maximum context length
+            
+        Returns:
+            Formatted prompt string
+        """
+        if not self.initialized:
+            return f"""
+You are TCCC.ai, an expert in Tactical Combat Casualty Care (TCCC).
+Please answer the following query to the best of your ability:
+
+{query}
+
+Note: The Document Library is not initialized so no specific context can be provided.
+"""
+        
+        # Use the response generator if available
+        if self.response_generator:
+            # Set context length limit if provided
+            if max_context_length is not None:
+                # Store current value to restore later
+                original_length = self.response_generator.max_context_length
+                self.response_generator.max_context_length = max_context_length
+                logger.info(f"Overriding max context length: {max_context_length}")
+                
+            try:
+                # Generate prompt with current settings
+                prompt = self.response_generator.generate_prompt(
+                    query=query,
+                    strategy=strategy,
+                    limit=limit
+                )
+                
+                # Restore original context length if it was changed
+                if max_context_length is not None:
+                    self.response_generator.max_context_length = original_length
+                
+                return prompt
+                
+            except Exception as e:
+                logger.error(f"Error generating prompt: {str(e)}")
+                # Restore original context length if it was changed
+                if max_context_length is not None:
+                    self.response_generator.max_context_length = original_length
+                
+                # Fall through to fallback method
+        
+        # Fallback to basic prompt
+        try:
+            results = self.query(query, min(limit, 2))  # Limit to 2 results for safety
+            
+            # Truncate context if needed
+            context_parts = []
+            total_length = 0
+            max_length = max_context_length or 1500
+            
+            for r in results.get("results", []):
+                text = r.get('text', '')
+                doc_id = r.get('document_id', 'unknown')
+                
+                # Truncate text if too long
+                if len(text) > 500:
+                    text = text[:497] + "..."
+                
+                part = f"From document {doc_id}: {text}"
+                
+                # Check if adding this part would exceed max length
+                if total_length + len(part) + 10 > max_length:
+                    if not context_parts:  # Ensure at least one result is included
+                        context_parts.append(part[:max_length - 100] + "... [truncated]")
+                    break
+                    
+                context_parts.append(part)
+                total_length += len(part) + 2  # +2 for newlines
+            
+            context = "\n\n".join(context_parts)
+            
+            return f"""
+You are TCCC.ai, an expert in Tactical Combat Casualty Care (TCCC).
+Please use the following information to answer the query:
+
+CONTEXT:
+{context}
+
+QUERY:
+{query}
+
+If the context doesn't contain enough information, please state that clearly.
+"""
+        except Exception as e:
+            logger.error(f"Error in fallback prompt generation: {str(e)}")
+            # Ultra fallback with no context
+            return f"""
+You are TCCC.ai, an expert in Tactical Combat Casualty Care (TCCC).
+Please answer the following query to the best of your ability:
+
+{query}
+
+Note: Unable to retrieve specific context from the document library due to a system error.
+"""
+    
+    def extract_medical_terms(self, text: str) -> List[str]:
+        """
+        Extract known medical terms from text.
+        
+        Args:
+            text: Input text
+            
+        Returns:
+            List of recognized medical terms
+        """
+        if not self.initialized:
+            return []
+        
+        if self.medical_vocabulary:
+            return self.medical_vocabulary.extract_medical_terms(text)
+        else:
+            return []
+    
+    def explain_medical_terms(self, text: str) -> Dict[str, str]:
+        """
+        Provide explanations for medical terms in text.
+        
+        Args:
+            text: Input text
+            
+        Returns:
+            Dictionary mapping terms to explanations
+        """
+        if not self.initialized:
+            return {}
+        
+        if self.medical_vocabulary:
+            return self.medical_vocabulary.explain_medical_terms(text)
+        else:
+            return {}
+    
     def get_status(self):
         """Get the status of the document library.
         
@@ -470,8 +685,12 @@ class DocumentLibrary:
                     "status": "not_initialized"
                 }
             
+            # Get vector count
             vector_count = 0
-            if self.index:
+            if self.vector_store:
+                vector_status = self.vector_store.get_status()
+                vector_count = vector_status.get("vectors", 0)
+            elif self.index:
                 vector_count = self.index.ntotal
             
             # Get cache stats if available
@@ -485,7 +704,15 @@ class DocumentLibrary:
                 if "error" not in cache_stats:
                     cache_info = cache_stats
             
-            return {
+            # Get medical vocabulary status
+            medical_vocab_status = "available" if (
+                hasattr(self, "medical_vocabulary") and 
+                self.medical_vocabulary and 
+                self.medical_vocabulary.initialized
+            ) else "not_available"
+            
+            # Build status dictionary
+            status = {
                 "status": "initialized",
                 "documents": {
                     "count": len(self.documents),
@@ -498,8 +725,17 @@ class DocumentLibrary:
                 "model": {
                     "name": self.config["embedding"]["model_name"]
                 },
-                "cache": cache_info
+                "cache": cache_info,
+                "components": {
+                    "document_processor": hasattr(self, "document_processor") and self.document_processor is not None,
+                    "vector_store": hasattr(self, "vector_store") and self.vector_store is not None,
+                    "query_engine": hasattr(self, "query_engine") and self.query_engine is not None,
+                    "response_generator": hasattr(self, "response_generator") and self.response_generator is not None,
+                    "medical_vocabulary": medical_vocab_status
+                }
             }
+            
+            return status
             
         except Exception as e:
             logger.error(f"Failed to get status: {str(e)}")
