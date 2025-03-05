@@ -51,6 +51,7 @@ venv.bak/
 *.onnx
 models/*
 !models/README.md
+!models/*/README.md
 !models/*/config.json
 checkpoints/
 data/raw/

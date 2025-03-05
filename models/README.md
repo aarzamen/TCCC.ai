@@ -41,6 +41,28 @@ The Phi-2 model is converted to ONNX format for efficient inference:
 | phi-2-instruct-int8 | 2.7B | INT8 | ~1.3GB | ~2.5GB | Good accuracy |
 | phi-2-instruct-int4 | 2.7B | INT4 | ~700MB | ~1.3GB | Acceptable accuracy |
 
+## Document Embedding Models
+
+The system uses Nexa AI's all-MiniLM-L12-v2 embedding model for document retrieval and semantic search capabilities.
+
+### all-MiniLM-L12-v2 Model Structure
+
+The all-MiniLM-L12-v2 model uses a distilled BERT architecture and is used through the sentence-transformers framework:
+- `model.safetensors`: The PyTorch model weights (can be converted to ONNX for further optimization)
+- `tokenizer.json`: Tokenizer configuration
+- `config.json`: Model configuration
+
+### all-MiniLM-L12-v2 Model Specifications
+
+| Feature | Value |
+|---------|-------|
+| Embedding Dimension | 384 |
+| Model Size | ~130MB |
+| Memory Usage | ~500MB |
+| Max Sequence Length | 512 tokens |
+| Speed | ~1ms per embedding on GPU, ~10ms on CPU |
+| Performance | High quality for semantic search, 78.6% semantic similarity benchmark score |
+
 ## ONNX Runtime Acceleration
 
 All models use ONNX Runtime for inference acceleration with the following features:
@@ -61,6 +83,12 @@ All models use ONNX Runtime for inference acceleration with the following featur
 2. Convert model to ONNX using optimum.onnxruntime
 3. Add model configuration to config/llm_analysis.yaml
 
+### Adding Embedding Models
+1. Create a directory with the model name (e.g., `all-MiniLM-L12-v2`)
+2. Download via Hugging Face or sentence-transformers
+3. Optionally convert to ONNX for accelerated inference
+4. Add model configuration to config/document_library.yaml
+
 ## Future Considerations
 
 Future improvements may include:
@@ -68,3 +96,4 @@ Future improvements may include:
 2. NVIDIA Nexa edge-optimized models for Jetson
 3. Phi-3 models for improved LLM capabilities
 4. Custom domain-specific fine-tuning for medical terminology
+5. Multilingual embedding models for international deployment
