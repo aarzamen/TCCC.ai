@@ -17,7 +17,7 @@ sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), 'src'
 
 from tccc.stt_engine import STTEngine
 from tccc.utils.logging import get_logger
-from tccc.utils.config import Config
+from tccc.utils import ConfigManager
 
 # Set up logging
 logger = get_logger(__name__)
@@ -35,7 +35,8 @@ def main():
     # Load configuration
     try:
         config_path = os.path.join(os.path.dirname(__file__), 'config', 'stt_engine.yaml')
-        config = Config.load_yaml(config_path)
+        config_manager = ConfigManager()
+        config = ConfigManager.load_yaml(config_path)
         print(f"Loaded configuration from: {config_path}")
     except Exception as e:
         print(f"Error loading configuration: {e}")
