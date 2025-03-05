@@ -6,7 +6,7 @@ This module provides utilities for loading and validating configuration from YAM
 
 import os
 import yaml
-from typing import Dict, Any, Optional
+from typing import Dict, Any, Optional, Union, IO
 
 
 class ConfigError(Exception):
@@ -128,3 +128,35 @@ def load_config(config_files: list, config_dir: Optional[str] = None) -> Config:
         config.load(filename)
         
     return config
+
+
+@classmethod
+def load_yaml(cls, file_path: Union[str, IO]) -> Dict[str, Any]:
+    """
+    Load YAML configuration from a file path or file object.
+    
+    Args:
+        file_path: Path to the YAML file or a file-like object
+            
+    Returns:
+        The loaded configuration as a dictionary
+        
+    Raises:
+        ConfigError: If the file cannot be loaded or parsed
+    """
+    try:
+        if isinstance(file_path, str):
+            with open(file_path, 'r') as f:
+                config = yaml.safe_load(f)
+        else:
+            config = yaml.safe_load(file_path)
+            
+        if not isinstance(config, dict):
+            raise ConfigError(f"Invalid configuration format. Expected a dictionary.")
+            
+        return config
+        
+    except yaml.YAMLError as e:
+        raise ConfigError(f"Error parsing YAML: {str(e)}")
+    except Exception as e:
+        raise ConfigError(f"Error loading configuration: {str(e)}")
