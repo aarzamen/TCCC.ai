@@ -18,6 +18,13 @@ from collections import deque
 from tccc.utils.logging import get_logger
 from tccc.stt_engine.stt_engine import TranscriptionResult, TranscriptionSegment, Word, TranscriptionConfig
 
+# Import Jetson optimizations if available
+try:
+    from tccc.utils.jetson_integration import get_whisper_params, initialize_jetson_optimizations
+    JETSON_INTEGRATION_AVAILABLE = True
+except ImportError:
+    JETSON_INTEGRATION_AVAILABLE = False
+
 # Check if faster_whisper is available
 try:
     from faster_whisper import WhisperModel
@@ -108,6 +115,29 @@ class FasterWhisperSTT:
                 logger.error("faster-whisper is not available. Please install it with 'pip install faster-whisper'")
                 return False
                 
+            # Apply Jetson optimizations if available
+            model_params = {}
+            if JETSON_INTEGRATION_AVAILABLE:
+                try:
+                    # Initialize Jetson optimizations
+                    jetson_integration = initialize_jetson_optimizations()
+                    if jetson_integration:
+                        logger.info("Applying Jetson-specific optimizations")
+                        # Get optimized whisper parameters
+                        model_params = jetson_integration.optimize_faster_whisper(self.model_size)
+                        
+                        # Override with Jetson optimized settings if available
+                        if 'compute_type' in model_params:
+                            self.compute_type = model_params['compute_type']
+                        if 'model_size' in model_params:
+                            self.model_size = model_params['model_size']
+                        if 'beam_size' in model_params:
+                            self.beam_size = model_params['beam_size']
+                        if 'cpu_threads' in model_params:
+                            self.cpu_threads = model_params['num_workers']
+                except Exception as e:
+                    logger.warning(f"Failed to apply Jetson optimizations: {str(e)}")
+            
             # Determine device and compute type
             device = "cuda" if TORCH_AVAILABLE and torch.cuda.is_available() and self.enable_acceleration else "cpu"
             compute_type = self.compute_type
@@ -129,14 +159,25 @@ class FasterWhisperSTT:
             if self.use_medical_vocabulary:
                 self._load_vocabulary()
             
+            # Set up model initialization parameters
+            model_init_params = {
+                "model_size_or_path": self.model_size,
+                "device": device,
+                "compute_type": compute_type,
+                "download_root": os.path.dirname(self.model_path) if "/" in self.model_path else None,
+                "cpu_threads": self.cpu_threads if device == "cpu" else 0
+            }
+            
+            # Add Jetson-specific parameters if available
+            for key, value in model_params.items():
+                if key not in ["model_size", "compute_type", "device"]:  # These are already handled
+                    model_init_params[key] = value
+            
+            # Log full initialization parameters
+            logger.debug(f"Initializing with parameters: {model_init_params}")
+            
             # Load the model
-            self.model = WhisperModel(
-                model_size_or_path=self.model_size,
-                device=device,
-                compute_type=compute_type,
-                download_root=os.path.dirname(self.model_path) if "/" in self.model_path else None,
-                cpu_threads=self.cpu_threads if device == "cpu" else 0
-            )
+            self.model = WhisperModel(**model_init_params)
             
             self.initialized = True
             logger.info(f"Faster-whisper model '{self.model_size}' initialized successfully on {device}")
@@ -406,6 +447,23 @@ class FasterWhisperSTT:
                 'accuracy_estimate': 1.0 - (error_count / (transcript_count + 1))
             }
         }
+        
+        # Add Jetson-specific information if available
+        if JETSON_INTEGRATION_AVAILABLE:
+            try:
+                jetson_integration = initialize_jetson_optimizations()
+                if jetson_integration:
+                    status['jetson'] = {
+                        'detected': jetson_integration.is_jetson,
+                        'optimizations_applied': JETSON_INTEGRATION_AVAILABLE
+                    }
+                    
+                    # Add resource stats if monitoring is active
+                    resource_stats = jetson_integration.get_resource_stats()
+                    if resource_stats:
+                        status['jetson']['resources'] = resource_stats
+            except Exception as e:
+                logger.warning(f"Could not get Jetson status: {str(e)}")
         
         return status
         

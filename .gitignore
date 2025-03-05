@@ -54,8 +54,15 @@ venv.bak/
 *.safetensors
 models/*
 !models/README.md
-!models/*/README.md
-!models/*/config.json
+!models/stt
+!models/llm
+!models/embeddings
+models/stt/*
+models/llm/*
+models/embeddings/*
+!models/stt/.gitkeep
+!models/llm/.gitkeep
+!models/embeddings/.gitkeep
 checkpoints/
 data/raw/
 data/processed/

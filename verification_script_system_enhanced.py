@@ -30,14 +30,14 @@ from enum import Enum
 sys.path.insert(0, os.path.abspath(os.path.dirname(__file__)))
 
 # Import the system components
-from src.tccc.system.system import TCCCSystem, SystemState
-from src.tccc.audio_pipeline import AudioPipeline
-from src.tccc.stt_engine import STTEngine
-from src.tccc.processing_core import ProcessingCore
-from src.tccc.llm_analysis import LLMAnalysis
-from src.tccc.data_store import DataStore
-from src.tccc.document_library import DocumentLibrary
-from src.tccc.utils import ConfigManager
+from tccc.system.system import TCCCSystem, SystemState
+from tccc.audio_pipeline import AudioPipeline
+from tccc.stt_engine import STTEngine
+from tccc.processing_core import ProcessingCore
+from tccc.llm_analysis import LLMAnalysis
+from tccc.data_store import DataStore
+from tccc.document_library import DocumentLibrary
+from tccc.utils import ConfigManager
 
 # Configure logging
 logging.basicConfig(
@@ -444,7 +444,7 @@ class MockTCCCSystem:
     def __init__(self, config_path=None):
         """Initialize the mock system"""
         self.config_path = config_path
-        self.state = SystemState.UNINITIALIZED
+        self.state = SystemState.INITIALIZING
         
         # Create mock modules
         self.modules = {
@@ -473,7 +473,7 @@ class MockTCCCSystem:
     
     async def initialize(self):
         """Initialize all modules"""
-        if self.state != SystemState.UNINITIALIZED:
+        if self.state != SystemState.INITIALIZING:
             return False
         
         self.state = SystemState.INITIALIZING
@@ -501,7 +501,7 @@ class MockTCCCSystem:
         if self.state != SystemState.READY:
             return False
         
-        self.state = SystemState.RUNNING
+        self.state = SystemState.READY
         self.running = True
         
         # Start the audio pipeline
@@ -512,10 +512,10 @@ class MockTCCCSystem:
     
     async def stop(self):
         """Stop the mock system"""
-        if self.state not in [SystemState.RUNNING, SystemState.PAUSED]:
+        if self.state not in [SystemState.READY, SystemState.CAPTURING, SystemState.PROCESSING]:
             return False
         
-        self.state = SystemState.SHUTTING_DOWN
+        self.state = SystemState.SHUTDOWN
         self.running = False
         
         # Cancel all tasks
@@ -1381,7 +1381,7 @@ class SystemVerifierEnhanced:
         """
         stage_start = time.time()
         
-        if not self.system or self.system.state != SystemState.RUNNING:
+        if not self.system or self.system.state != SystemState.READY:
             logger.error("System not running, skipping error handling verification")
             return False
         
@@ -1412,7 +1412,7 @@ class SystemVerifierEnhanced:
             errors_detected = final_error_count - initial_error_count
             
             # Check that system is still running despite error
-            system_still_running = self.system.state == SystemState.RUNNING
+            system_still_running = self.system.state == SystemState.READY
             
             if errors_detected > 0 and system_still_running:
                 logger.info("Error handling test passed")
@@ -1464,7 +1464,7 @@ class SystemVerifierEnhanced:
         """
         stage_start = time.time()
         
-        if not self.system or self.system.state != SystemState.RUNNING:
+        if not self.system or self.system.state != SystemState.READY:
             logger.error("System not running, skipping performance verification")
             return False
         
