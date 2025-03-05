@@ -12,8 +12,22 @@ import threading
 import time
 from typing import Dict, List, Any, Optional, Callable
 from datetime import datetime
+from enum import Enum
 
 from tccc.utils.logging import get_logger
+
+# Define SystemState enum here to avoid circular imports
+class SystemState(Enum):
+    """System operational states."""
+    INITIALIZING = "initializing"
+    IDLE = "idle"
+    READY = "ready"
+    CAPTURING = "capturing"
+    PROCESSING = "processing"
+    ANALYZING = "analyzing"
+    REPORTING = "reporting"
+    ERROR = "error"
+    SHUTDOWN = "shutdown"
 
 logger = get_logger(__name__)
 

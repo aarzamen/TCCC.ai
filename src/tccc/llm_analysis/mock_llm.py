@@ -1,8 +1,9 @@
 """
-Mock LLM module for TCCC.ai system.
+Phi-2 LLM module integration for TCCC.ai system.
 
-This module provides a mock implementation of the Phi-2 Instruct model
-for development and testing without requiring the actual model.
+This module provides both real and mock implementations of the Phi-2 Instruct model,
+allowing for flexible testing and deployment based on available resources.
+The real implementation uses Transformers with optimizations for Jetson hardware.
 """
 
 import os
@@ -21,7 +22,206 @@ import uuid
 from tccc.utils.config import Config
 from tccc.utils.logging import get_logger
 
+# Try to import transformers for real implementation
+try:
+    import torch
+    from transformers import AutoModelForCausalLM, AutoTokenizer, TextIteratorStreamer
+    TRANSFORMERS_AVAILABLE = True
+except ImportError:
+    TRANSFORMERS_AVAILABLE = False
+
 logger = get_logger(__name__)
+
+class RealPhiModel:
+    """
+    Real implementation of the Phi-2 Instruct model using HuggingFace Transformers.
+    Optimized for efficient inference on edge devices like Jetson.
+    """
+    
+    def __init__(self, config: Dict[str, Any]):
+        """Initialize the real Phi-2 model.
+        
+        Args:
+            config: Configuration dictionary
+        """
+        self.config = config
+        logger.info("Initializing Real Phi-2 Instruct model")
+        
+        # Model configuration
+        self.model_path = config.get("model_path", "microsoft/phi-2")
+        self.use_gpu = config.get("use_gpu", True) and torch.cuda.is_available()
+        self.quantization = config.get("quantization", "4-bit")
+        self.max_tokens = config.get("max_tokens", 1024)
+        self.temperature = config.get("temperature", 0.7)
+        self.top_p = config.get("top_p", 0.9)
+        
+        # Load model and tokenizer
+        self._load_model()
+        
+        # Track metrics
+        self.metrics = {
+            "total_requests": 0,
+            "total_tokens": 0,
+            "avg_latency": 0.0
+        }
+    
+    def _load_model(self):
+        """Load the Phi-2 model and tokenizer with optimizations."""
+        try:
+            # Set device
+            device = "cuda" if self.use_gpu else "cpu"
+            
+            # Log device info
+            if self.use_gpu:
+                device_props = torch.cuda.get_device_properties(0)
+                logger.info(f"Using GPU: {device_props.name} with {device_props.total_memory / 1024**2:.0f}MB memory")
+            else:
+                logger.info("Using CPU for inference")
+            
+            # Load tokenizer
+            logger.info(f"Loading tokenizer from {self.model_path}")
+            self.tokenizer = AutoTokenizer.from_pretrained(self.model_path)
+            
+            # Load model with optimizations
+            logger.info(f"Loading model from {self.model_path}")
+            
+            # Configure loading options based on quantization settings
+            load_kwargs = {
+                "device_map": "auto"
+            }
+            
+            # Apply quantization if requested
+            if self.quantization == "4-bit" and self.use_gpu:
+                load_kwargs.update({
+                    "load_in_4bit": True,
+                    "bnb_4bit_compute_dtype": torch.float16,
+                    "bnb_4bit_use_double_quant": True
+                })
+            elif self.quantization == "8-bit" and self.use_gpu:
+                load_kwargs.update({
+                    "load_in_8bit": True
+                })
+            elif self.use_gpu:
+                # Use half precision for GPU
+                load_kwargs.update({
+                    "torch_dtype": torch.float16
+                })
+            
+            # Load model
+            self.model = AutoModelForCausalLM.from_pretrained(
+                self.model_path,
+                **load_kwargs
+            )
+            
+            logger.info("Phi-2 model loaded successfully")
+        except Exception as e:
+            logger.error(f"Failed to load Phi-2 model: {str(e)}")
+            raise RuntimeError(f"Model loading failed: {str(e)}")
+    
+    def _format_prompt(self, prompt: str) -> str:
+        """Format prompt for Phi-2 Instruct model."""
+        # Phi-2 uses a simple instruction format
+        return f"Instruct: {prompt}\nOutput:"
+    
+    def generate(self, prompt: str, max_tokens: Optional[int] = None, 
+                 temperature: Optional[float] = None, top_p: Optional[float] = None) -> Dict[str, Any]:
+        """Generate text using the Phi-2 model.
+        
+        Args:
+            prompt: Input prompt
+            max_tokens: Maximum tokens to generate
+            temperature: Temperature for generation
+            top_p: Top-p sampling value
+            
+        Returns:
+            Dictionary with generated text and metadata
+        """
+        start_time = time.time()
+        self.metrics["total_requests"] += 1
+        
+        try:
+            # Set generation parameters
+            if max_tokens is None:
+                max_tokens = self.max_tokens
+                
+            if temperature is None:
+                temperature = self.temperature
+                
+            if top_p is None:
+                top_p = self.top_p
+            
+            # Format prompt for the model
+            formatted_prompt = self._format_prompt(prompt)
+            
+            # Encode the prompt
+            inputs = self.tokenizer(formatted_prompt, return_tensors="pt")
+            input_ids = inputs.input_ids.to(self.model.device)
+            
+            # Estimate prompt tokens
+            prompt_tokens = len(inputs.input_ids[0])
+            
+            # Generate text
+            generation_config = {
+                "max_new_tokens": max_tokens,
+                "temperature": max(0.1, temperature),  # Enforce minimum temperature
+                "top_p": top_p,
+                "do_sample": temperature > 0.1,  # Use sampling for non-zero temperature
+                "repetition_penalty": 1.1,  # Avoid repetitive text
+                "pad_token_id": self.tokenizer.eos_token_id  # Ensure proper padding
+            }
+            
+            with torch.no_grad():
+                output = self.model.generate(
+                    input_ids,
+                    **generation_config
+                )
+            
+            # Decode output
+            generated_text = self.tokenizer.decode(output[0][len(input_ids[0]):], skip_special_tokens=True)
+            
+            # Calculate tokens and latency
+            completion_tokens = len(output[0]) - len(input_ids[0])
+            self.metrics["total_tokens"] += prompt_tokens + completion_tokens
+            
+            latency = time.time() - start_time
+            self.metrics["avg_latency"] = (self.metrics["avg_latency"] * (self.metrics["total_requests"] - 1) + latency) / self.metrics["total_requests"]
+            
+            # Format response to match expected output
+            return {
+                "id": str(uuid.uuid4()),
+                "choices": [{"text": generated_text}],
+                "usage": {
+                    "prompt_tokens": prompt_tokens,
+                    "completion_tokens": completion_tokens,
+                    "total_tokens": prompt_tokens + completion_tokens
+                },
+                "model": "phi-2-real",
+                "latency": latency
+            }
+            
+        except Exception as e:
+            logger.error(f"Error generating text with Phi-2 model: {str(e)}")
+            # Return a minimal response structure
+            return {
+                "id": str(uuid.uuid4()),
+                "choices": [{"text": f"Error generating text: {str(e)}"}],
+                "error": str(e)
+            }
+    
+    def get_metrics(self) -> Dict[str, Any]:
+        """Get model usage metrics.
+        
+        Returns:
+            Dictionary with usage metrics
+        """
+        return {
+            "total_requests": self.metrics["total_requests"],
+            "total_tokens": int(self.metrics["total_tokens"]),
+            "avg_latency": round(self.metrics["avg_latency"], 3),
+            "model": "phi-2-real",
+            "device": "cuda" if self.use_gpu else "cpu",
+            "quantization": self.quantization
+        }
 
 class MockPhiModel:
     """
@@ -135,7 +335,7 @@ class MockPhiModel:
                     {
                         "event_id": "evt005",
                         "event": "antibiotics administration",
-                        "timestamp": null,
+                        "timestamp": None,
                         "relative_time": "after morphine",
                         "sequence": "after morphine",
                         "confidence": "medium"
@@ -143,7 +343,7 @@ class MockPhiModel:
                     {
                         "event_id": "evt006",
                         "event": "IV access",
-                        "timestamp": null,
+                        "timestamp": None,
                         "relative_time": "before fluid administration",
                         "sequence": "before Hextend",
                         "confidence": "medium"
@@ -151,7 +351,7 @@ class MockPhiModel:
                     {
                         "event_id": "evt007",
                         "event": "MEDEVAC arrangement",
-                        "timestamp": null,
+                        "timestamp": None,
                         "relative_time": "after status report",
                         "sequence": "after vitals stabilizing",
                         "confidence": "medium"
@@ -565,3 +765,45 @@ P - PLAN:
             "avg_latency": round(self.metrics["avg_latency"], 3),
             "model": "phi-2-instruct-mock"
         }
+
+
+def get_phi_model(config: Dict[str, Any]):
+    """
+    Factory function to create either a real or mock Phi-2 model based on available dependencies.
+    
+    Args:
+        config: Configuration dictionary for the model
+        
+    Returns:
+        A Phi-2 model implementation (real or mock)
+    """
+    # Check if transformers is available for real implementation
+    use_real = config.get("force_real", False)
+    use_mock = config.get("force_mock", False)
+    
+    # Explicit mock requested
+    if use_mock:
+        logger.info("Using mock Phi-2 implementation (explicitly requested)")
+        return MockPhiModel(config)
+    
+    # Try real implementation
+    if TRANSFORMERS_AVAILABLE and (use_real or not use_mock):
+        try:
+            logger.info("Attempting to use real Phi-2 implementation")
+            model = RealPhiModel(config)
+            logger.info("Successfully initialized real Phi-2 implementation")
+            return model
+        except Exception as e:
+            if use_real:
+                # If real was explicitly requested, propagate the error
+                logger.error(f"Failed to initialize real Phi-2 model: {str(e)}")
+                raise
+            else:
+                # Otherwise fall back to mock
+                logger.warning(f"Failed to initialize real Phi-2 model: {str(e)}")
+                logger.info("Falling back to mock implementation")
+                return MockPhiModel(config)
+    else:
+        # Transformers not available, use mock
+        logger.info("Using mock Phi-2 implementation (transformers not available)")
+        return MockPhiModel(config)

@@ -13,22 +13,16 @@ from typing import Dict, Any
 # Import main components
 from .llm_analysis import LLMAnalysis
 
-# Import Phi models
-try:
-    from .phi_model import PhiModel, get_phi_model  # Use our new implementation
-    __has_phi_model = True
-except ImportError:
-    __has_phi_model = False
-
-# Import mock implementation
-try:
-    from .mock_llm import MockPhiModel
-    __has_mock = True
-except ImportError:
-    __has_mock = False
-
 # Get logger
 from tccc.utils.logging import get_logger
 logger = get_logger(__name__)
 
-__all__ = ["LLMAnalysis", "get_phi_model"]
+# Import Phi model implementations
+try:
+    from .mock_llm import RealPhiModel, MockPhiModel, get_phi_model
+    __has_phi_model = True
+except ImportError:
+    __has_phi_model = False
+    logger.warning("Phi model implementation not available")
+
+__all__ = ["LLMAnalysis", "get_phi_model", "RealPhiModel", "MockPhiModel"]
