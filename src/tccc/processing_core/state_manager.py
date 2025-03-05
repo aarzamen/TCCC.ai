@@ -2,10 +2,12 @@
 State management module for TCCC.ai processing core.
 
 This module provides state management functionality for the Processing Core.
+Uses SQLite with WAL mode for persistence.
 """
 
 import os
 import json
+import sqlite3
 import threading
 import time
 from typing import Dict, List, Any, Optional, Callable
@@ -68,6 +70,7 @@ class StateEntry:
 class StateManager:
     """
     Manages state for the Processing Core.
+    Uses SQLite with WAL mode for efficient and resilient persistence.
     """
     
     def __init__(self, config: Dict[str, Any]):
@@ -83,6 +86,8 @@ class StateManager:
         self.autosave_interval_sec = config.get("autosave_interval_sec", 60)
         self.keep_history = config.get("keep_history", True)
         self.max_history_entries = config.get("max_history_entries", 10)
+        self.db_path = os.path.join(self.storage_path, "state.db")
+        self.connection = None
         
         # Create storage directory if needed
         if self.enable_persistence and not os.path.exists(self.storage_path):
@@ -107,6 +112,10 @@ class StateManager:
         self.autosave_thread = None
         self.stop_autosave = threading.Event()
         
+        # Initialize database
+        if self.enable_persistence:
+            self._init_database()
+        
         # Load initial state
         self._load_state()
         
@@ -114,64 +123,153 @@ class StateManager:
         if self.enable_persistence and self.autosave_interval_sec > 0:
             self._start_autosave()
     
+    def _init_database(self):
+        """
+        Initialize the SQLite database with WAL mode.
+        """
+        try:
+            # Create a connection to the database
+            self.connection = sqlite3.connect(self.db_path, check_same_thread=False)
+            
+            # Enable WAL mode for better concurrency and resilience
+            self.connection.execute("PRAGMA journal_mode=WAL;")
+            
+            # Create tables if they don't exist
+            cursor = self.connection.cursor()
+            
+            # Current state table - stores key-value pairs
+            cursor.execute('''
+                CREATE TABLE IF NOT EXISTS current_state (
+                    key TEXT PRIMARY KEY,
+                    value TEXT,
+                    modified_at REAL
+                )
+            ''')
+            
+            # State history table
+            cursor.execute('''
+                CREATE TABLE IF NOT EXISTS state_history (
+                    id INTEGER PRIMARY KEY AUTOINCREMENT,
+                    state TEXT,
+                    timestamp REAL,
+                    metadata TEXT
+                )
+            ''')
+            
+            # Checkpoints table
+            cursor.execute('''
+                CREATE TABLE IF NOT EXISTS checkpoints (
+                    name TEXT PRIMARY KEY,
+                    state TEXT,
+                    timestamp REAL,
+                    metadata TEXT
+                )
+            ''')
+            
+            self.connection.commit()
+            logger.info("Initialized SQLite database with WAL mode")
+            
+        except Exception as e:
+            logger.error(f"Failed to initialize database: {str(e)}")
+            self.enable_persistence = False
+    
     def _load_state(self):
         """
-        Load state from persistent storage.
+        Load state from SQLite database.
         """
-        if not self.enable_persistence:
+        if not self.enable_persistence or self.connection is None:
             return
         
-        state_file = os.path.join(self.storage_path, "current_state.json")
-        history_file = os.path.join(self.storage_path, "state_history.json")
-        
         with self.lock:
-            # Load current state
-            if os.path.exists(state_file):
-                try:
-                    with open(state_file, 'r') as f:
-                        self.current_state = json.load(f)
-                    logger.info(f"Loaded state from {state_file}")
-                except Exception as e:
-                    logger.error(f"Failed to load state from {state_file}: {str(e)}")
-            
-            # Load state history
-            if self.keep_history and os.path.exists(history_file):
-                try:
-                    with open(history_file, 'r') as f:
-                        history_data = json.load(f)
-                        self.history = [StateEntry.from_dict(entry) for entry in history_data]
-                    logger.info(f"Loaded state history from {history_file} ({len(self.history)} entries)")
-                except Exception as e:
-                    logger.error(f"Failed to load state history from {history_file}: {str(e)}")
+            try:
+                # Load current state
+                cursor = self.connection.cursor()
+                cursor.execute("SELECT key, value FROM current_state")
+                rows = cursor.fetchall()
+                
+                for key, value in rows:
+                    try:
+                        self.current_state[key] = json.loads(value)
+                    except json.JSONDecodeError:
+                        # Store as-is if not valid JSON
+                        self.current_state[key] = value
+                
+                logger.info(f"Loaded {len(rows)} state keys from database")
+                
+                # Load state history if enabled
+                if self.keep_history:
+                    cursor.execute(
+                        "SELECT state, timestamp, metadata FROM state_history ORDER BY timestamp DESC LIMIT ?",
+                        (self.max_history_entries,)
+                    )
+                    history_rows = cursor.fetchall()
+                    
+                    for state_json, timestamp, metadata_json in history_rows:
+                        try:
+                            state = json.loads(state_json)
+                            metadata = json.loads(metadata_json) if metadata_json else None
+                            self.history.append(StateEntry(state, timestamp, metadata))
+                        except json.JSONDecodeError as e:
+                            logger.warning(f"Error parsing history entry: {e}")
+                    
+                    # Reverse to get chronological order
+                    self.history.reverse()
+                    logger.info(f"Loaded {len(self.history)} history entries from database")
+                
+            except Exception as e:
+                logger.error(f"Failed to load state from database: {str(e)}")
     
     def _save_state(self):
         """
-        Save state to persistent storage.
+        Save state to SQLite database.
         """
-        if not self.enable_persistence:
+        if not self.enable_persistence or self.connection is None:
             return
         
-        state_file = os.path.join(self.storage_path, "current_state.json")
-        history_file = os.path.join(self.storage_path, "state_history.json")
-        
         with self.lock:
-            # Save current state
             try:
-                with open(state_file, 'w') as f:
-                    json.dump(self.current_state, f, indent=2)
-                logger.debug(f"Saved state to {state_file}")
+                cursor = self.connection.cursor()
+                current_time = time.time()
+                
+                # Begin transaction
+                self.connection.execute("BEGIN TRANSACTION")
+                
+                # Save current state
+                for key, value in self.current_state.items():
+                    value_json = json.dumps(value)
+                    cursor.execute(
+                        "INSERT OR REPLACE INTO current_state (key, value, modified_at) VALUES (?, ?, ?)",
+                        (key, value_json, current_time)
+                    )
+                
+                # Save latest history entry if available and history is enabled
+                if self.keep_history and self.history:
+                    latest = self.history[-1]
+                    state_json = json.dumps(latest.state)
+                    metadata_json = json.dumps(latest.metadata) if latest.metadata else None
+                    
+                    cursor.execute(
+                        "INSERT INTO state_history (state, timestamp, metadata) VALUES (?, ?, ?)",
+                        (state_json, latest.timestamp, metadata_json)
+                    )
+                    
+                    # Cleanup old history entries if we have too many
+                    cursor.execute(
+                        "DELETE FROM state_history WHERE id NOT IN (SELECT id FROM state_history ORDER BY timestamp DESC LIMIT ?)",
+                        (self.max_history_entries,)
+                    )
+                
+                # Commit transaction
+                self.connection.commit()
+                logger.debug(f"Saved state to database ({len(self.current_state)} keys)")
+                
             except Exception as e:
-                logger.error(f"Failed to save state to {state_file}: {str(e)}")
-            
-            # Save state history
-            if self.keep_history and self.history:
+                logger.error(f"Failed to save state to database: {str(e)}")
+                # Try to rollback transaction
                 try:
-                    history_data = [entry.to_dict() for entry in self.history]
-                    with open(history_file, 'w') as f:
-                        json.dump(history_data, f, indent=2)
-                    logger.debug(f"Saved state history to {history_file} ({len(self.history)} entries)")
-                except Exception as e:
-                    logger.error(f"Failed to save state history to {history_file}: {str(e)}")
+                    self.connection.rollback()
+                except:
+                    pass
     
     def _start_autosave(self):
         """
@@ -204,7 +302,7 @@ class StateManager:
     
     def stop(self):
         """
-        Stop the state manager and save state.
+        Stop the state manager, save state, and close database connection.
         """
         if self.autosave_thread is not None and self.autosave_thread.is_alive():
             self.stop_autosave.set()
@@ -212,6 +310,16 @@ class StateManager:
         
         # Save state one last time
         self._save_state()
+        
+        # Close database connection
+        if self.connection is not None:
+            try:
+                self.connection.close()
+                self.connection = None
+                logger.info("Closed database connection")
+            except Exception as e:
+                logger.error(f"Error closing database connection: {str(e)}")
+        
         logger.info("Stopped state manager")
     
     def get_state(self) -> Dict[str, Any]:
@@ -428,14 +536,13 @@ class StateManager:
         Args:
             name: The name of the checkpoint.
         """
-        if not self.enable_persistence:
+        if not self.enable_persistence or self.connection is None:
             logger.warning("Cannot save checkpoint: Persistence is disabled")
             return
         
-        checkpoint_file = os.path.join(self.storage_path, f"checkpoint_{name}.json")
-        
         with self.lock:
             try:
+                cursor = self.connection.cursor()
                 checkpoint_data = {
                     "state": self.current_state,
                     "timestamp": time.time(),
@@ -445,12 +552,23 @@ class StateManager:
                     }
                 }
                 
-                with open(checkpoint_file, 'w') as f:
-                    json.dump(checkpoint_data, f, indent=2)
+                state_json = json.dumps(checkpoint_data["state"])
+                timestamp = checkpoint_data["timestamp"]
+                metadata_json = json.dumps(checkpoint_data["metadata"])
                 
+                cursor.execute(
+                    "INSERT OR REPLACE INTO checkpoints (name, state, timestamp, metadata) VALUES (?, ?, ?, ?)",
+                    (name, state_json, timestamp, metadata_json)
+                )
+                
+                self.connection.commit()
                 logger.info(f"Saved state checkpoint: {name}")
             except Exception as e:
                 logger.error(f"Failed to save state checkpoint: {str(e)}")
+                try:
+                    self.connection.rollback()
+                except:
+                    pass
     
     def load_checkpoint(self, name: str) -> bool:
         """
@@ -462,31 +580,42 @@ class StateManager:
         Returns:
             True if the checkpoint was loaded successfully, False otherwise.
         """
-        if not self.enable_persistence:
+        if not self.enable_persistence or self.connection is None:
             logger.warning("Cannot load checkpoint: Persistence is disabled")
-            return False
-        
-        checkpoint_file = os.path.join(self.storage_path, f"checkpoint_{name}.json")
-        
-        if not os.path.exists(checkpoint_file):
-            logger.error(f"Checkpoint not found: {name}")
             return False
         
         with self.lock:
             try:
-                with open(checkpoint_file, 'r') as f:
-                    checkpoint_data = json.load(f)
+                cursor = self.connection.cursor()
+                cursor.execute(
+                    "SELECT state, timestamp, metadata FROM checkpoints WHERE name = ?",
+                    (name,)
+                )
+                row = cursor.fetchone()
                 
+                if not row:
+                    logger.error(f"Checkpoint not found: {name}")
+                    return False
+                
+                state_json, timestamp, metadata_json = row
                 old_state = self.current_state.copy()
                 
                 # Update current state
-                self.current_state = checkpoint_data.get("state", {})
+                self.current_state = json.loads(state_json)
                 
                 # Add to history if enabled
                 if self.keep_history:
+                    metadata = {"action": "load_checkpoint", "name": name}
+                    if metadata_json:
+                        try:
+                            metadata.update(json.loads(metadata_json))
+                        except:
+                            pass
+                    
                     self.history.append(StateEntry(
                         self.current_state.copy(),
-                        metadata={"action": "load_checkpoint", "name": name}
+                        timestamp=time.time(),
+                        metadata=metadata
                     ))
                     
                     # Trim history if needed
@@ -500,9 +629,8 @@ class StateManager:
                     except Exception as e:
                         logger.error(f"Error in state change callback: {str(e)}")
                 
-                # Save state if persistence is enabled
-                if self.enable_persistence:
-                    self._save_state()
+                # Save current state to database
+                self._save_state()
                 
                 logger.info(f"Loaded state checkpoint: {name}")
                 return True
@@ -518,19 +646,45 @@ class StateManager:
         Returns:
             A list of checkpoint names.
         """
-        if not self.enable_persistence:
+        if not self.enable_persistence or self.connection is None:
             return []
         
         try:
-            checkpoints = []
+            cursor = self.connection.cursor()
+            cursor.execute("SELECT name FROM checkpoints ORDER BY timestamp DESC")
+            rows = cursor.fetchall()
             
-            for filename in os.listdir(self.storage_path):
-                if filename.startswith("checkpoint_") and filename.endswith(".json"):
-                    checkpoint_name = filename[11:-5]  # Remove "checkpoint_" prefix and ".json" suffix
-                    checkpoints.append(checkpoint_name)
-            
-            return checkpoints
+            return [row[0] for row in rows]
             
         except Exception as e:
             logger.error(f"Failed to list checkpoints: {str(e)}")
             return []
+            
+    def delete_checkpoint(self, name: str) -> bool:
+        """
+        Delete a checkpoint.
+        
+        Args:
+            name: The name of the checkpoint to delete.
+            
+        Returns:
+            True if the checkpoint was deleted, False otherwise.
+        """
+        if not self.enable_persistence or self.connection is None:
+            return False
+            
+        try:
+            cursor = self.connection.cursor()
+            cursor.execute("DELETE FROM checkpoints WHERE name = ?", (name,))
+            self.connection.commit()
+            
+            if cursor.rowcount > 0:
+                logger.info(f"Deleted checkpoint: {name}")
+                return True
+            else:
+                logger.warning(f"Checkpoint not found: {name}")
+                return False
+                
+        except Exception as e:
+            logger.error(f"Failed to delete checkpoint: {str(e)}")
+            return False
