@@ -2,13 +2,16 @@
 Processing Core module for TCCC.ai system.
 
 This module implements the main Processing Core component of the TCCC.ai system.
+Includes module registration system with dependency tracking.
 """
 
 import asyncio
 import time
 import threading
-from typing import Dict, List, Any, Optional, Tuple, Set, Callable
+from typing import Dict, List, Any, Optional, Tuple, Set, Callable, Type
 from dataclasses import dataclass
+from enum import Enum, auto
+import networkx as nx
 
 from tccc.utils.logging import get_logger
 from tccc.utils.config import Config
@@ -20,6 +23,66 @@ from tccc.processing_core.plugin_manager import PluginManager
 from tccc.processing_core.state_manager import StateManager
 
 logger = get_logger(__name__)
+
+
+class ModuleState(Enum):
+    """Operational states for modules in the ProcessingCore."""
+    UNINITIALIZED = auto()  # Module is registered but not initialized
+    INITIALIZING = auto()   # Module is in the process of initializing
+    READY = auto()          # Module is initialized and ready for use
+    ACTIVE = auto()         # Module is actively processing data
+    ERROR = auto()          # Module encountered an error
+    STANDBY = auto()        # Module is initialized but temporarily inactive
+    SHUTDOWN = auto()       # Module has been shut down
+
+
+@dataclass
+class ModuleInfo:
+    """Information about a registered module."""
+    name: str
+    module_type: str
+    instance: Any
+    dependencies: List[str]
+    state: ModuleState = ModuleState.UNINITIALIZED
+    state_message: Optional[str] = None
+    last_state_change: Optional[float] = None
+    metrics: Dict[str, Any] = None
+    config: Optional[Dict[str, Any]] = None
+    
+    def __post_init__(self):
+        """Initialize default values."""
+        if self.metrics is None:
+            self.metrics = {}
+        self.last_state_change = time.time()
+    
+    def update_state(self, state: ModuleState, message: Optional[str] = None) -> None:
+        """
+        Update the module state.
+        
+        Args:
+            state: The new state.
+            message: Optional message about the state change.
+        """
+        self.state = state
+        self.state_message = message
+        self.last_state_change = time.time()
+    
+    def to_dict(self) -> Dict[str, Any]:
+        """
+        Convert to dictionary for serialization.
+        
+        Returns:
+            Dictionary representation of the module info.
+        """
+        return {
+            "name": self.name,
+            "type": self.module_type,
+            "state": self.state.name,
+            "state_message": self.state_message,
+            "last_state_change": self.last_state_change,
+            "dependencies": self.dependencies,
+            "metrics": self.metrics
+        }
 
 
 @dataclass
@@ -156,7 +219,8 @@ class ProcessingCore:
     
     Implements the ProcessingCoreInterface defined in the module_interfaces.md
     specification. Handles text processing, entity extraction, intent classification, 
-    sentiment analysis, and conversation summarization.
+    sentiment analysis, and conversation summarization. Includes a module registration
+    system with dependency tracking.
     """
     
     def __init__(self):
@@ -164,7 +228,11 @@ class ProcessingCore:
         self.initialized = False
         self.config: Optional[Dict[str, Any]] = None
         
-        # Components
+        # Module registry and dependency graph
+        self.modules: Dict[str, ModuleInfo] = {}
+        self.dependency_graph = nx.DiGraph()
+        
+        # Core components (preserved for backward compatibility)
         self.entity_extractor: Optional[EntityExtractor] = None
         self.intent_classifier: Optional[IntentClassifier] = None
         self.sentiment_analyzer: Optional[SentimentAnalyzer] = None
@@ -181,6 +249,142 @@ class ProcessingCore:
         # Locks for thread-safety
         self.processing_lock = threading.RLock()
         self.conversation_lock = threading.RLock()
+        self.module_lock = threading.RLock()
+        
+        # Current operational state
+        self.operational_state = ModuleState.UNINITIALIZED
+    
+    def register_module(self, name: str, module_type: str, instance: Any, 
+                        dependencies: List[str] = None, config: Dict[str, Any] = None) -> bool:
+        """
+        Register a module with the ProcessingCore.
+        
+        Args:
+            name: Unique name for the module.
+            module_type: Type of module (e.g., "extractor", "classifier").
+            instance: The module instance.
+            dependencies: List of module names this module depends on.
+            config: Optional configuration for the module.
+            
+        Returns:
+            True if registration was successful, False otherwise.
+        """
+        with self.module_lock:
+            # Check if module with this name already exists
+            if name in self.modules:
+                logger.warning(f"Module {name} is already registered")
+                return False
+            
+            # Create module info
+            module_info = ModuleInfo(
+                name=name,
+                module_type=module_type,
+                instance=instance,
+                dependencies=dependencies or [],
+                config=config
+            )
+            
+            # Add to registry
+            self.modules[name] = module_info
+            
+            # Update dependency graph
+            self.dependency_graph.add_node(name)
+            for dep in module_info.dependencies:
+                if dep in self.modules:
+                    self.dependency_graph.add_edge(dep, name)
+                else:
+                    logger.warning(f"Module {name} depends on unregistered module {dep}")
+            
+            logger.info(f"Registered module: {name} of type {module_type}")
+            return True
+    
+    def unregister_module(self, name: str) -> bool:
+        """
+        Unregister a module.
+        
+        Args:
+            name: Name of the module to unregister.
+            
+        Returns:
+            True if unregistered successfully, False otherwise.
+        """
+        with self.module_lock:
+            if name not in self.modules:
+                logger.warning(f"Module {name} is not registered")
+                return False
+            
+            # Check if other modules depend on this one
+            dependent_modules = []
+            for module_name, module_info in self.modules.items():
+                if name in module_info.dependencies:
+                    dependent_modules.append(module_name)
+            
+            if dependent_modules:
+                logger.error(f"Cannot unregister module {name} as it is required by: {', '.join(dependent_modules)}")
+                return False
+            
+            # Update module state
+            try:
+                self.modules[name].update_state(ModuleState.SHUTDOWN, "Module unregistered")
+            except Exception as e:
+                logger.error(f"Error updating state for module {name}: {e}")
+            
+            # Remove from registry and dependency graph
+            del self.modules[name]
+            self.dependency_graph.remove_node(name)
+            
+            logger.info(f"Unregistered module: {name}")
+            return True
+    
+    def get_module(self, name: str) -> Optional[Any]:
+        """
+        Get a module instance by name.
+        
+        Args:
+            name: Name of the module.
+            
+        Returns:
+            The module instance, or None if not found.
+        """
+        module_info = self.modules.get(name)
+        return module_info.instance if module_info else None
+    
+    def get_module_info(self, name: str) -> Optional[ModuleInfo]:
+        """
+        Get information about a module.
+        
+        Args:
+            name: Name of the module.
+            
+        Returns:
+            ModuleInfo for the module, or None if not found.
+        """
+        return self.modules.get(name)
+    
+    def get_module_status(self) -> Dict[str, Dict[str, Any]]:
+        """
+        Get status information for all modules.
+        
+        Returns:
+            Dictionary mapping module names to their status.
+        """
+        with self.module_lock:
+            return {name: info.to_dict() for name, info in self.modules.items()}
+    
+    def get_initialization_order(self) -> List[str]:
+        """
+        Get the correct order to initialize modules based on dependencies.
+        
+        Returns:
+            List of module names in initialization order.
+        """
+        try:
+            # Use topological sort to determine initialization order
+            return list(nx.topological_sort(self.dependency_graph))
+        except nx.NetworkXUnfeasible:
+            # Circular dependencies detected
+            logger.error("Circular module dependencies detected")
+            return list(self.modules.keys())
     
     async def initialize(self, config: Dict[str, Any]) -> bool:
         """
@@ -199,46 +403,110 @@ class ProcessingCore:
         try:
             self.config = config
             
-            # Initialize the resource monitor first
+            # Update operational state
+            self.operational_state = ModuleState.INITIALIZING
+            
+            # Initialize resource monitor first
             resource_config = config.get("resource_management", {})
             self.resource_monitor = ResourceMonitor(resource_config)
+            self.register_module(
+                name="resource_monitor",
+                module_type="monitor",
+                instance=self.resource_monitor,
+                config=resource_config
+            )
+            self.modules["resource_monitor"].update_state(ModuleState.INITIALIZING)
             self.resource_monitor.start()
+            self.modules["resource_monitor"].update_state(ModuleState.ACTIVE)
             
             # Initialize state manager
             state_config = config.get("state_management", {})
             self.state_manager = StateManager(state_config)
+            self.register_module(
+                name="state_manager",
+                module_type="state",
+                instance=self.state_manager,
+                config=state_config
+            )
+            self.modules["state_manager"].update_state(ModuleState.READY)
             
             # Initialize entity extractor
             entity_config = config.get("entity_extraction", {})
             self.entity_extractor = EntityExtractor(entity_config)
+            self.register_module(
+                name="entity_extractor",
+                module_type="extractor",
+                instance=self.entity_extractor,
+                dependencies=["resource_monitor"],
+                config=entity_config
+            )
+            self.modules["entity_extractor"].update_state(ModuleState.READY)
             
             # Initialize intent classifier
             intent_config = config.get("intent_classification", {})
             self.intent_classifier = IntentClassifier(intent_config)
+            self.register_module(
+                name="intent_classifier",
+                module_type="classifier",
+                instance=self.intent_classifier,
+                dependencies=["resource_monitor"],
+                config=intent_config
+            )
+            self.modules["intent_classifier"].update_state(ModuleState.READY)
             
             # Initialize sentiment analyzer
             sentiment_config = config.get("sentiment_analysis", {})
             self.sentiment_analyzer = SentimentAnalyzer(sentiment_config)
+            self.register_module(
+                name="sentiment_analyzer",
+                module_type="analyzer",
+                instance=self.sentiment_analyzer,
+                dependencies=["resource_monitor"],
+                config=sentiment_config
+            )
+            self.modules["sentiment_analyzer"].update_state(ModuleState.READY)
             
             # Initialize plugin manager
             plugin_config = config.get("plugins", {})
             self.plugin_manager = PluginManager(plugin_config)
+            self.register_module(
+                name="plugin_manager",
+                module_type="manager",
+                instance=self.plugin_manager,
+                dependencies=["resource_monitor", "state_manager"],
+                config=plugin_config
+            )
+            self.modules["plugin_manager"].update_state(ModuleState.READY)
             
             # Register resource monitor callback to track resource usage
             if self.resource_monitor and self.state_manager:
                 self.resource_monitor.register_callback(self._on_resource_update)
             
+            # Configure dynamic resource allocation
+            resource_config = config.get("resource_management", {})
+            self.enable_dynamic_allocation = resource_config.get("enable_dynamic_allocation", True)
+            self.cpu_high_threshold = resource_config.get("cpu_high_threshold", 80)
+            self.cpu_low_threshold = resource_config.get("cpu_low_threshold", 20)
+            self.memory_high_threshold = resource_config.get("memory_high_threshold", 80)
+            self.memory_low_threshold = resource_config.get("memory_low_threshold", 20)
+            self.max_concurrent_tasks = config.get("general", {}).get("max_concurrent_tasks", 2)
+            self.min_concurrent_tasks = 1
+            self.current_concurrent_tasks = self.max_concurrent_tasks
+            
             self.initialized = True
+            self.operational_state = ModuleState.READY
             logger.info("Processing Core initialized successfully")
             return True
             
         except Exception as e:
             logger.error(f"Failed to initialize Processing Core: {str(e)}")
+            self.operational_state = ModuleState.ERROR
             return False
     
     def _on_resource_update(self, usage, *args, **kwargs):
         """
         Callback for resource usage updates.
+        Handles dynamic resource allocation based on system load.
         
         Args:
             usage: Resource usage information.
@@ -251,10 +519,91 @@ class ProcessingCore:
                 "resource_usage": usage.to_dict(),
                 "resource_metrics": self.resource_monitor.get_resource_metrics()
             })
+        
+        # Handle dynamic resource allocation if enabled
+        if hasattr(self, 'enable_dynamic_allocation') and self.enable_dynamic_allocation and self.initialized:
+            try:
+                self._adjust_resource_allocation(usage)
+            except Exception as e:
+                logger.error(f"Error in dynamic resource allocation: {str(e)}")
+    
+    def _adjust_resource_allocation(self, usage):
+        """
+        Adjust resource allocation based on current system load.
+        Scales concurrent tasks and processing modes.
+        
+        Args:
+            usage: Current resource usage information.
+        """
+        # Check CPU usage
+        cpu_usage = usage.cpu_usage
+        memory_usage = usage.memory_usage
+        
+        old_concurrent_tasks = self.current_concurrent_tasks
+        
+        # Adjust concurrent tasks based on load
+        if cpu_usage > self.cpu_high_threshold or memory_usage > self.memory_high_threshold:
+            # High load - reduce concurrent tasks
+            self.current_concurrent_tasks = max(self.min_concurrent_tasks, self.current_concurrent_tasks - 1)
+            
+            # Put non-essential modules in standby if load is extremely high
+            if cpu_usage > 90 or memory_usage > 90:
+                self._adjust_module_states(ModuleState.STANDBY, ["plugin_manager"])
+                
+        elif cpu_usage < self.cpu_low_threshold and memory_usage < self.memory_low_threshold:
+            # Low load - increase concurrent tasks up to maximum
+            self.current_concurrent_tasks = min(self.max_concurrent_tasks, self.current_concurrent_tasks + 1)
+            
+            # Reactivate modules that were in standby
+            self._adjust_module_states(ModuleState.READY, ["plugin_manager"])
+        
+        # Log changes if resource allocation changed
+        if old_concurrent_tasks != self.current_concurrent_tasks:
+            logger.info(f"Adjusted concurrent tasks: {old_concurrent_tasks} -> {self.current_concurrent_tasks} " +
+                       f"(CPU: {cpu_usage:.1f}%, Memory: {memory_usage:.1f}%)")
+            
+            # Update state manager with new allocation
+            if self.state_manager:
+                self.state_manager.set_state_value(
+                    "resource_allocation", 
+                    {
+                        "concurrent_tasks": self.current_concurrent_tasks,
+                        "cpu_usage": cpu_usage,
+                        "memory_usage": memory_usage,
+                        "timestamp": time.time()
+                    }
+                )
+    
+    def _adjust_module_states(self, target_state: ModuleState, module_names: List[str]):
+        """
+        Adjust the operational state of specified modules.
+        
+        Args:
+            target_state: The state to set modules to.
+            module_names: List of module names to adjust.
+        """
+        with self.module_lock:
+            for name in module_names:
+                if name in self.modules:
+                    module_info = self.modules[name]
+                    current_state = module_info.state
+                    
+                    # Only change state if different
+                    if current_state != target_state:
+                        # For standby, make sure the module supports it
+                        if target_state == ModuleState.STANDBY:
+                            module_info.update_state(ModuleState.STANDBY, "Resource conservation mode")
+                            logger.info(f"Module {name} placed in STANDBY mode due to high system load")
+                        
+                        # For ready, reactivate the module
+                        elif target_state == ModuleState.READY and current_state == ModuleState.STANDBY:
+                            module_info.update_state(ModuleState.READY, "Resumed from standby")
+                            logger.info(f"Module {name} reactivated from STANDBY mode")
     
     async def processTranscription(self, segment: TranscriptionSegment) -> ProcessedSegment:
         """
         Process incoming transcription segments.
+        Takes advantage of dynamic resource allocation to adjust processing.
         
         Args:
             segment: The transcription segment to process.
@@ -264,6 +613,14 @@ class ProcessingCore:
         """
         if not self.initialized:
             raise RuntimeError("Processing Core is not initialized")
+        
+        # Update module state to ACTIVE during processing
+        if "entity_extractor" in self.modules:
+            self.modules["entity_extractor"].update_state(ModuleState.ACTIVE)
+        if "intent_classifier" in self.modules:
+            self.modules["intent_classifier"].update_state(ModuleState.ACTIVE)
+        if "sentiment_analyzer" in self.modules:
+            self.modules["sentiment_analyzer"].update_state(ModuleState.ACTIVE)
         
         start_time = time.time()
         
@@ -278,10 +635,17 @@ class ProcessingCore:
                 metadata=segment.metadata.copy() if segment.metadata else {}
             )
             
-            # Process the segment with parallel tasks
-            entity_task = self.extractEntities(segment.text)
-            intent_task = self.identifyIntents(segment.text)
-            sentiment_task = self.analyzeSentiment(segment.text)
+            # Create a semaphore to limit concurrent processing based on resource allocation
+            semaphore = asyncio.Semaphore(self.current_concurrent_tasks)
+            
+            # Process the segment with parallel tasks, controlled by semaphore
+            async def run_with_semaphore(coro):
+                async with semaphore:
+                    return await coro
+            
+            entity_task = run_with_semaphore(self.extractEntities(segment.text))
+            intent_task = run_with_semaphore(self.identifyIntents(segment.text))
+            sentiment_task = run_with_semaphore(self.analyzeSentiment(segment.text))
             
             # Gather results
             results = await asyncio.gather(
@@ -301,29 +665,46 @@ class ProcessingCore:
                 if isinstance(result, Exception):
                     logger.error(f"Error in processing segment: {str(result)}")
                     self.metrics.errors_encountered += 1
+                    
+                    # Update module state to ERROR
+                    if i == 0 and "entity_extractor" in self.modules:
+                        self.modules["entity_extractor"].update_state(ModuleState.ERROR, str(result))
+                    elif i == 1 and "intent_classifier" in self.modules:
+                        self.modules["intent_classifier"].update_state(ModuleState.ERROR, str(result))
+                    elif i == 2 and "sentiment_analyzer" in self.modules:
+                        self.modules["sentiment_analyzer"].update_state(ModuleState.ERROR, str(result))
             
-            # Apply any plugins
-            if self.plugin_manager:
-                # Convert to dictionary for plugin processing
-                segment_dict = {
-                    "text": processed.text,
-                    "speaker": processed.speaker,
-                    "start_time": processed.start_time,
-                    "end_time": processed.end_time,
-                    "confidence": processed.confidence,
-                    "entities": [e.to_dict() for e in processed.entities] if processed.entities else [],
-                    "intents": [i.to_dict() for i in processed.intents] if processed.intents else [],
-                    "sentiment": processed.sentiment.to_dict() if processed.sentiment else None,
-                    "metadata": processed.metadata or {}
-                }
-                
-                plugin_start = time.time()
-                processed_dict = self.plugin_manager.process_data(segment_dict)
-                self.metrics.plugin_processing_time += time.time() - plugin_start
-                
-                # Update processed segment with plugin results
-                processed.metadata = processed_dict.get("metadata", {})
-                # Other fields could be updated here if needed
+            # Apply plugins if manager is in READY or ACTIVE state
+            if self.plugin_manager and "plugin_manager" in self.modules:
+                module_state = self.modules["plugin_manager"].state
+                if module_state in (ModuleState.READY, ModuleState.ACTIVE):
+                    # Convert to dictionary for plugin processing
+                    segment_dict = {
+                        "text": processed.text,
+                        "speaker": processed.speaker,
+                        "start_time": processed.start_time,
+                        "end_time": processed.end_time,
+                        "confidence": processed.confidence,
+                        "entities": [e.to_dict() for e in processed.entities] if processed.entities else [],
+                        "intents": [i.to_dict() for i in processed.intents] if processed.intents else [],
+                        "sentiment": processed.sentiment.to_dict() if processed.sentiment else None,
+                        "metadata": processed.metadata or {}
+                    }
+                    
+                    # Update module state
+                    self.modules["plugin_manager"].update_state(ModuleState.ACTIVE)
+                    
+                    # Process with plugins
+                    plugin_start = time.time()
+                    processed_dict = self.plugin_manager.process_data(segment_dict)
+                    self.metrics.plugin_processing_time += time.time() - plugin_start
+                    
+                    # Update processed segment with plugin results
+                    processed.metadata = processed_dict.get("metadata", {})
+                    # Other fields could be updated here if needed
+                    
+                    # Return to READY state
+                    self.modules["plugin_manager"].update_state(ModuleState.READY)
             
             # Record metrics
             self.metrics.segments_processed += 1
@@ -339,11 +720,40 @@ class ProcessingCore:
                 conversation_id = segment.metadata["conversation_id"]
                 self._add_segment_to_conversation(conversation_id, processed)
             
+            # Update module states back to READY
+            if "entity_extractor" in self.modules and self.modules["entity_extractor"].state == ModuleState.ACTIVE:
+                self.modules["entity_extractor"].update_state(ModuleState.READY)
+            if "intent_classifier" in self.modules and self.modules["intent_classifier"].state == ModuleState.ACTIVE:
+                self.modules["intent_classifier"].update_state(ModuleState.READY)
+            if "sentiment_analyzer" in self.modules and self.modules["sentiment_analyzer"].state == ModuleState.ACTIVE:
+                self.modules["sentiment_analyzer"].update_state(ModuleState.READY)
+            
             return processed
             
         except Exception as e:
             logger.error(f"Error processing transcription segment: {str(e)}")
             self.metrics.errors_encountered += 1
+            
+            # Update core operational state in case of critical error
+            if self.operational_state == ModuleState.ACTIVE:
+                self.operational_state = ModuleState.ERROR
+                logger.critical(f"Processing Core entered ERROR state: {str(e)}")
+                
+                # Attempt recovery
+                if self.state_manager:
+                    try:
+                        # Record error in state manager
+                        self.state_manager.set_state_value("last_error", {
+                            "message": str(e),
+                            "timestamp": time.time(),
+                            "segment_id": segment.metadata.get("id") if segment.metadata else None
+                        })
+                        
+                        # Return to READY state after error recording
+                        self.operational_state = ModuleState.READY
+                        logger.info("Processing Core recovered from ERROR state")
+                    except Exception as recovery_error:
+                        logger.error(f"Failed to recover from error: {str(recovery_error)}")
             
             # Return a minimal processed segment on error
             return ProcessedSegment(
@@ -623,17 +1033,54 @@ class ProcessingCore:
     
     def shutdown(self):
         """
-        Shutdown the processing core.
+        Shutdown the processing core with graceful module termination.
+        Modules are shut down in reverse dependency order to ensure proper cleanup.
         """
         logger.info("Shutting down Processing Core")
+        self.operational_state = ModuleState.SHUTDOWN
         
-        # Stop the resource monitor
+        # Get modules in reverse dependency order
+        try:
+            shutdown_order = list(reversed(self.get_initialization_order()))
+        except Exception as e:
+            logger.error(f"Error determining shutdown order: {e}")
+            shutdown_order = list(self.modules.keys())
+        
+        # Shutdown each module in order
+        with self.module_lock:
+            for module_name in shutdown_order:
+                if module_name not in self.modules:
+                    continue
+                
+                module_info = self.modules[module_name]
+                logger.info(f"Shutting down module: {module_name}")
+                
+                try:
+                    # Update module state
+                    module_info.update_state(ModuleState.SHUTDOWN, "Shutting down")
+                    
+                    # Call shutdown method if available
+                    if hasattr(module_info.instance, 'shutdown'):
+                        module_info.instance.shutdown()
+                    elif hasattr(module_info.instance, 'stop'):
+                        module_info.instance.stop()
+                    
+                    logger.info(f"Module {module_name} shutdown complete")
+                except Exception as e:
+                    logger.error(f"Error shutting down module {module_name}: {str(e)}")
+        
+        # For backward compatibility, ensure these are definitely stopped
         if self.resource_monitor:
-            self.resource_monitor.stop()
+            try:
+                self.resource_monitor.stop()
+            except Exception as e:
+                logger.error(f"Error stopping resource monitor: {str(e)}")
         
-        # Stop the state manager
         if self.state_manager:
-            self.state_manager.stop()
+            try:
+                self.state_manager.stop()
+            except Exception as e:
+                logger.error(f"Error stopping state manager: {str(e)}")
         
         self.initialized = False
         logger.info("Processing Core shutdown complete")
