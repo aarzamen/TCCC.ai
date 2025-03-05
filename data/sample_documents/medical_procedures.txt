@@ -1,0 +1,26 @@
+# Common Medical Procedures in TCCC
+
+## Airway Management
+Proper airway management is critical in tactical care. The following procedures may be necessary:
+
+1. Chin Lift/Jaw Thrust: Basic maneuver to open airway
+2. Nasopharyngeal Airway (NPA): Used for unconscious patients with intact gag reflex
+3. Supraglottic Airway Device: Used when NPA is insufficient
+4. Surgical Cricothyroidotomy: Used when other methods fail
+
+## Breathing Support
+Ensure adequate oxygenation and ventilation:
+
+1. Needle Decompression: For tension pneumothorax
+2. Chest Seal: For open pneumothorax
+3. Oxygen Administration: When available
+4. Assisted Ventilation: When breathing is inadequate
+
+## Circulation Management
+Control bleeding and maintain circulation:
+
+1. Direct Pressure: First-line treatment for hemorrhage
+2. Tourniquet Application: For life-threatening extremity bleeding
+3. Hemostatic Dressings: For wounds not amenable to tourniquet
+4. IV/IO Access: For fluid and medication administration
+5. Fluid Resuscitation: For hypovolemic shock

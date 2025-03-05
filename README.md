@@ -75,7 +75,15 @@ python -m tccc.cli start --modules audio_pipeline stt_engine
 
 ## Development
 
-### Critical Development Tasks
+### Current Features
+
+- [x] **Document Library RAG Implementation**
+  - Embedding-based semantic search using Nexa AI's all-MiniLM-L12-v2 model
+  - Efficient document chunking and indexing with FAISS vector database
+  - In-memory and disk-based caching with TTL and size limits
+  - Support for text files with extensible architecture for PDF, DOCX, HTML
+
+### Next Development Tasks
 
 - [ ] **TCCC Casualty Card (DD Form 1380) Implementation** - HIGH PRIORITY
   - Purpose: Core functionality for documenting battlefield casualties

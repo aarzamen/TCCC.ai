@@ -1,0 +1,170 @@
+{
+  "1_0": {
+    "chunk_id": "1_0",
+    "doc_id": "1",
+    "text": "# Common Medical Procedures in TCCC\n\n## Airway Management\nProper airway management is critical in tactical care. The following procedures may be necessary:\n\n1. Chin Lift/Jaw Thrust: Basic maneuver to open airway\n2. Nasopharyngeal Airway (NPA): Used for unconscious patients with intact gag reflex\n3. Supraglottic Airway Device: Used when NPA is insufficient\n4. Surgical Cricothyroidotomy: Used when other methods fail\n\n## Breathing Support\nEnsure adequate oxygenation and ventilation:\n\n1. Needle Decompression: For tension pneumothorax\n2. Chest Seal: For open pneumothorax\n3. Oxygen Administration: When available\n4. Assisted Ventilation: When breathing is inadequate\n\n## Circulation Management\nControl bleeding and maintain circulation:\n\n1. Direct Pressure: First-line treatment for hemorrhage\n2. Tourniquet Application: For life-threatening extremity bleeding\n3. Hemostatic Dressings: For wounds not amenable to tourniquet\n4. IV/IO Access: For fluid and medication administration\n5. Fluid Resuscita",
+    "start_char": 0,
+    "end_char": 1000
+  },
+  "1_1": {
+    "chunk_id": "1_1",
+    "doc_id": "1",
+    "text": "urniquet Application: For life-threatening extremity bleeding\n3. Hemostatic Dressings: For wounds not amenable to tourniquet\n4. IV/IO Access: For fluid and medication administration\n5. Fluid Resuscitation: For hypovolemic shock\n",
+    "start_char": 800,
+    "end_char": 1028
+  },
+  "2_0": {
+    "chunk_id": "2_0",
+    "doc_id": "2",
+    "text": "# Tactical Considerations in TCCC\n\n## Care Under Fire Phase\nDuring direct threat conditions:\n\n1. Return fire as directed or required\n2. Move casualty to cover if possible\n3. Direct casualty to move to cover and apply self-aid if able\n4. Control major bleeding with tourniquet\n5. Maintain tactical situational awareness\n\n## Tactical Field Care Phase\nDuring indirect threat conditions:\n\n1. Maintain tactical security\n2. Conduct thorough assessment\n3. Treat wounds according to priority\n4. Consider evacuation resources and timing\n5. Communicate with tactical leadership\n\n## Tactical Evacuation Care Phase\nDuring evacuation:\n\n1. Continue ongoing resuscitation\n2. Monitor for deterioration\n3. Prepare documentation\n4. Prepare for transfer of care\n5. Maintain security as situation dictates\n\n## Environmental Considerations\nAdapt care based on:\n\n1. Climate conditions (heat, cold, humidity)\n2. Terrain considerations\n3. Time of day/night operations\n4. Available resources\n5. Remote vs. urban settings\n",
+    "start_char": 0,
+    "end_char": 996
+  },
+  "2_1": {
+    "chunk_id": "2_1",
+    "doc_id": "2",
+    "text": "tal Considerations\nAdapt care based on:\n\n1. Climate conditions (heat, cold, humidity)\n2. Terrain considerations\n3. Time of day/night operations\n4. Available resources\n5. Remote vs. urban settings\n",
+    "start_char": 800,
+    "end_char": 996
+  },
+  "3_0": {
+    "chunk_id": "3_0",
+    "doc_id": "3",
+    "text": "# Medical Equipment for TCCC\n\n## Individual First Aid Kit (IFAK)\nStandard components:\n\n1. Combat Application Tourniquet (CAT)\n2. Hemostatic gauze (Combat Gauze)\n3. Pressure bandage\n4. Nasopharyngeal airway\n5. Chest seal\n6. Surgical tape\n7. Trauma shears\n8. Gloves\n9. Casualty card\n\n## Medical Operator Kit\nAdvanced components:\n\n1. Backup tourniquets\n2. Additional hemostatic agents\n3. Intravenous access supplies\n4. Fluid bags (Hextend, NS)\n5. Chest decompression needle\n6. Advanced airway equipment\n7. Surgical cricothyroidotomy kit\n8. Medication module\n9. Hypothermia prevention kit\n\n## Evacuation Equipment\nFor casualty movement:\n\n1. Tactical litters\n2. Poleless litters\n3. Improvised carrying devices\n4. SKEDCO rescue system\n5. Casualty drag straps\n",
+    "start_char": 0,
+    "end_char": 753
+  },
+  "4_0": {
+    "chunk_id": "4_0",
+    "doc_id": "4",
+    "text": "# Common Medical Procedures in TCCC\n\n## Airway Management\nProper airway management is critical in tactical care. The following procedures may be necessary:\n\n1. Chin Lift/Jaw Thrust: Basic maneuver to open airway\n2. Nasopharyngeal Airway (NPA): Used for unconscious patients with intact gag reflex\n3. Supraglottic Airway Device: Used when NPA is insufficient\n4. Surgical Cricothyroidotomy: Used when other methods fail\n\n## Breathing Support\nEnsure adequate oxygenation and ventilation:\n\n1. Needle Decompression: For tension pneumothorax\n2. Chest Seal: For open pneumothorax\n3. Oxygen Administration: When available\n4. Assisted Ventilation: When breathing is inadequate\n\n## Circulation Management\nControl bleeding and maintain circulation:\n\n1. Direct Pressure: First-line treatment for hemorrhage\n2. Tourniquet Application: For life-threatening extremity bleeding\n3. Hemostatic Dressings: For wounds not amenable to tourniquet\n4. IV/IO Access: For fluid and medication administration\n5. Fluid Resuscita",
+    "start_char": 0,
+    "end_char": 1000
+  },
+  "4_1": {
+    "chunk_id": "4_1",
+    "doc_id": "4",
+    "text": "urniquet Application: For life-threatening extremity bleeding\n3. Hemostatic Dressings: For wounds not amenable to tourniquet\n4. IV/IO Access: For fluid and medication administration\n5. Fluid Resuscitation: For hypovolemic shock\n",
+    "start_char": 800,
+    "end_char": 1028
+  },
+  "5_0": {
+    "chunk_id": "5_0",
+    "doc_id": "5",
+    "text": "# Tactical Considerations in TCCC\n\n## Care Under Fire Phase\nDuring direct threat conditions:\n\n1. Return fire as directed or required\n2. Move casualty to cover if possible\n3. Direct casualty to move to cover and apply self-aid if able\n4. Control major bleeding with tourniquet\n5. Maintain tactical situational awareness\n\n## Tactical Field Care Phase\nDuring indirect threat conditions:\n\n1. Maintain tactical security\n2. Conduct thorough assessment\n3. Treat wounds according to priority\n4. Consider evacuation resources and timing\n5. Communicate with tactical leadership\n\n## Tactical Evacuation Care Phase\nDuring evacuation:\n\n1. Continue ongoing resuscitation\n2. Monitor for deterioration\n3. Prepare documentation\n4. Prepare for transfer of care\n5. Maintain security as situation dictates\n\n## Environmental Considerations\nAdapt care based on:\n\n1. Climate conditions (heat, cold, humidity)\n2. Terrain considerations\n3. Time of day/night operations\n4. Available resources\n5. Remote vs. urban settings\n",
+    "start_char": 0,
+    "end_char": 996
+  },
+  "5_1": {
+    "chunk_id": "5_1",
+    "doc_id": "5",
+    "text": "tal Considerations\nAdapt care based on:\n\n1. Climate conditions (heat, cold, humidity)\n2. Terrain considerations\n3. Time of day/night operations\n4. Available resources\n5. Remote vs. urban settings\n",
+    "start_char": 800,
+    "end_char": 996
+  },
+  "6_0": {
+    "chunk_id": "6_0",
+    "doc_id": "6",
+    "text": "# Medical Equipment for TCCC\n\n## Individual First Aid Kit (IFAK)\nStandard components:\n\n1. Combat Application Tourniquet (CAT)\n2. Hemostatic gauze (Combat Gauze)\n3. Pressure bandage\n4. Nasopharyngeal airway\n5. Chest seal\n6. Surgical tape\n7. Trauma shears\n8. Gloves\n9. Casualty card\n\n## Medical Operator Kit\nAdvanced components:\n\n1. Backup tourniquets\n2. Additional hemostatic agents\n3. Intravenous access supplies\n4. Fluid bags (Hextend, NS)\n5. Chest decompression needle\n6. Advanced airway equipment\n7. Surgical cricothyroidotomy kit\n8. Medication module\n9. Hypothermia prevention kit\n\n## Evacuation Equipment\nFor casualty movement:\n\n1. Tactical litters\n2. Poleless litters\n3. Improvised carrying devices\n4. SKEDCO rescue system\n5. Casualty drag straps\n",
+    "start_char": 0,
+    "end_char": 753
+  },
+  "7_0": {
+    "chunk_id": "7_0",
+    "doc_id": "7",
+    "text": "\n    # TCCC Medical Procedures Reference\n    \n    ## Airway Management\n    - Chin lift/jaw thrust\n    - Nasopharyngeal airway\n    - Endotracheal intubation\n    - Cricothyroidotomy\n    \n    ## Breathing Management\n    - Needle decompression for tension pneumothorax\n    - Chest seal for open pneumothorax\n    - Supplemental oxygen administration\n    \n    ## Circulation Management\n    - Tourniquet application for extremity hemorrhage\n    - Wound packing with hemostatic gauze\n    - IV/IO access\n    - Fluid resuscitation\n    - TXA administration for hemorrhagic shock\n    \n    ## Medication Administration\n    - Morphine: 5-10mg IV/IO for pain\n    - Antibiotics: Ceftriaxone 1-2g IV for open wounds\n    - TXA: 1g IV over 10 minutes for hemorrhagic shock\n    \n    ## Assessment Guidelines\n    - GCS scoring and monitoring\n    - Vital signs interpretation in trauma\n    - Signs of tension pneumothorax\n    - Signs of hypovolemic shock\n    ",
+    "start_char": 0,
+    "end_char": 937
+  },
+  "7_1": {
+    "chunk_id": "7_1",
+    "doc_id": "7",
+    "text": "oring and monitoring\n    - Vital signs interpretation in trauma\n    - Signs of tension pneumothorax\n    - Signs of hypovolemic shock\n    ",
+    "start_char": 800,
+    "end_char": 937
+  },
+  "8_0": {
+    "chunk_id": "8_0",
+    "doc_id": "8",
+    "text": "\n    # TCCC Medical Procedures Reference\n    \n    ## Airway Management\n    - Chin lift/jaw thrust\n    - Nasopharyngeal airway\n    - Endotracheal intubation\n    - Cricothyroidotomy\n    \n    ## Breathing Management\n    - Needle decompression for tension pneumothorax\n    - Chest seal for open pneumothorax\n    - Supplemental oxygen administration\n    \n    ## Circulation Management\n    - Tourniquet application for extremity hemorrhage\n    - Wound packing with hemostatic gauze\n    - IV/IO access\n    - Fluid resuscitation\n    - TXA administration for hemorrhagic shock\n    \n    ## Medication Administration\n    - Morphine: 5-10mg IV/IO for pain\n    - Antibiotics: Ceftriaxone 1-2g IV for open wounds\n    - TXA: 1g IV over 10 minutes for hemorrhagic shock\n    \n    ## Assessment Guidelines\n    - GCS scoring and monitoring\n    - Vital signs interpretation in trauma\n    - Signs of tension pneumothorax\n    - Signs of hypovolemic shock\n    ",
+    "start_char": 0,
+    "end_char": 937
+  },
+  "8_1": {
+    "chunk_id": "8_1",
+    "doc_id": "8",
+    "text": "oring and monitoring\n    - Vital signs interpretation in trauma\n    - Signs of tension pneumothorax\n    - Signs of hypovolemic shock\n    ",
+    "start_char": 800,
+    "end_char": 937
+  },
+  "9_0": {
+    "chunk_id": "9_0",
+    "doc_id": "9",
+    "text": "# Common Medical Procedures in TCCC ## Airway Management Proper airway management is critical in tactical care. The following procedures may be necessary: 1. Chin Lift/Jaw Thrust: Basic maneuver to open airway 2. Nasopharyngeal Airway (NPA): Used for unconscious patients with intact gag reflex 3. Supraglottic Airway Device: Used when NPA is insufficient 4. Surgical Cricothyroidotomy: Used when other methods fail ## Breathing Support Ensure adequate oxygenation and ventilation: 1. Needle Decompression: For tension pneumothorax 2. Chest Seal: For open pneumothorax 3. Oxygen Administration: When available 4. Assisted Ventilation: When breathing is inadequate ## Circulation Management Control bleeding and maintain circulation: 1. Direct Pressure: First-line treatment for hemorrhage 2. Tourniquet Application: For life-threatening extremity bleeding 3. Hemostatic Dressings: For wounds not amenable to tourniquet 4. IV/IO Access: For fluid and medication administration 5. Fluid Resuscitation: ",
+    "start_char": 0,
+    "end_char": 1000
+  },
+  "9_1": {
+    "chunk_id": "9_1",
+    "doc_id": "9",
+    "text": "et Application: For life-threatening extremity bleeding 3. Hemostatic Dressings: For wounds not amenable to tourniquet 4. IV/IO Access: For fluid and medication administration 5. Fluid Resuscitation: For hypovolemic shock",
+    "start_char": 800,
+    "end_char": 1021
+  },
+  "10_0": {
+    "chunk_id": "10_0",
+    "doc_id": "10",
+    "text": "# Tactical Considerations in TCCC ## Care Under Fire Phase During direct threat conditions: 1. Return fire as directed or required 2. Move casualty to cover if possible 3. Direct casualty to move to cover and apply self-aid if able 4. Control major bleeding with tourniquet 5. Maintain tactical situational awareness ## Tactical Field Care Phase During indirect threat conditions: 1. Maintain tactical security 2. Conduct thorough assessment 3. Treat wounds according to priority 4. Consider evacuation resources and timing 5. Communicate with tactical leadership ## Tactical Evacuation Care Phase During evacuation: 1. Continue ongoing resuscitation 2. Monitor for deterioration 3. Prepare documentation 4. Prepare for transfer of care 5. Maintain security as situation dictates ## Environmental Considerations Adapt care based on: 1. Climate conditions (heat, cold, humidity) 2. Terrain considerations 3. Time of day/night operations 4. Available resources 5. Remote vs. urban settings",
+    "start_char": 0,
+    "end_char": 987
+  },
+  "10_1": {
+    "chunk_id": "10_1",
+    "doc_id": "10",
+    "text": "siderations Adapt care based on: 1. Climate conditions (heat, cold, humidity) 2. Terrain considerations 3. Time of day/night operations 4. Available resources 5. Remote vs. urban settings",
+    "start_char": 800,
+    "end_char": 987
+  },
+  "11_0": {
+    "chunk_id": "11_0",
+    "doc_id": "11",
+    "text": "# Medical Equipment for TCCC ## Individual First Aid Kit (IFAK) Standard components: 1. Combat Application Tourniquet (CAT) 2. Hemostatic gauze (Combat Gauze) 3. Pressure bandage 4. Nasopharyngeal airway 5. Chest seal 6. Surgical tape 7. Trauma shears 8. Gloves 9. Casualty card ## Medical Operator Kit Advanced components: 1. Backup tourniquets 2. Additional hemostatic agents 3. Intravenous access supplies 4. Fluid bags (Hextend, NS) 5. Chest decompression needle 6. Advanced airway equipment 7. Surgical cricothyroidotomy kit 8. Medication module 9. Hypothermia prevention kit ## Evacuation Equipment For casualty movement: 1. Tactical litters 2. Poleless litters 3. Improvised carrying devices 4. SKEDCO rescue system 5. Casualty drag straps",
+    "start_char": 0,
+    "end_char": 746
+  },
+  "12_0": {
+    "chunk_id": "12_0",
+    "doc_id": "12",
+    "text": "# Common Medical Procedures in TCCC ## Airway Management Proper airway management is critical in tactical care. The following procedures may be necessary: 1. Chin Lift/Jaw Thrust: Basic maneuver to open airway 2. Nasopharyngeal Airway (NPA): Used for unconscious patients with intact gag reflex 3. Supraglottic Airway Device: Used when NPA is insufficient 4. Surgical Cricothyroidotomy: Used when other methods fail ## Breathing Support Ensure adequate oxygenation and ventilation: 1. Needle Decompression: For tension pneumothorax 2. Chest Seal: For open pneumothorax 3. Oxygen Administration: When available 4. Assisted Ventilation: When breathing is inadequate ## Circulation Management Control bleeding and maintain circulation: 1. Direct Pressure: First-line treatment for hemorrhage 2. Tourniquet Application: For life-threatening extremity bleeding 3. Hemostatic Dressings: For wounds not amenable to tourniquet 4. IV/IO Access: For fluid and medication administration 5. Fluid Resuscitation: ",
+    "start_char": 0,
+    "end_char": 1000
+  },
+  "12_1": {
+    "chunk_id": "12_1",
+    "doc_id": "12",
+    "text": "et Application: For life-threatening extremity bleeding 3. Hemostatic Dressings: For wounds not amenable to tourniquet 4. IV/IO Access: For fluid and medication administration 5. Fluid Resuscitation: For hypovolemic shock",
+    "start_char": 800,
+    "end_char": 1021
+  },
+  "13_0": {
+    "chunk_id": "13_0",
+    "doc_id": "13",
+    "text": "# Tactical Considerations in TCCC ## Care Under Fire Phase During direct threat conditions: 1. Return fire as directed or required 2. Move casualty to cover if possible 3. Direct casualty to move to cover and apply self-aid if able 4. Control major bleeding with tourniquet 5. Maintain tactical situational awareness ## Tactical Field Care Phase During indirect threat conditions: 1. Maintain tactical security 2. Conduct thorough assessment 3. Treat wounds according to priority 4. Consider evacuation resources and timing 5. Communicate with tactical leadership ## Tactical Evacuation Care Phase During evacuation: 1. Continue ongoing resuscitation 2. Monitor for deterioration 3. Prepare documentation 4. Prepare for transfer of care 5. Maintain security as situation dictates ## Environmental Considerations Adapt care based on: 1. Climate conditions (heat, cold, humidity) 2. Terrain considerations 3. Time of day/night operations 4. Available resources 5. Remote vs. urban settings",
+    "start_char": 0,
+    "end_char": 987
+  },
+  "13_1": {
+    "chunk_id": "13_1",
+    "doc_id": "13",
+    "text": "siderations Adapt care based on: 1. Climate conditions (heat, cold, humidity) 2. Terrain considerations 3. Time of day/night operations 4. Available resources 5. Remote vs. urban settings",
+    "start_char": 800,
+    "end_char": 987
+  },
+  "14_0": {
+    "chunk_id": "14_0",
+    "doc_id": "14",
+    "text": "# Medical Equipment for TCCC ## Individual First Aid Kit (IFAK) Standard components: 1. Combat Application Tourniquet (CAT) 2. Hemostatic gauze (Combat Gauze) 3. Pressure bandage 4. Nasopharyngeal airway 5. Chest seal 6. Surgical tape 7. Trauma shears 8. Gloves 9. Casualty card ## Medical Operator Kit Advanced components: 1. Backup tourniquets 2. Additional hemostatic agents 3. Intravenous access supplies 4. Fluid bags (Hextend, NS) 5. Chest decompression needle 6. Advanced airway equipment 7. Surgical cricothyroidotomy kit 8. Medication module 9. Hypothermia prevention kit ## Evacuation Equipment For casualty movement: 1. Tactical litters 2. Poleless litters 3. Improvised carrying devices 4. SKEDCO rescue system 5. Casualty drag straps",
+    "start_char": 0,
+    "end_char": 746
+  }
+}

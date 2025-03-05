@@ -1,0 +1,37 @@
+{
+  "result": {
+    "query": "How do I manage airways in tactical care?",
+    "results": [
+      {
+        "document_id": "9",
+        "text": "# Common Medical Procedures in TCCC ## Airway Management Proper airway management is critical in tactical care. The following procedures may be necessary: 1. Chin Lift/Jaw Thrust: Basic maneuver to open airway 2. Nasopharyngeal Airway (NPA): Used for unconscious patients with intact gag reflex 3. Supraglottic Airway Device: Used when NPA is insufficient 4. Surgical Cricothyroidotomy: Used when other methods fail ## Breathing Support Ensure adequate oxygenation and ventilation: 1. Needle Decompression: For tension pneumothorax 2. Chest Seal: For open pneumothorax 3. Oxygen Administration: When available 4. Assisted Ventilation: When breathing is inadequate ## Circulation Management Control bleeding and maintain circulation: 1. Direct Pressure: First-line treatment for hemorrhage 2. Tourniquet Application: For life-threatening extremity bleeding 3. Hemostatic Dressings: For wounds not amenable to tourniquet 4. IV/IO Access: For fluid and medication administration 5. Fluid Resuscitation: ",
+        "score": 0.6224045753479004,
+        "metadata": {
+          "category": "TCCC Reference",
+          "type": "Text",
+          "source": "Verification Script",
+          "created_at": "2025-03-05 02:29:34",
+          "file_name": "medical_procedures.txt",
+          "content_type": "text/plain",
+          "file_size": 1028
+        }
+      },
+      {
+        "document_id": "4",
+        "text": "# Common Medical Procedures in TCCC\n\n## Airway Management\nProper airway management is critical in tactical care. The following procedures may be necessary:\n\n1. Chin Lift/Jaw Thrust: Basic maneuver to open airway\n2. Nasopharyngeal Airway (NPA): Used for unconscious patients with intact gag reflex\n3. Supraglottic Airway Device: Used when NPA is insufficient\n4. Surgical Cricothyroidotomy: Used when other methods fail\n\n## Breathing Support\nEnsure adequate oxygenation and ventilation:\n\n1. Needle Decompression: For tension pneumothorax\n2. Chest Seal: For open pneumothorax\n3. Oxygen Administration: When available\n4. Assisted Ventilation: When breathing is inadequate\n\n## Circulation Management\nControl bleeding and maintain circulation:\n\n1. Direct Pressure: First-line treatment for hemorrhage\n2. Tourniquet Application: For life-threatening extremity bleeding\n3. Hemostatic Dressings: For wounds not amenable to tourniquet\n4. IV/IO Access: For fluid and medication administration\n5. Fluid Resuscita",
+        "score": 0.6224045753479004,
+        "metadata": {
+          "category": "TCCC Reference",
+          "type": "Text",
+          "source": "Verification Script",
+          "created_at": "2025-03-05 00:59:33",
+          "file_name": "medical_procedures.txt"
+        }
+      }
+    ],
+    "total_results": 2,
+    "processing_time": 0.06376385688781738,
+    "cache_hit": false
+  },
+  "timestamp": 1741170575.5392573
+}

@@ -1,0 +1,35 @@
+{
+  "result": {
+    "query": "How do I apply a tourniquet?",
+    "results": [
+      {
+        "document_id": "4",
+        "text": "urniquet Application: For life-threatening extremity bleeding\n3. Hemostatic Dressings: For wounds not amenable to tourniquet\n4. IV/IO Access: For fluid and medication administration\n5. Fluid Resuscitation: For hypovolemic shock\n",
+        "score": 0.5306426286697388,
+        "metadata": {
+          "category": "TCCC Reference",
+          "type": "Text",
+          "source": "Verification Script",
+          "created_at": "2025-03-05 00:59:33",
+          "file_name": "medical_procedures.txt"
+        }
+      },
+      {
+        "document_id": "1",
+        "text": "urniquet Application: For life-threatening extremity bleeding\n3. Hemostatic Dressings: For wounds not amenable to tourniquet\n4. IV/IO Access: For fluid and medication administration\n5. Fluid Resuscitation: For hypovolemic shock\n",
+        "score": 0.5306426286697388,
+        "metadata": {
+          "category": "TCCC Reference",
+          "type": "Text",
+          "source": "Verification Script",
+          "created_at": "2025-03-05 00:58:16",
+          "file_name": "medical_procedures.txt"
+        }
+      }
+    ],
+    "total_results": 2,
+    "processing_time": 0.09020066261291504,
+    "cache_hit": false
+  },
+  "timestamp": 1741170575.7552257
+}
