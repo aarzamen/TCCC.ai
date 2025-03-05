@@ -2,20 +2,20 @@
 
 # Model settings
 model:
-  # Model type (whisper, nemo, riva)
-  type: "whisper"
+  # Model type (whisper, faster-whisper)
+  type: "faster-whisper"
   
-  # Model size (tiny, base, small, medium, large)
-  size: "medium"
+  # Model size (tiny, small, medium, large-v2, large-v3)
+  size: "small"
   
   # Model file path (if local model is used)
-  path: "models/whisper-medium-en/"
+  path: "models/faster-whisper-small"
   
   # Batch size for inference
   batch_size: 1
   
-  # Use mixed precision (FP16)
-  mixed_precision: true
+  # Computation precision (float16, int8)
+  compute_type: "float16"
   
   # Language
   language: "en"
@@ -88,8 +88,11 @@ hardware:
   # CUDA stream configuration
   cuda_streams: 2
   
-  # Memory limit in MB
-  memory_limit_mb: 4096
+  # Memory limit in MB (8GB = 8192MB, reserve 2GB for system)
+  memory_limit_mb: 6144
+  
+  # CPU threads for CPU-bound operations
+  cpu_threads: 6
   
   # Quantization (INT8, FP16, FP32)
   quantization: "FP16"

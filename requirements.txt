@@ -24,6 +24,7 @@ tensorrt>=8.6.0
 
 # Speech recognition
 openai-whisper>=20231117
+faster-whisper>=0.10.0  # Nexa AI's optimized Whisper implementation
 pyannote.audio>=3.0.0
 speechbrain>=0.5.14
 

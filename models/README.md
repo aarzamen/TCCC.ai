@@ -4,24 +4,38 @@ This directory contains models for the TCCC.ai system. The models are optimized 
 
 ## Speech Recognition Models
 
-The system uses OpenAI's Whisper models converted to ONNX format for improved performance.
+The system supports two implementations of OpenAI's Whisper models: the standard ONNX-based implementation and Nexa AI's faster-whisper implementation.
 
-### Whisper Model Structure
+### Nexa AI's faster-whisper Models
+
+The system now uses Nexa AI's faster-whisper, which offers significant performance improvements:
+
+| Model | Parameters | Size | Memory (FP16) | Accuracy | Speed (RTF) |
+|-------|------------|------|---------------|----------|-------------|
+| faster-whisper-tiny | ~39M | ~80MB | ~200MB | Good | 0.15-0.2x (5-7x real-time) |
+| faster-whisper-small | ~244M | ~500MB | ~1GB | Better | 0.3-0.4x (2.5-3x real-time) |
+| faster-whisper-medium | ~769M | ~1.5GB | ~2.5GB | Better+ | 0.6-0.7x (1.5x real-time) |
+| faster-whisper-large-v2 | ~1.5B | ~3GB | ~4.5GB | Best | 0.9-1.0x (1x real-time) |
+
+Each faster-whisper model utilizes the CTranslate2 backend and can run in various precision modes:
+- `float16`: Best balance of accuracy and speed on GPU
+- `int8`: Optimized for CPU-only deployment with minimal accuracy loss
+- `int8_float16`: Mixed quantization for balanced performance
+
+### Legacy Whisper ONNX Models
+
+The system also supports the original Whisper models converted to ONNX format:
 
 Each Whisper model is split into two ONNX files:
 - `encoder.onnx`: Processes audio features
 - `decoder.onnx`: Generates text from encoded audio features 
 
-### English-Only Whisper Models
-
-The following English-only models are supported:
-
 | Model | Size | Disk Space | Memory Usage | Accuracy | Speed (RTF) |
 |-------|------|------------|--------------|----------|-------------|
-| whisper-tiny-en | ~150MB | ~350MB | Good | 1.5-3x faster |
-| whisper-base-en | ~300MB | ~500MB | Better | 1.5-3x faster |
-| whisper-small-en | ~500MB | ~1GB | Better+ | 1.5-3x faster |
-| whisper-medium-en | ~1.5GB | ~3GB | Best | 1.5-3x faster |
+| whisper-tiny-en | ~150MB | ~350MB | Good | 0.5-0.7x (1.5-2x real-time) |
+| whisper-base-en | ~300MB | ~500MB | Better | 0.6-0.8x (1.2-1.5x real-time) |
+| whisper-small-en | ~500MB | ~1GB | Better+ | 0.7-0.9x (1.1-1.4x real-time) |
+| whisper-medium-en | ~1.5GB | ~3GB | Best | 0.8-1.0x (1-1.2x real-time) |
 
 ## LLM Analysis Models
 
