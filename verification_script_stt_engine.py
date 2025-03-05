@@ -11,9 +11,13 @@ import sys
 import time
 import numpy as np
 from pathlib import Path
+import logging
 
 # Add the src directory to the path
 sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), 'src')))
+
+# Configure mock functionality
+os.environ["USE_MOCK_STT"] = "1"
 
 from tccc.stt_engine import STTEngine
 from tccc.utils.logging import get_logger

@@ -1,174 +1,90 @@
-# TCCC.ai Custom Medical Vocabulary
-#
-# This file contains medical terms and abbreviations for the STT Engine.
+# TCCC Medical Terminology for Speech Recognition
 # Format:
-# 1. Simple terms: Add one term per line
-# 2. Replacements: original -> corrected
+# 1. Simple terms (preserved as-is)
+# 2. Corrections: misspelled -> corrected
 # 3. Abbreviations: ABBR = Full Form
-#
-# Medical Conditions and Diagnoses
-hypertension
-diabetes mellitus
-myocardial infarction -> heart attack
-cerebrovascular accident -> stroke
-hypercholesterolemia
-osteoarthritis
-hypothyroidism
-hyperthyroidism
-gastroesophageal reflux disease
-rheumatoid arthritis
-chronic obstructive pulmonary disease
-asthma
-pneumonia
-urinary tract infection
-atrial fibrillation
-congestive heart failure
-multiple sclerosis
-parkinson's disease
-alzheimer's disease
-sepsis
-anemia
-appendicitis
-diverticulitis
-gastritis
-hepatitis
-pancreatitis
-nephritis
-neuropathy
-retinopathy
-bronchitis
 
-# Common medical abbreviations
-HTN = hypertension
-DM = diabetes mellitus
-MI = myocardial infarction
-CVA = cerebrovascular accident
-GERD = gastroesophageal reflux disease
-RA = rheumatoid arthritis
-COPD = chronic obstructive pulmonary disease
-UTI = urinary tract infection
-AFib = atrial fibrillation
-CHF = congestive heart failure
-MS = multiple sclerosis
-PD = parkinson's disease
-AD = alzheimer's disease
-BP = blood pressure
-HR = heart rate
-RR = respiratory rate
-BG = blood glucose
-CBC = complete blood count
-BMP = basic metabolic panel
-CMP = comprehensive metabolic panel
-ECG = electrocardiogram
-EKG = electrocardiogram
-CXR = chest x-ray
-CT = computed tomography
-MRI = magnetic resonance imaging
-US = ultrasound
-PET = positron emission tomography
-IV = intravenous
-IM = intramuscular
-SC = subcutaneous
-PO = by mouth
-BID = twice daily
-TID = three times daily
-QID = four times daily
-PRN = as needed
-NPO = nothing by mouth
-OTC = over the counter
-Rx = prescription
+# Tactical Combat Casualty Care Terminology
+TCCC
+hemorrhage
+hemostatic
+tourniquet
+pneumothorax
+tension pneumothorax
+tactical field care
+junctional
+compression
+occlusive
+cricothyroidotomy
+nasopharyngeal airway
+hypothermia
+hypovolemic
+tachycardia
+bradycardia
+hypoxia
+analgesia
 
-# Medical procedures and treatments
-dialysis
-chemotherapy
-radiation therapy
-physical therapy
-occupational therapy
-speech therapy
-respiratory therapy
-intravenous fluids
+# Common Medical Procedures
+needle decompression
+chest seal
+pressure dressing
+wound packing
+tourniquets
+intravenous
+intraosseous
+supraglottic
+
+# Resuscitation Terminology
+hypotensive
+hypotension
+resuscitation
 intubation
-mechanical ventilation
-cardioversion
-defibrillation
-echocardiogram
-bronchoscopy
-colonoscopy
-endoscopy
-laparoscopy
-thoracentesis
-paracentesis
-lumbar puncture
+cannulation
+ventilation
+oxygenation
+saturation
+perfusion
 
-# Medications
-atorvastatin -> Atorvastatin
-lipitor -> Lipitor
-simvastatin -> Simvastatin
-rosuvastatin -> Rosuvastatin
-crestor -> Crestor
-metoprolol -> Metoprolol
-lopressor -> Lopressor
-lisinopril -> Lisinopril
-prinivil -> Prinivil
-hydrochlorothiazide -> Hydrochlorothiazide
-furosemide -> Furosemide
-lasix -> Lasix
-metformin -> Metformin
-glucophage -> Glucophage
-levothyroxine -> Levothyroxine
-synthroid -> Synthroid
-omeprazole -> Omeprazole
-prilosec -> Prilosec
-amoxicillin -> Amoxicillin
-azithromycin -> Azithromycin
-zithromax -> Zithromax
-prednisone -> Prednisone
-albuterol -> Albuterol
-proventil -> Proventil
-ibuprofen -> Ibuprofen
-acetaminophen -> Acetaminophen
-tylenol -> Tylenol
-aspirin -> Aspirin
-warfarin -> Warfarin
-coumadin -> Coumadin
-clopidogrel -> Clopidogrel
-plavix -> Plavix
+# Incorrect to Correct Mappings
+tore neck it -> tourniquet
+tore nick it -> tourniquet
+turn ok it -> tourniquet
+chest steal -> chest seal
+chest seal -> chest seal
+nitroglosserin -> nitroglycerin
+needle the compression -> needle decompression
+near pharyngeal -> nasopharyngeal
+henman static -> hemostatic
+pneumo thorax -> pneumothorax
+hemor edge -> hemorrhage
+him or edge -> hemorrhage
+hypor volemic -> hypovolemic
+hyper thermic -> hyperthermic
+hypo thermic -> hypothermic
 
-# Anatomical terms
-cardiovascular
-gastrointestinal
-musculoskeletal
-neurological
-respiratory
-genitourinary
-endocrine
-integumentary
-lymphatic
-hematologic
-pharyngeal
-esophageal
-duodenum
-jejunum
-ileum
-trachea
-bronchi
-alveoli
-myocardium
-endocardium
-pericardium
-cerebrum
-cerebellum
-brainstem
-hypothalamus
-thalamus
-pituitary
-thyroid
-adrenal
-pancreas
-gallbladder
-urethra
-bladder
-prostate
-uterus
-ovaries
-fallopian tubes
+# Abbreviations
+TFC = Tactical Field Care
+CUF = Care Under Fire
+TCC = Tactical Combat Casualty Care
+CLS = Combat Life Saver
+MARCH = Massive Hemorrhage, Airway, Respiration, Circulation, Hypothermia
+CAT = Combat Application Tourniquet
+TQ = Tourniquet
+NPA = Nasopharyngeal Airway
+IV = Intravenous
+IO = Intraosseous
+BP = Blood Pressure
+HR = Heart Rate
+RR = Respiratory Rate
+SpO2 = Oxygen Saturation
+GSW = Gunshot Wound
+TBI = Traumatic Brain Injury
+SBP = Systolic Blood Pressure
+KIA = Killed In Action
+DOW = Died Of Wounds
+CASEVAC = Casualty Evacuation
+TACEVAC = Tactical Evacuation
+ZMIST = MIST with Z for Zone information
+MIST = Mechanism, Injury, Signs, Treatment
+TCCC-MP = TCCC for Medical Personnel
+TCCC-AC = TCCC for All Combatants

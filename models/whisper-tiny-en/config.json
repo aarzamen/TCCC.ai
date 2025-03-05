@@ -1,0 +1,7 @@
+{
+  "language": "en",
+  "task": "transcribe",
+  "beam_size": 5,
+  "temperature": 0.0,
+  "model_size": "tiny"
+}
