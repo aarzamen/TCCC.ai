@@ -1,0 +1,79 @@
+# Jetson Orin Nano Optimization Configuration for TCCC.ai
+# This file configures hardware-specific optimizations for the TCCC.ai system
+
+# Power management configuration
+power_mode: "balanced"  # Options: max_performance, balanced, power_saver
+cuda_enabled: true
+tensorrt_enabled: true
+
+# Audio configuration (specific to Razer Seiren V3 Mini)
+audio:
+  sample_rate: 48000
+  bit_depth: 24
+  channels: 1
+  buffer_size: 4096
+  vad_enabled: true
+  vad_threshold: 0.5
+  vad_min_speech_duration_ms: 250
+  vad_min_silence_duration_ms: 100
+
+# Model specific optimizations
+models:
+  whisper:
+    compute_type: "float16"  # Options: float32, float16, int8
+    device: "cuda"
+    cpu_threads: 2
+    beam_size: 3
+    model_size: "tiny.en"  # Options: tiny.en, base.en, small.en
+    batch_size: 1
+    cache_dir: "data/models/whisper"
+    
+  llm:
+    quantization: "int8"  # Options: float16, int8, int4
+    device: "cuda"
+    device_map: "auto"
+    max_tokens: 512
+    context_size: 2048
+    cache_dir: "data/models/llm"
+    
+  embeddings:
+    device: "cuda"
+    half_precision: true
+    cache_dir: "data/models/embeddings"
+
+# Memory allocation limits (in GB)
+memory_limits:
+  whisper: 1.0
+  llm: 4.0
+  embeddings: 0.5
+  system_reserve: 1.0
+
+# Resource monitoring configuration
+monitoring:
+  enabled: true
+  interval_seconds: 5.0
+  history_size: 100
+  warning_thresholds:
+    cpu_percent: 90
+    memory_percent: 85
+    temperature_celsius: 75
+
+# Performance profiles
+profiles:
+  emergency:
+    description: "Maximum performance for emergency situations"
+    power_mode: "max_performance"
+    llm_max_tokens: 1024
+    whisper_beam_size: 5
+    
+  field:
+    description: "Balanced performance for field operations"
+    power_mode: "balanced"
+    llm_max_tokens: 512
+    whisper_beam_size: 3
+    
+  training:
+    description: "Extended battery life for training scenarios"
+    power_mode: "power_saver"
+    llm_max_tokens: 256
+    whisper_beam_size: 1

@@ -1,0 +1,194 @@
+# Processing Core Configuration
+
+# General settings
+general:
+  # Enable or disable the processing core
+  enabled: true
+  
+  # Debug mode
+  debug: false
+  
+  # Processing mode (sync, async, or batch)
+  processing_mode: "async"
+  
+  # Maximum number of concurrent processing tasks
+  max_concurrent_tasks: 4
+  
+  # Timeout for processing tasks in milliseconds
+  processing_timeout_ms: 5000
+
+# Entity extraction settings
+entity_extraction:
+  # Entity extraction model type (spacy, transformers)
+  model_type: "spacy"
+  
+  # Spacy model name
+  spacy_model: "en_core_web_sm"
+  
+  # Custom entity types to extract
+  custom_entity_types:
+    - name: "ACCOUNT_NUMBER"
+      pattern: "[A-Z]{2}\\d{6}"
+    - name: "POLICY_NUMBER"
+      pattern: "P\\d{8}"
+    - name: "PRODUCT_CODE"
+      pattern: "[A-Z]{3}\\d{4}"
+  
+  # Confidence threshold for entity extraction
+  confidence_threshold: 0.7
+  
+  # Enable entity linking
+  enable_linking: true
+
+# Intent classification settings
+intent_classification:
+  # Intent classifier model type (rule_based, neural)
+  model_type: "rule_based"
+  
+  # Model path or name
+  model_path: "models/intent_classifier/"
+  
+  # Confidence threshold for intent classification
+  confidence_threshold: 0.6
+  
+  # Intent categories
+  categories:
+    - "inquiry"
+    - "complaint"
+    - "request"
+    - "escalation"
+    - "gratitude"
+    - "cancellation"
+    - "confirmation"
+  
+  # Fallback intent when confidence is below threshold
+  fallback_intent: "unknown"
+
+# Sentiment analysis settings
+sentiment_analysis:
+  # Sentiment analyzer model type (rule_based, transformers)
+  model_type: "transformers"
+  
+  # Model name or path
+  model_name: "distilbert-base-uncased-finetuned-sst-2-english"
+  
+  # Enable fine-grained sentiment
+  fine_grained: true
+  
+  # Use quantized model for efficiency
+  use_quantized: true
+  
+  # Enable emotion detection alongside sentiment
+  detect_emotions: true
+  
+  # Emotions to detect
+  emotions:
+    - "anger"
+    - "joy"
+    - "sadness"
+    - "fear"
+    - "surprise"
+    - "trust"
+    - "anticipation"
+
+# Summarization settings
+summarization:
+  # Summarization method (extractive, abstractive, hybrid)
+  method: "extractive"
+  
+  # Maximum summary length in tokens
+  max_length: 100
+  
+  # Model name or path for abstractive summarization
+  model_name: "t5-small"
+  
+  # Enable incremental summarization as conversation progresses
+  incremental: true
+  
+  # Summary update frequency (by segments or time)
+  update_frequency:
+    segments: 5 
+    seconds: 60
+
+# Plugin system settings
+plugins:
+  # Enable plugin system
+  enabled: true
+  
+  # Plugin directories to scan
+  directories:
+    - "plugins/processing_core/"
+  
+  # Default plugins to load
+  default_plugins:
+    - "keyword_extraction"
+    - "topic_classification"
+  
+  # Plugin isolation (process, thread, none)
+  isolation: "thread"
+
+# Resource management for Jetson Orin Nano
+resource_management:
+  # Enable resource monitoring
+  enable_monitoring: true
+  
+  # Monitoring interval in seconds
+  monitoring_interval_sec: 5
+  
+  # CPU utilization threshold (percentage)
+  cpu_threshold: 80
+  
+  # GPU utilization threshold (percentage)
+  gpu_threshold: 85
+  
+  # Memory utilization threshold (percentage)
+  memory_threshold: 75
+  
+  # Enable dynamic resource allocation
+  dynamic_allocation: true
+  
+  # Enable TensorRT acceleration
+  use_tensorrt: true
+  
+  # Use FP16 precision
+  use_fp16: true
+  
+  # Maximum memory usage in MB
+  max_memory_mb: 2048
+
+# Hardware acceleration for Jetson Orin Nano
+hardware:
+  # Enable CUDA acceleration
+  enable_cuda: true
+  
+  # CUDA device ID
+  cuda_device: 0
+  
+  # Use TensorRT optimization
+  use_tensorrt: true
+  
+  # Model quantization (FP32, FP16, INT8)
+  quantization: "FP16"
+  
+  # Number of inference threads
+  inference_threads: 2
+  
+  # Memory pool size in MB
+  memory_pool_mb: 1024
+
+# State management
+state_management:
+  # Enable state persistence
+  enable_persistence: true
+  
+  # State storage location
+  storage_path: "data/processing_core/state"
+  
+  # Auto-save interval in seconds
+  autosave_interval_sec: 60
+  
+  # Keep state history
+  keep_history: true
+  
+  # Maximum history entries
+  max_history_entries: 10

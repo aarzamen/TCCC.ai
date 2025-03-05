@@ -48,7 +48,10 @@ venv.bak/
 *.h5
 *.joblib
 *.pt
+*.bin
 *.onnx
+*.gguf
+*.safetensors
 models/*
 !models/README.md
 !models/*/README.md
@@ -57,12 +60,20 @@ checkpoints/
 data/raw/
 data/processed/
 data/interim/
+data/documents/*
+!data/documents/.gitkeep
+data/tccc.db*
+data/query_cache/
+data/models/embeddings/*
+!data/models/embeddings/.gitkeep
+data/embeddings/*
 
 # Logs and databases
 logs/
 *.log
 *.sqlite
 *.db
+*.db-*
 *.sql
 *.sqlite3
 .DS_Store
@@ -70,15 +81,31 @@ logs/
 # Sensitive information
 .env
 .env.local
-secrets.yaml
-secrets.json
-credentials.json
-config.json
+secrets.*
+*secret*
+*credential*
+*api_key*
+*apikey*
+*auth*
+*password*
+*config*.json
 *.pem
 *.key
 *.p12
 *credentials*
 *token*
+*.jwt
+*oath*
+*.ssh*
+*_rsa
+*id_ed*
+
+# Test outputs and mocks
+*mock_*.*
+*temp_*.*
+*test_output*.*
+*generated_card*.*
+*sample_data*.*
 
 # Testing
 .pytest_cache/
