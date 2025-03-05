@@ -8,13 +8,13 @@ model:
     provider: "local"
     
     # Model name/identifier
-    name: "llama3-8b-quantized"
+    name: "phi-2-instruct"
     
     # Model path for local models
-    path: "models/llama3-8b-q4/"
+    path: "models/phi-2-instruct/"
     
     # Maximum context length
-    max_context_length: 4096
+    max_context_length: 2048
     
     # Temperature for generation
     temperature: 0.7
@@ -27,9 +27,9 @@ model:
   
   # Fallback model (used if primary fails or for specific tasks)
   fallback:
-    provider: "openai"
-    name: "gpt-3.5-turbo"
-    api_key: "${OPENAI_API_KEY}"  # Environment variable reference
+    provider: "local"
+    name: "phi-2-instruct-mock"
+    path: "models/phi-2-instruct/"
     temperature: 0.7
     top_p: 0.95
     max_tokens: 1024

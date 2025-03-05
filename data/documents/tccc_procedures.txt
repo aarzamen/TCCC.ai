@@ -1,0 +1,32 @@
+
+    # TCCC Medical Procedures Reference
+    
+    ## Airway Management
+    - Chin lift/jaw thrust
+    - Nasopharyngeal airway
+    - Endotracheal intubation
+    - Cricothyroidotomy
+    
+    ## Breathing Management
+    - Needle decompression for tension pneumothorax
+    - Chest seal for open pneumothorax
+    - Supplemental oxygen administration
+    
+    ## Circulation Management
+    - Tourniquet application for extremity hemorrhage
+    - Wound packing with hemostatic gauze
+    - IV/IO access
+    - Fluid resuscitation
+    - TXA administration for hemorrhagic shock
+    
+    ## Medication Administration
+    - Morphine: 5-10mg IV/IO for pain
+    - Antibiotics: Ceftriaxone 1-2g IV for open wounds
+    - TXA: 1g IV over 10 minutes for hemorrhagic shock
+    
+    ## Assessment Guidelines
+    - GCS scoring and monitoring
+    - Vital signs interpretation in trauma
+    - Signs of tension pneumothorax
+    - Signs of hypovolemic shock
+    

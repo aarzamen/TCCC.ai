@@ -49,7 +49,9 @@ venv.bak/
 *.joblib
 *.pt
 *.onnx
-models/
+models/*
+!models/README.md
+!models/*/config.json
 checkpoints/
 data/raw/
 data/processed/

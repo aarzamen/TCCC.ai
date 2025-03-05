@@ -1,0 +1,1756 @@
+# TCCC.ai Comprehensive Development Guide
+
+This guide provides complete step-by-step instructions for developing and deploying the TCCC.ai system on NVIDIA Jetson Orin Nano hardware.
+
+## Table of Contents
+1. [Project Overview](#1-project-overview)
+2. [Environment Setup](#2-environment-setup)
+3. [Project Setup](#3-project-setup)
+4. [Module Development](#4-module-development)
+5. [Integration and Testing](#5-integration-and-testing)
+6. [Optimization for Jetson](#6-optimization-for-jetson)
+7. [Deployment](#7-deployment)
+8. [Documentation](#8-documentation)
+9. [Maintenance](#9-maintenance)
+10. [Best Practices](#10-best-practices)
+
+## 1. Project Overview
+
+### 1.1 System Architecture
+
+TCCC.ai (Tactical Combat Casualty Care AI) is a system designed to act as a "black box recorder" for combat medicine, running on the NVIDIA Jetson Orin Nano platform. The system captures audio during medical procedures, transcribes speech to text, processes this information through language models, and creates structured medical documentation.
+
+```
+┌────────────────────────────────────────────────────────────────────┐
+│                    TCCC.ai Combat Trauma Scribe                    │
+└────────────────────────────────────────────────────────────────────┘
+                                 │
+         ┌───────────────────────┼───────────────────────┐
+         ▼                       ▼                       ▼
+┌─────────────────┐    ┌─────────────────┐    ┌─────────────────┐
+│  Audio Pipeline │    │ Processing Core │    │   Data Store    │
+└─────────────────┘    └─────────────────┘    └─────────────────┘
+         │                       │                       │
+         ▼                       ▼                       ▼
+┌─────────────────┐    ┌─────────────────┐    ┌─────────────────┐
+│ Speech-to-Text  │───▶│  LLM Analysis   │───▶│Document Library │
+│    Engine       │    │  & Parsing      │    │     (RAG)       │
+└─────────────────┘    └─────────────────┘    └─────────────────┘
+```
+
+### 1.2 Module Interfaces
+
+The system consists of 6 core modules, each with a well-defined interface:
+
+1. **Audio Pipeline**: Captures and processes audio
+2. **Speech-to-Text Engine**: Transcribes audio to text
+3. **Processing Core**: Orchestrates system operations
+4. **LLM Analysis & Parsing**: Extracts medical information from transcriptions
+5. **Data Store**: Manages persistent data
+6. **Document Library (RAG)**: Provides contextual medical information
+
+Each module has standardized interface contracts detailed in the [Module Interfaces](#4-module-development) section.
+
+### 1.3 Hardware Constraints
+
+- **Platform**: NVIDIA Jetson Orin Nano 8GB (945-13766-0005-000)
+- **Processing Power**: 67 TOPS
+- **Storage**: Samsung 960 EVO 1TB NVMe
+- **Memory**: Limited to 8GB shared between CPU and GPU
+- **Power**: Must be optimized for battery operation
+
+### 1.4 Key Data Flows
+
+1. **Audio Capture → Transcription Pipeline**:
+   - Audio segments flow through noise reduction → VAD → speaker diarization → STT engine
+   - Metadata including timestamps, speaker IDs, and environmental context accompanies the audio
+
+2. **Transcription → Analysis Pipeline**:
+   - Text with timestamps and confidence scores → entity extraction → event recognition → chronological ordering
+   - Medical terminology and abbreviations are expanded and normalized during processing
+
+3. **Analysis → Documentation Pipeline**:
+   - Extracted events → timeline database → structured reports
+   - Critical events trigger immediate alerts and prioritization
+
+4. **Knowledge Enhancement Flow**:
+   - Context from transcriptions → RAG queries → relevant protocol retrieval → LLM context enhancement
+   - Protocol compliance verification against retrieved documentation
+
+5. **System Monitoring Loop**:
+   - Resource utilization metrics → thermal analysis → performance throttling decisions
+   - Battery status → power management profile adjustments
+
+### 1.5 Operational States
+
+1. **Initialization Mode**:
+   - Load optimized models
+   - Initialize databases
+   - Perform system checks
+   - Establish baseline audio environment
+
+2. **Active Documentation Mode**:
+   - Full pipeline operation
+   - Maximum audio quality and transcription accuracy
+   - Comprehensive event logging
+
+3. **Power Conservation Mode**:
+   - Reduced sampling rates
+   - Smaller model variants
+   - Prioritized event processing
+   - Background tasks deferred
+
+4. **Critical Event Mode**:
+   - Focused resources on high-priority documentation
+   - Increased processing for critical medical procedures
+   - Real-time alert generation
+
+5. **Recovery Mode**:
+   - Restore from last checkpoint
+   - Rebuild timeline from available data
+   - Self-diagnostic and repair procedures
+
+## 2. Environment Setup
+
+### 2.1 Install System Dependencies
+
+```bash
+# Update package lists
+sudo apt update
+
+# Install system dependencies
+sudo apt install -y \
+  git python3-pip python3-dev python3-venv \
+  portaudio19-dev libsndfile1-dev ffmpeg \
+  sqlite3 cmake build-essential libopenblas-dev \
+  nvidia-jetpack jtop nodejs npm
+```
+
+### 2.2 Set Up Claude Code CLI
+
+The Claude Code CLI is a tool that will assist throughout development with coding tasks. Check connectivity to required domains before installation:
+
+```bash
+# Test connectivity to required domains
+ping -c 1 api.anthropic.com
+ping -c 1 statsig.anthropic.com
+ping -c 1 sentry.io
+
+# Create a directory for global npm packages
+mkdir -p ~/.npm-global
+
+# Configure npm to use the new directory path
+npm config set prefix ~/.npm-global
+
+# Add to PATH (use appropriate shell config file)
+echo 'export PATH=~/.npm-global/bin:$PATH' >> ~/.bashrc
+# If using zsh, use this instead:
+# echo 'export PATH=~/.npm-global/bin:$PATH' >> ~/.zshrc
+
+# Apply the new PATH setting
+source ~/.bashrc  # or source ~/.zshrc if using zsh
+
+# Install Claude Code CLI (NOT in virtual environment)
+npm install -g @anthropic-ai/claude-code
+```
+
+### 2.3 Configure Claude Code CLI
+
+Claude Code requires configuration to work effectively with the TCCC.ai project:
+
+```bash
+# Run Claude Code once to authenticate
+claude
+
+# After authentication, configure your preferences
+# Set dark theme
+claude config set -g theme dark
+
+# Set terminal bell for notifications
+claude config set -g preferredNotifChannel terminal_bell
+
+# Set up common-case allowed commands
+claude config add allowedTools "Bash(ls)"
+claude config add allowedTools "Bash(find)"
+claude config add allowedTools "Bash(grep)"
+claude config add allowedTools "Bash(cat)"
+claude config add allowedTools "Bash(git status)"
+claude config add allowedTools "Bash(git diff)"
+claude config add allowedTools "Bash(git log)"
+claude config add allowedTools "Bash(python -m)"
+claude config add allowedTools "Bash(pip list)"
+claude config add allowedTools "Bash(pip install)"
+claude config add allowedTools "Bash(pytest)"
+claude config add allowedTools "Bash(npm run)"
+claude config add allowedTools "Bash(npm test)"
+
+# Set file patterns to ignore
+claude config add ignorePatterns "node_modules/**"
+claude config add ignorePatterns "**/__pycache__/**"
+claude config add ignorePatterns ".git/**"
+claude config add ignorePatterns "venv/**"
+claude config add ignorePatterns ".env"
+claude config add ignorePatterns "*.pyc"
+claude config add ignorePatterns "*.pyo"
+claude config add ignorePatterns "*.so"
+claude config add ignorePatterns "*.egg-info/**"
+claude config add ignorePatterns "dist/**"
+claude config add ignorePatterns "build/**"
+claude config add ignorePatterns "logs/**"
+claude config add ignorePatterns "data/**"
+claude config add ignorePatterns "models/**/*.bin"
+claude config add ignorePatterns "models/**/*.onnx"
+claude config add ignorePatterns "models/**/*.gguf"
+```
+
+### 2.4 Set Up Python Environment
+
+```bash
+# Create project directory
+mkdir -p ~/tccc-project
+cd ~/tccc-project
+
+# Create virtual environment for the project
+python3 -m venv venv
+source venv/bin/activate
+
+# Install basic Python dependencies
+pip install wheel setuptools pip --upgrade
+```
+
+## 3. Project Setup
+
+### 3.1 Create Reference Directory
+
+```bash
+# Create directory structure for reference materials
+mkdir -p ~/tccc-project/references/{module_specs,interfaces,architecture,best_practices}
+
+# Save module interface definitions to a reference file
+cat > ~/tccc-project/references/interfaces/module_interfaces.md << "EOL"
+# Module Interface Contracts
+
+This file defines the standard interfaces that all TCCC.ai modules must implement.
+
+## Audio Pipeline Interface
+```python
+class AudioPipelineInterface:
+    def initialize(self, config: dict) -> bool:
+        """Initialize the audio pipeline with configuration"""
+        pass
+        
+    def start_recording(self) -> bool:
+        """Start audio capture"""
+        pass
+        
+    def stop_recording(self) -> bool:
+        """Stop audio capture"""
+        pass
+        
+    def get_next_segment(self) -> tuple[np.ndarray, dict]:
+        """Return next processed audio segment with metadata"""
+        pass
+        
+    def get_status(self) -> dict:
+        """Return current status of the audio pipeline"""
+        pass
+```
+
+## STT Engine Interface
+```python
+class STTEngineInterface:
+    def initialize(self, config: dict) -> bool:
+        """Initialize the STT engine with configuration"""
+        pass
+        
+    def transcribe_segment(self, audio: np.ndarray, metadata: dict) -> dict:
+        """Transcribe audio segment and return structured result"""
+        pass
+        
+    def update_context(self, context: str) -> bool:
+        """Update context for improved transcription accuracy"""
+        pass
+        
+    def get_status(self) -> dict:
+        """Return current status of the STT engine"""
+        pass
+```
+
+## Processing Core Interface
+```python
+class ProcessingCoreInterface:
+    def initialize(self, config: dict) -> bool:
+        """Initialize the processing core with configuration"""
+        pass
+        
+    def register_module(self, module_id: str, callbacks: dict) -> bool:
+        """Register a module with the core for orchestration"""
+        pass
+        
+    def update_status(self, module_id: str, status: dict) -> bool:
+        """Update module status in the core"""
+        pass
+        
+    def get_resource_allocation(self, module_id: str) -> dict:
+        """Get resource allocation for a specific module"""
+        pass
+        
+    def get_system_state(self) -> dict:
+        """Get current system state"""
+        pass
+```
+
+## LLM Analysis Interface
+```python
+class LLMAnalysisInterface:
+    def initialize(self, config: dict) -> bool:
+        """Initialize the LLM analysis module with configuration"""
+        pass
+        
+    def process_transcription(self, transcription: dict, context: dict = None) -> list[dict]:
+        """Process transcription and extract medical events"""
+        pass
+        
+    def generate_report(self, report_type: str, events: list[dict]) -> dict:
+        """Generate structured report from medical events"""
+        pass
+        
+    def get_status(self) -> dict:
+        """Return current status of the LLM analysis module"""
+        pass
+```
+
+## Data Store Interface
+```python
+class DataStoreInterface:
+    def initialize(self, config: dict) -> bool:
+        """Initialize the data store with configuration"""
+        pass
+        
+    def store_event(self, event: dict) -> str:
+        """Store medical event and return event ID"""
+        pass
+        
+    def store_report(self, report: dict) -> str:
+        """Store generated report and return report ID"""
+        pass
+        
+    def query_events(self, filters: dict) -> list[dict]:
+        """Query events based on filters"""
+        pass
+        
+    def get_timeline(self, start_time: str, end_time: str) -> list[dict]:
+        """Get timeline of events within time range"""
+        pass
+        
+    def get_context(self, current_time: str, window_seconds: int = 300) -> dict:
+        """Get historical context for current processing"""
+        pass
+        
+    def get_status(self) -> dict:
+        """Return current status of the data store"""
+        pass
+```
+
+## Document Library Interface
+```python
+class DocumentLibraryInterface:
+    def initialize(self, config: dict) -> bool:
+        """Initialize the document library with configuration"""
+        pass
+        
+    def add_document(self, document: dict) -> str:
+        """Add document to the library and return document ID"""
+        pass
+        
+    def query(self, query_text: str, n_results: int = 3) -> dict:
+        """Query the document library and return relevant context"""
+        pass
+        
+    def get_document_metadata(self, document_id: str) -> dict:
+        """Get metadata for a specific document"""
+        pass
+        
+    def get_status(self) -> dict:
+        """Return current status of the document library"""
+        pass
+```
+EOL
+
+# Save architecture overview to reference file
+cat > ~/tccc-project/references/architecture/system_architecture.md << "EOL"
+# TCCC.ai System Architecture
+
+## Core Components
+
+1. **Audio Pipeline**: Captures and processes audio from the environment
+2. **STT Engine**: Converts audio to text with high accuracy
+3. **Processing Core**: Coordinates all modules and manages resources
+4. **LLM Analysis**: Extracts medical information and generates reports
+5. **Data Store**: Manages persistent storage of events and reports
+6. **Document Library**: Provides medical reference information
+
+## Key Data Flows
+
+- Audio → Transcription → Analysis → Storage
+- Queries → Document Retrieval → Enhanced Analysis
+- System Metrics → Resource Management → Performance Optimization
+
+## Operational States
+
+- Initialization Mode
+- Active Documentation Mode  
+- Power Conservation Mode
+- Critical Event Mode
+- Recovery Mode
+EOL
+
+# Save best practices to reference file
+cat > ~/tccc-project/references/best_practices/development_guide.md << "EOL"
+# TCCC.ai Development Best Practices
+
+1. **Start with MVPs**: Begin with minimal working versions of each module
+2. **Use version control**: Commit frequently with clear messages
+3. **Document as you go**: Write docstrings for all functions and classes
+4. **Test continuously**: Create unit tests alongside implementation
+5. **Optimize for Jetson**: Consider hardware constraints in all code
+6. **Manage resources**: Implement proper cleanup and monitoring
+7. **Handle errors gracefully**: Implement recovery mechanisms
+8. **Use configuration files**: Externalize all configurable parameters
+EOL
+```
+
+### 3.2 Initialize Git Repository
+
+```bash
+# Initialize Git repository
+cd ~/tccc-project
+git init
+
+# Create .gitignore
+cat > .gitignore << "EOL"
+# Python
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+.Python
+build/
+develop-eggs/
+dist/
+downloads/
+eggs/
+.eggs/
+lib/
+lib64/
+parts/
+sdist/
+var/
+wheels/
+*.egg-info/
+.installed.cfg
+*.egg
+
+# Virtual Environment
+venv/
+ENV/
+
+# IDE files
+.idea/
+.vscode/
+*.swp
+*.swo
+
+# Models and data
+models/*.onnx
+models/*.gguf
+models/*.bin
+data/vector_db/
+data/audio/
+
+# Logs and databases
+logs/
+*.log
+*.db
+*.sqlite
+*.sqlite3
+
+# Sensitive information
+.env
+config/secrets.yaml
+
+# OS specific
+.DS_Store
+Thumbs.db
+EOL
+
+git add .gitignore
+git commit -m "Add .gitignore"
+
+# Create GitHub repository (via web interface)
+# Then add remote
+git remote add origin https://github.com/yourusername/tccc-ai.git
+```
+
+### 3.3 Initialize Project Structure with Claude Code
+
+Using Claude Code to create the initial project structure will save significant time and ensure consistency with architectural guidelines:
+
+```bash
+# Use Claude Code to create initial project structure
+claude "Initialize the TCCC.ai project based on the architecture and specifications in the reference files.
+
+Create a complete project structure with:
+1. Directory hierarchy for six modules (processing_core, audio_pipeline, stt_engine, llm_analysis, data_store, document_library)
+2. Base package configuration (setup.py, requirements.txt)
+3. Module interface implementations (implementing the exact interfaces defined in references/interfaces/module_interfaces.md)
+4. Configuration system using YAML
+5. Logging infrastructure
+6. Testing framework
+7. Error handling patterns
+8. README.md with project overview
+
+The structure should support modular development of the TCCC.ai system for Jetson Orin Nano following the architecture in references/architecture/system_architecture.md and best practices in references/best_practices/development_guide.md."
+```
+
+### 3.4 Create Base Configuration
+
+Create default configuration files for the system and each module:
+
+```bash
+# Create base config directory
+mkdir -p ~/tccc-project/config
+
+# Create main system configuration file
+claude "Create a base configuration file for the TCCC.ai system in YAML format.
+
+The configuration should:
+1. Include sections for system-wide settings
+2. Include sections for each of the six modules
+3. Follow the configuration patterns defined in module specifications
+4. Have sensible defaults for Jetson Orin Nano
+5. Include detailed comments explaining each parameter
+6. Support different operational modes
+
+Create a complete, well-commented config.yaml file that could serve as the default system configuration."
+```
+
+### 3.5 Initial Commit
+
+```bash
+# Review generated structure
+ls -la
+
+# Add all files to Git
+git add .
+
+# Initial commit
+git commit -m "Initial project structure and configuration"
+
+# Push to GitHub
+git push -u origin main
+```
+
+## 4. Module Development
+
+We'll develop the modules in this order to ensure dependencies are met:
+
+1. Processing Core (system orchestration)
+2. Data Store (persistence layer)
+3. Audio Pipeline (input handling)
+4. STT Engine (speech processing)
+5. Document Library (knowledge base)
+6. LLM Analysis (intelligence layer)
+
+### 4.1 Processing Core Development
+
+The Processing Core is the central orchestration module that manages system resources and coordinates all other modules.
+
+#### 4.1.1 Interface Contract
+
+Ensure implementation follows the defined interface:
+
+```python
+class ProcessingCoreInterface:
+    def initialize(self, config: dict) -> bool:
+        """Initialize the processing core with configuration"""
+        pass
+        
+    def register_module(self, module_id: str, callbacks: dict) -> bool:
+        """Register a module with the core for orchestration"""
+        pass
+        
+    def update_status(self, module_id: str, status: dict) -> bool:
+        """Update module status in the core"""
+        pass
+        
+    def get_resource_allocation(self, module_id: str) -> dict:
+        """Get resource allocation for a specific module"""
+        pass
+        
+    def get_system_state(self) -> dict:
+        """Get current system state"""
+        pass
+```
+
+#### 4.1.2 Implementation with Claude Code
+
+```bash
+# Create feature branch
+git checkout -b feature/processing-core
+
+# Use Claude Code to implement the module
+claude "Implement the Processing Core module for TCCC.ai.
+
+Requirements:
+1. Follow the ProcessingCoreInterface contract exactly
+2. Use SQLite for state persistence with WAL mode
+3. Implement resource monitoring with psutil and jetson-stats
+4. Create a module registration system with dependency tracking
+5. Implement proper error handling and recovery mechanisms
+6. Add comprehensive logging with rotation
+7. Implement state transitions for the 5 operational states
+8. Support dynamic resource allocation based on system load
+9. Include thermal management for Jetson hardware
+10. Implement graceful shutdown and recovery
+
+Include detailed unit tests that validate all interface methods and key functionality."
+```
+
+#### 4.1.3 Key Components to Implement
+
+1. **Module Registry**: Track modules and their dependencies
+2. **Resource Monitor**: Track CPU, GPU, memory, and thermal status
+3. **State Manager**: Handle system state transitions
+4. **Configuration Manager**: Distribute configuration to modules
+5. **Event System**: Coordinate message passing between modules
+
+#### 4.1.4 Verify and Test
+
+```bash
+# Install the package in development mode
+pip install -e .
+
+# Run tests for Processing Core
+pytest tests/processing_core -v
+
+# Manually verify key functionality
+python -c "from tccc.processing_core import ProcessingCore; core = ProcessingCore(); print(core.get_system_state())"
+```
+
+#### 4.1.5 Commit Processing Core
+
+```bash
+# Add Processing Core files
+git add src/processing_core tests/processing_core
+
+# Commit changes
+git commit -m "Implement Processing Core module"
+
+# Push to GitHub
+git push -u origin feature/processing-core
+
+# Create pull request (via GitHub web interface)
+# Review and merge PR
+```
+
+### 4.2 Data Store Development
+
+The Data Store module handles persistent storage of all data generated by the system.
+
+#### 4.2.1 Interface Contract
+
+Ensure implementation follows the defined interface:
+
+```python
+class DataStoreInterface:
+    def initialize(self, config: dict) -> bool:
+        """Initialize the data store with configuration"""
+        pass
+        
+    def store_event(self, event: dict) -> str:
+        """Store medical event and return event ID"""
+        pass
+        
+    def store_report(self, report: dict) -> str:
+        """Store generated report and return report ID"""
+        pass
+        
+    def query_events(self, filters: dict) -> list[dict]:
+        """Query events based on filters"""
+        pass
+        
+    def get_timeline(self, start_time: str, end_time: str) -> list[dict]:
+        """Get timeline of events within time range"""
+        pass
+        
+    def get_context(self, current_time: str, window_seconds: int = 300) -> dict:
+        """Get historical context for current processing"""
+        pass
+        
+    def get_status(self) -> dict:
+        """Return current status of the data store"""
+        pass
+```
+
+#### 4.2.2 Implementation with Claude Code
+
+```bash
+# Return to main branch and pull changes
+git checkout main
+git pull
+
+# Create feature branch
+git checkout -b feature/data-store
+
+# Use Claude Code to implement the module
+claude "Implement the Data Store module for TCCC.ai.
+
+Requirements:
+1. Follow the DataStoreInterface contract exactly
+2. Use SQLite with WAL mode and optimized schema
+3. Implement efficient indexing for timestamp-based queries
+4. Create the events, reports, and sessions tables as specified
+5. Add backup and recovery functionality
+6. Implement context generation for LLM Analysis
+7. Add comprehensive error handling with transaction safety
+8. Include database migration capability
+9. Optimize for NVMe storage on Jetson
+10. Implement proper connection pooling
+11. Add unit tests for all interface methods
+
+Ensure the implementation handles concurrent access and maintains data integrity."
+```
+
+#### 4.2.3 Key Components to Implement
+
+1. **Database Manager**: Handle SQLite connection and optimization
+2. **Timeline Manager**: Store and retrieve chronological events
+3. **Report Repository**: Manage structured reports
+4. **Context Provider**: Generate historical context
+5. **Backup System**: Ensure data safety and recovery
+6. **Query Engine**: Efficient data retrieval
+
+#### 4.2.4 Verify and Test
+
+```bash
+# Install the package in development mode
+pip install -e .
+
+# Run tests for Data Store
+pytest tests/data_store -v
+
+# Manually verify key functionality
+python -c "from tccc.data_store import DataStore; store = DataStore(); store.initialize({}); print(store.get_status())"
+```
+
+#### 4.2.5 Commit Data Store
+
+```bash
+# Add Data Store files
+git add src/data_store tests/data_store
+
+# Commit changes
+git commit -m "Implement Data Store module"
+
+# Push to GitHub
+git push -u origin feature/data-store
+
+# Create pull request (via GitHub web interface)
+# Review and merge PR
+```
+
+### 4.3 Audio Pipeline Development
+
+The Audio Pipeline module captures and processes audio from the environment.
+
+#### 4.3.1 Interface Contract
+
+Ensure implementation follows the defined interface:
+
+```python
+class AudioPipelineInterface:
+    def initialize(self, config: dict) -> bool:
+        """Initialize the audio pipeline with configuration"""
+        pass
+        
+    def start_recording(self) -> bool:
+        """Start audio capture"""
+        pass
+        
+    def stop_recording(self) -> bool:
+        """Stop audio capture"""
+        pass
+        
+    def get_next_segment(self) -> tuple[np.ndarray, dict]:
+        """Return next processed audio segment with metadata"""
+        pass
+        
+    def get_status(self) -> dict:
+        """Return current status of the audio pipeline"""
+        pass
+```
+
+#### 4.3.2 Implementation with Claude Code
+
+```bash
+# Return to main branch and pull changes
+git checkout main
+git pull
+
+# Create feature branch
+git checkout -b feature/audio-pipeline
+
+# Use Claude Code to implement the module
+claude "Implement the Audio Pipeline module for TCCC.ai.
+
+Requirements:
+1. Follow the AudioPipelineInterface contract exactly
+2. Use PyAudio for capturing audio with configurable settings
+3. Implement Silero VAD (Voice Activity Detection)
+4. Create circular buffer for continuous recording
+5. Add audio preprocessing (noise reduction, AGC)
+6. Implement speaker diarization (basic)
+7. Generate rich metadata for each audio segment
+8. Add proper thread management and synchronization
+9. Implement comprehensive error handling
+10. Add unit tests with mock audio devices
+11. Optimize for Jetson Orin Nano hardware
+
+Include documentation on audio format requirements and hardware compatibility."
+```
+
+#### 4.3.3 Key Components to Implement
+
+1. **Audio Capture**: Interface with microphone hardware
+2. **Circular Buffer**: Store continuous audio efficiently
+3. **Voice Activity Detection**: Identify speech segments
+4. **Audio Enhancement**: Improve signal quality
+5. **Segmentation**: Create logical audio chunks
+
+#### 4.3.4 Verify and Test
+
+```bash
+# Install the package in development mode
+pip install -e .
+
+# Run tests for Audio Pipeline
+pytest tests/audio_pipeline -v
+
+# Manually verify key functionality (if mic available)
+python -c "from tccc.audio_pipeline import AudioPipeline; import time; ap = AudioPipeline(); ap.initialize({}); ap.start_recording(); time.sleep(5); audio, meta = ap.get_next_segment(); print(meta); ap.stop_recording()"
+```
+
+#### 4.3.5 Commit Audio Pipeline
+
+```bash
+# Add Audio Pipeline files
+git add src/audio_pipeline tests/audio_pipeline
+
+# Commit changes
+git commit -m "Implement Audio Pipeline module"
+
+# Push to GitHub
+git push -u origin feature/audio-pipeline
+
+# Create pull request (via GitHub web interface)
+# Review and merge PR
+```
+
+### 4.4 STT Engine Development
+
+The Speech-to-Text Engine converts audio to text with high accuracy.
+
+#### 4.4.1 Interface Contract
+
+Ensure implementation follows the defined interface:
+
+```python
+class STTEngineInterface:
+    def initialize(self, config: dict) -> bool:
+        """Initialize the STT engine with configuration"""
+        pass
+        
+    def transcribe_segment(self, audio: np.ndarray, metadata: dict) -> dict:
+        """Transcribe audio segment and return structured result"""
+        pass
+        
+    def update_context(self, context: str) -> bool:
+        """Update context for improved transcription accuracy"""
+        pass
+        
+    def get_status(self) -> dict:
+        """Return current status of the STT engine"""
+        pass
+```
+
+#### 4.4.2 Implementation with Claude Code
+
+```bash
+# Return to main branch and pull changes
+git checkout main
+git pull
+
+# Create feature branch
+git checkout -b feature/stt-engine
+
+# Use Claude Code to implement the module
+claude "Implement the STT Engine module for TCCC.ai.
+
+Requirements:
+1. Follow the STTEngineInterface contract exactly
+2. Use Whisper model with ONNX Runtime optimization
+3. Implement model quantization (INT8) for Jetson hardware
+4. Add medical terminology correction
+5. Generate word-level timestamps
+6. Implement confidence scoring
+7. Add context-aware transcription improvement
+8. Optimize GPU memory usage
+9. Implement proper CUDA error handling
+10. Add comprehensive unit tests
+11. Include model caching and warmup procedures
+
+Ensure the implementation balances accuracy and performance on Jetson hardware."
+```
+
+#### 4.4.3 Key Components to Implement
+
+1. **Model Manager**: Handle Whisper model loading and optimization
+2. **Transcription Engine**: Process audio through model
+3. **Medical Term Processor**: Correct specialized terminology
+4. **Resource Manager**: Optimize GPU memory usage
+5. **Performance Monitor**: Track and optimize performance
+
+#### 4.4.4 Verify and Test
+
+```bash
+# Install the package in development mode
+pip install -e .
+
+# Run tests for STT Engine
+pytest tests/stt_engine -v
+
+# Manually verify with sample audio (if available)
+python -c "from tccc.stt_engine import STTEngine; import numpy as np; engine = STTEngine(); engine.initialize({}); sample = np.zeros(16000, dtype=np.float32); result = engine.transcribe_segment(sample, {'sample_rate': 16000}); print(result)"
+```
+
+#### 4.4.5 Commit STT Engine
+
+```bash
+# Add STT Engine files
+git add src/stt_engine tests/stt_engine
+
+# Commit changes
+git commit -m "Implement STT Engine module"
+
+# Push to GitHub
+git push -u origin feature/stt-engine
+
+# Create pull request (via GitHub web interface)
+# Review and merge PR
+```
+
+### 4.5 Document Library Development
+
+The Document Library provides a knowledge base of medical and tactical reference materials.
+
+#### 4.5.1 Interface Contract
+
+Ensure implementation follows the defined interface:
+
+```python
+class DocumentLibraryInterface:
+    def initialize(self, config: dict) -> bool:
+        """Initialize the document library with configuration"""
+        pass
+        
+    def add_document(self, document: dict) -> str:
+        """Add document to the library and return document ID"""
+        pass
+        
+    def query(self, query_text: str, n_results: int = 3) -> dict:
+        """Query the document library and return relevant context"""
+        pass
+        
+    def get_document_metadata(self, document_id: str) -> dict:
+        """Get metadata for a specific document"""
+        pass
+        
+    def get_status(self) -> dict:
+        """Return current status of the document library"""
+        pass
+```
+
+#### 4.5.2 Implementation with Claude Code
+
+```bash
+# Return to main branch and pull changes
+git checkout main
+git pull
+
+# Create feature branch
+git checkout -b feature/document-library
+
+# Use Claude Code to implement the module
+claude "Implement the Document Library (RAG) module for TCCC.ai.
+
+Requirements:
+1. Follow the DocumentLibraryInterface contract exactly
+2. Use a quantized embedding model (MiniLM) optimized for Jetson
+3. Implement FAISS for vector storage with INT8 quantization
+4. Create document chunking with recursive strategy
+5. Add document processing for various formats (PDF, TXT, HTML)
+6. Implement efficient query processing with metadata filtering
+7. Include cached results for common queries
+8. Add comprehensive error handling
+9. Optimize for memory constraints (8GB total system memory)
+10. Include unit tests for all components
+11. Add sample medical documents for testing
+
+Ensure the implementation balances quality of results with resource efficiency."
+```
+
+#### 4.5.3 Key Components to Implement
+
+1. **Document Processor**: Parse various document formats
+2. **Embedding Generator**: Convert text to vector embeddings
+3. **Vector Database**: Store and retrieve embeddings
+4. **Query Processor**: Convert queries to relevant results
+5. **Document Manager**: Handle document metadata
+
+#### 4.5.4 Verify and Test
+
+```bash
+# Install the package in development mode
+pip install -e .
+
+# Run tests for Document Library
+pytest tests/document_library -v
+
+# Manually verify with sample query
+python -c "from tccc.document_library import DocumentLibrary; lib = DocumentLibrary(); lib.initialize({}); results = lib.query('treatment for hemorrhage', 2); print(results)"
+```
+
+#### 4.5.5 Commit Document Library
+
+```bash
+# Add Document Library files
+git add src/document_library tests/document_library
+
+# Commit changes
+git commit -m "Implement Document Library module"
+
+# Push to GitHub
+git push -u origin feature/document-library
+
+# Create pull request (via GitHub web interface)
+# Review and merge PR
+```
+
+### 4.6 LLM Analysis Development
+
+The LLM Analysis module extracts medical information from transcriptions and generates reports.
+
+#### 4.6.1 Interface Contract
+
+Ensure implementation follows the defined interface:
+
+```python
+class LLMAnalysisInterface:
+    def initialize(self, config: dict) -> bool:
+        """Initialize the LLM analysis module with configuration"""
+        pass
+        
+    def process_transcription(self, transcription: dict, context: dict = None) -> list[dict]:
+        """Process transcription and extract medical events"""
+        pass
+        
+    def generate_report(self, report_type: str, events: list[dict]) -> dict:
+        """Generate structured report from medical events"""
+        pass
+        
+    def get_status(self) -> dict:
+        """Return current status of the LLM analysis module"""
+        pass
+```
+
+#### 4.6.2 Implementation with Claude Code
+
+```bash
+# Return to main branch and pull changes
+git checkout main
+git pull
+
+# Create feature branch
+git checkout -b feature/llm-analysis
+
+# Use Claude Code to implement the module
+claude "Implement the LLM Analysis module for TCCC.ai.
+
+Requirements:
+1. Follow the LLMAnalysisInterface contract exactly
+2. Use a quantized LLM (Llama-2 or Phi-2) optimized for Jetson
+3. Implement efficient prompt design for medical entity extraction
+4. Create structured output parsing for consistent event formats
+5. Implement MEDEVAC and ZMIST report generation
+6. Add integration with Document Library for medical context
+7. Implement chronological event ordering
+8. Add comprehensive error handling
+9. Include fallback mechanisms for resource constraints
+10. Optimize for minimal GPU memory usage
+11. Add thorough unit tests for all components
+
+Ensure the implementation produces accurate medical information extraction while operating within hardware constraints."
+```
+
+#### 4.6.3 Key Components to Implement
+
+1. **LLM Engine**: Manage the language model and inference
+2. **Medical Entity Recognition**: Extract medical procedures and events
+3. **Temporal Event Sequencer**: Order events chronologically
+4. **Report Generator**: Create structured medical reports
+5. **Context Integrator**: Enhance analysis with reference information
+
+#### 4.6.4 Verify and Test
+
+```bash
+# Install the package in development mode
+pip install -e .
+
+# Run tests for LLM Analysis
+pytest tests/llm_analysis -v
+
+# Manually verify with sample transcription
+python -c "from tccc.llm_analysis import LLMAnalysis; analyzer = LLMAnalysis(); analyzer.initialize({}); events = analyzer.process_transcription({'text': 'Applied a CAT tourniquet to the left thigh of the patient at 14:30.'}); print(events)"
+```
+
+#### 4.6.5 Commit LLM Analysis
+
+```bash
+# Add LLM Analysis files
+git add src/llm_analysis tests/llm_analysis
+
+# Commit changes
+git commit -m "Implement LLM Analysis module"
+
+# Push to GitHub
+git push -u origin feature/llm-analysis
+
+# Create pull request (via GitHub web interface)
+# Review and merge PR
+```
+
+## 5. Integration and Testing
+
+### 5.1 Create Integration Tests
+
+Now that all modules are implemented, create integration tests to verify their interaction:
+
+```bash
+# Create integration branch
+git checkout -b feature/integration-tests
+
+# Use Claude Code to create integration tests
+claude "Create comprehensive integration tests for the TCCC.ai system.
+
+Requirements:
+1. Test the complete audio-to-report pipeline
+2. Verify communication between all six modules
+3. Test each of the operational states
+4. Validate system behavior under resource constraints
+5. Test error handling and recovery mechanisms
+6. Include performance benchmarks
+7. Test data flows across module boundaries
+8. Verify proper cleanup and shutdown
+9. Test proper handling of configuration changes
+10. Include documentation for all test scenarios
+
+Create detailed integration tests that ensure the full system functions correctly."
+```
+
+### 5.2 Create System Integration Module
+
+```bash
+# Use Claude Code to create system integration code
+claude "Implement the system integration code for TCCC.ai.
+
+Requirements:
+1. Create a main System class that initializes all six modules
+2. Implement the initialization sequence (Processing Core first, etc.)
+3. Establish communication channels between modules
+4. Implement operational state management
+5. Add comprehensive error handling and recovery
+6. Include detailed logging of system status
+7. Implement resource allocation across modules
+8. Handle startup and shutdown procedures
+9. Add configuration loading and validation
+10. Include health monitoring and diagnostics
+
+Ensure the implementation follows clean architecture principles and properly integrates all modules."
+```
+
+### 5.3 Create End-to-End Test Scenario
+
+```bash
+# Create an end-to-end test scenario
+claude "Create an end-to-end test scenario for TCCC.ai that simulates a realistic combat medical scenario.
+
+The test should:
+1. Include sample audio files with medical terminology
+2. Test the full pipeline from audio to report generation
+3. Verify accuracy of medical event extraction
+4. Test MEDEVAC and ZMIST report generation
+5. Validate timeline creation and event ordering
+6. Test document retrieval for relevant protocols
+7. Include metrics for performance evaluation
+8. Test operational state transitions
+9. Simulate resource constraints and recovery
+10. Include comprehensive assertions and validation
+
+Create a complete test that can validate the full system functionality."
+```
+
+### 5.4 Test Full System Integration
+
+```bash
+# Install full system
+pip install -e .
+
+# Run integration tests
+pytest tests/integration -v
+
+# Run end-to-end test
+python -m tccc.tests.end_to_end
+```
+
+### 5.5 Commit Integration Code
+
+```bash
+# Add integration files
+git add src/tccc tests/integration
+
+# Commit changes
+git commit -m "Add system integration and tests"
+
+# Push to GitHub
+git push -u origin feature/integration-tests
+
+# Create pull request (via GitHub web interface)
+# Review and merge PR
+```
+
+## 6. Optimization for Jetson
+
+### 6.1 Profiling and Benchmarking
+
+```bash
+# Create optimization branch
+git checkout -b feature/jetson-optimization
+
+# Install profiling tools
+pip install py-spy memory_profiler tensorrt
+
+# Create benchmarking script with Claude Code
+claude "Create a comprehensive benchmarking script for TCCC.ai on Jetson Orin Nano.
+
+The script should:
+1. Profile CPU, GPU, and memory usage for each module
+2. Measure latency for key operations (audio processing, transcription, LLM inference)
+3. Test performance under various load conditions
+4. Compare different configuration options
+5. Generate detailed reports with visualizations
+6. Identify bottlenecks in the system
+7. Test performance with different power modes (MAX-N, MAX-Q, etc.)
+8. Measure thermal performance during extended operation
+9. Benchmark database operations
+10. Test vector search performance
+
+Create a comprehensive benchmarking suite that helps identify optimization opportunities."
+```
+
+### 6.2 Jetson-Specific Optimizations
+
+```bash
+# Use Claude Code to create Jetson optimization module
+claude "Implement Jetson-specific optimizations for TCCC.ai.
+
+Requirements:
+1. Create a JetsonOptimizer class that can be used across modules
+2. Implement TensorRT conversions for neural network models
+3. Add power management profiles (MAX-P, MAX-Q, etc.)
+4. Implement thermal management monitoring and throttling
+5. Optimize I/O operations for NVMe storage
+6. Implement efficient CPU/GPU memory management
+7. Add ARM-specific optimizations (NEON instructions)
+8. Implement dynamic batching for inference operations
+9. Add model quantization utilities (INT8, FP16)
+10. Include comprehensive diagnostics and monitoring
+
+Ensure the optimizations significantly improve performance and efficiency on the Jetson Orin Nano platform."
+```
+
+### 6.3 Apply and Test Optimizations
+
+```bash
+# Apply optimizations to system
+python -m tccc.utils.optimization.apply_optimizations
+
+# Run benchmarks to verify improvements
+python -m tccc.utils.benchmarking.run_benchmarks
+
+# Generate optimization report
+python -m tccc.utils.benchmarking.generate_report
+```
+
+### 6.4 Commit Optimizations
+
+```bash
+# Add optimization files
+git add src/tccc/utils/optimization src/tccc/utils/benchmarking
+
+# Commit changes
+git commit -m "Add Jetson-specific optimizations"
+
+# Push to GitHub
+git push -u origin feature/jetson-optimization
+
+# Create pull request (via GitHub web interface)
+# Review and merge PR
+```
+
+## 7. Deployment
+
+### 7.1 Create Deployment Configuration
+
+```bash
+# Create deployment branch
+git checkout -b feature/deployment
+
+# Create deployment configuration with Claude Code
+claude "Create deployment configuration for TCCC.ai on Jetson Orin Nano.
+
+Requirements:
+1. Create Systemd service files for automatic startup
+2. Implement environment setup scripts for production
+3. Create configuration files for different deployment scenarios
+4. Implement Docker container definitions with appropriate security
+5. Add backup and recovery procedures
+6. Implement update mechanisms for the deployed system
+7. Create health monitoring and alert systems
+8. Add secure boot configuration
+9. Implement logging rotation and management
+10. Create installation validation tests
+
+Ensure the deployment is robust, secure, and suitable for field use."
+```
+
+### 7.2 Create Installation Script
+
+```bash
+# Create installation script with Claude Code
+claude "Create a comprehensive installation script for TCCC.ai.
+
+The script should:
+1. Verify system requirements (Jetson Orin Nano)
+2. Install all system dependencies
+3. Configure CUDA and TensorRT properly
+4. Set up Python environment
+5. Install TCCC.ai package
+6. Download and configure models
+7. Set up Systemd services
+8. Configure logging
+9. Run validation tests
+10. Generate installation report
+11. Support both online and offline installation
+12. Include detailed error handling and recovery
+13. Support unattended installation
+
+Create a robust installation script suitable for field deployment."
+```
+
+### 7.3 Test Deployment
+
+```bash
+# Test deployment in clean environment (if possible)
+sudo ./deployment/install/install.sh
+
+# Verify services are running
+systemctl status tccc-ai
+
+# Test basic functionality
+curl http://localhost:8080/status
+```
+
+### 7.4 Create Release
+
+```bash
+# Create release tag
+git tag -a v0.1.0 -m "Initial release"
+
+# Push tag to GitHub
+git push origin v0.1.0
+
+# Create release on GitHub (via web interface)
+# Upload installation artifacts
+```
+
+## 8. Documentation
+
+### 8.1 Generate API Documentation
+
+```bash
+# Install documentation tools
+pip install sphinx sphinx-rtd-theme
+
+# Set up Sphinx documentation
+sphinx-quickstart docs
+
+# Generate API documentation
+sphinx-apidoc -o docs/source src
+
+# Build documentation
+cd docs
+make html
+```
+
+### 8.2 Create User Manual
+
+```bash
+# Create user manual with Claude Code
+claude "Create a comprehensive user manual for TCCC.ai.
+
+The manual should include:
+1. System overview and capabilities
+2. Installation instructions for different environments
+3. Configuration options with examples
+4. Basic operation guide with screenshots
+5. Maintenance procedures and troubleshooting
+6. Performance tuning recommendations
+7. Security considerations and best practices
+8. Reference for all commands and features
+9. Glossary of medical and technical terms
+10. FAQ section with common questions
+
+Create a clear, well-organized manual suitable for users with minimal technical background."
+```
+
+### 8.3 Create Developer Documentation
+
+```bash
+# Create developer documentation with Claude Code
+claude "Create comprehensive developer documentation for TCCC.ai.
+
+The documentation should include:
+1. Architecture overview with detailed diagrams
+2. Module interfaces and design patterns
+3. Development environment setup
+4. Extension points for each module
+5. Testing procedures and guidelines
+6. Performance optimization guidelines
+7. Coding standards and conventions
+8. Contribution workflow
+9. Release process
+10. Jetson-specific development considerations
+
+Create detailed documentation that enables new developers to quickly understand and contribute to the project."
+```
+
+### 8.4 Commit Documentation
+
+```bash
+# Add documentation files
+git add docs
+
+# Commit changes
+git commit -m "Add comprehensive documentation"
+
+# Push to GitHub
+git push origin feature/deployment
+
+# Create pull request (via GitHub web interface)
+# Review and merge PR
+```
+
+## 9. Maintenance
+
+### 9.1 Create Maintenance Tools
+
+```bash
+# Create maintenance tools with Claude Code
+claude "Create maintenance tools for TCCC.ai.
+
+Develop scripts and utilities for:
+1. System diagnostics and health checks
+2. Log analysis and reporting
+3. Database maintenance and optimization
+4. Model updates and verification
+5. System backup and restoration
+6. Performance monitoring over time
+7. Error reporting and analysis
+8. Remote monitoring capabilities
+9. Update management
+10. Configuration validation
+
+Create robust, easy-to-use tools suitable for field maintenance."
+```
+
+### 9.2 Create Roadmap
+
+```bash
+# Create project roadmap with Claude Code
+claude "Create a detailed roadmap for future TCCC.ai development.
+
+The roadmap should include:
+1. Planned features and enhancements with priorities
+2. Technical debt items to address
+3. Performance optimization goals
+4. Integration with other systems
+5. Support for additional hardware platforms
+6. Enhanced security features
+7. Documentation improvements
+8. User experience enhancements
+9. Timeline estimates for each item
+10. Dependencies between items
+
+Provide a prioritized list with estimated effort and impact for each item."
+```
+
+### 9.3 Final Project Review
+
+```bash
+# Run comprehensive tests
+pytest
+
+# Generate test coverage report
+pytest --cov=src tests/
+
+# Run linting and static analysis
+flake8 src tests
+
+# Review documentation completeness
+ls -la docs/
+
+# Check all GitHub issues are addressed
+# Ensure CI/CD pipeline is working
+```
+
+### 9.4 Create Final Release
+
+```bash
+# Create release branch
+git checkout -b release/v1.0.0
+
+# Update version information
+# Update changelog
+
+# Commit release changes
+git commit -m "Prepare for v1.0.0 release"
+
+# Create release tag
+git tag -a v1.0.0 -m "Version 1.0.0 release"
+
+# Push to GitHub
+git push origin release/v1.0.0
+git push origin v1.0.0
+
+# Create release on GitHub (via web interface)
+```
+
+## 10. Best Practices
+
+Throughout development, adhere to these best practices to ensure a high-quality, maintainable system:
+
+### 10.1 Code Quality
+
+- Follow PEP 8 style guidelines for Python code
+- Document all functions, classes, and modules with docstrings
+- Create comprehensive unit tests (aim for >80% coverage)
+- Use type hints consistently
+- Conduct regular code reviews
+
+```python
+# Example of well-documented function with type hints
+def process_audio_segment(audio_data: np.ndarray, sample_rate: int) -> tuple[np.ndarray, dict]:
+    """
+    Process raw audio data to enhance quality for transcription.
+    
+    Args:
+        audio_data: Raw audio samples as float32 array
+        sample_rate: Sample rate in Hz (typically 16000)
+        
+    Returns:
+        tuple: (processed_audio, metadata_dict)
+            - processed_audio: Enhanced audio
+            - metadata_dict: Processing information including:
+                - vad_active: Voice activity detected
+                - snr: Estimated signal-to-noise ratio
+    
+    Note:
+        Optimized for Jetson Nano using CPU processing.
+        For high noise environments, consider increasing denoise_strength.
+    """
+    # Implementation...
+```
+
+### 10.2 Jetson Optimizations
+
+- Monitor memory usage constantly (both system and CUDA)
+- Use jtop to track hardware utilization
+- Implement power management for different scenarios
+- Optimize neural network operations with TensorRT
+- Track thermal performance during long operations
+
+```python
+# Example of Jetson optimization
+def optimize_for_jetson():
+    """Configure system for optimal Jetson performance"""
+    try:
+        # Check if running on Jetson
+        import jtop
+        
+        # Set CUDA device properties
+        import torch
+        if torch.cuda.is_available():
+            # Reduce memory usage by using half precision
+            torch.set_default_tensor_type(torch.cuda.HalfTensor)
+            
+        # Monitor system status
+        with jtop.jtop() as jetson:
+            cpu_usage = jetson.cpu['usage']
+            gpu_usage = jetson.gpu['usage']
+            temperature = jetson.temperature
+            
+            # Log baseline metrics
+            logging.info(f"Jetson baseline - CPU: {cpu_usage}%, "
+                         f"GPU: {gpu_usage}%, Temp: {temperature}°C")
+            
+            # Adjust based on temperature
+            if temperature > 80:
+                logging.warning("High temperature detected, enabling efficiency mode")
+                # Implement throttling or fan control
+    except ImportError:
+        logging.info("Not running on Jetson platform, skipping optimizations")
+```
+
+### 10.3 Error Handling
+
+- Implement proper error handling for hardware interactions
+- Use try/except blocks with specific exception types
+- Implement graceful degradation for module failures
+- Log errors with context information
+- Create meaningful custom exceptions
+
+```python
+# Example of proper error handling
+class AudioProcessingError(Exception):
+    """Raised when audio processing fails"""
+    pass
+
+def capture_audio():
+    try:
+        # PyAudio setup and recording
+        return audio_data
+    except (IOError, OSError) as e:
+        # Handle hardware errors
+        logging.error(f"Audio hardware error: {str(e)}")
+        raise AudioProcessingError(f"Failed to capture audio: {str(e)}")
+    except Exception as e:
+        # Handle unexpected errors
+        logging.critical(f"Unexpected error in audio capture: {str(e)}")
+        # Fall back to silent audio
+        return np.zeros(8000)
+```
+
+### 10.4 Resource Management
+
+- Implement proper cleanup in `__del__` methods
+- Release GPU resources explicitly when done
+- Use context managers (`with` statements) for resources
+- Implement proper threading and concurrency
+
+```python
+# Example of proper resource management
+class STTEngine:
+    def __init__(self, model_path):
+        self.model = self._load_model(model_path)
+        
+    def __del__(self):
+        # Explicitly release GPU resources
+        if hasattr(self, 'model') and self.model is not None:
+            self.model = None
+            # Force CUDA memory cleanup
+            import gc
+            gc.collect()
+            if torch.cuda.is_available():
+                torch.cuda.empty_cache()
+```
+
+### 10.5 Configuration Management
+
+- Use YAML for configuration files
+- Implement validation for configuration options
+- Create sensible defaults
+- Allow runtime reconfiguration of key parameters
+
+```python
+# Example of configuration management
+import yaml
+from pydantic import BaseModel, validator
+
+class AudioConfig(BaseModel):
+    sample_rate: int = 16000
+    channels: int = 1
+    chunk_size: int = 1024
+    buffer_seconds: float = 30.0
+    vad_enabled: bool = True
+    noise_reduction_level: float = 0.5
+    
+    @validator('sample_rate')
+    def valid_sample_rate(cls, v):
+        if v not in [8000, 16000, 44100, 48000]:
+            raise ValueError(f"Sample rate {v} not supported")
+        return v
+
+def load_config(config_path):
+    with open(config_path, 'r') as f:
+        raw_config = yaml.safe_load(f)
+    
+    # Validate with pydantic
+    return AudioConfig(**raw_config)
+```
+
+### 10.6 Testing Strategy
+
+- Create unit tests for each function/class
+- Develop integration tests for module interactions
+- Implement end-to-end tests for full system validation
+- Create performance tests for optimization
+- Use mocks for hardware-dependent tests
+
+```python
+# Example of a comprehensive test
+def test_vad_detection():
+    """Test voice activity detection with known samples"""
+    # Setup
+    pipeline = AudioPipeline()
+    
+    # Test with silence (zeros)
+    silence = np.zeros(16000)  # 1 second of silence at 16kHz
+    audio_processed, metadata = pipeline.process_audio_segment(silence, 16000)
+    assert metadata['vad_active'] == False
+    
+    # Test with sine wave (simulating speech)
+    t = np.linspace(0, 1, 16000)
+    speech = 0.5 * np.sin(2 * np.pi * 440 * t)  # 440Hz tone
+    audio_processed, metadata = pipeline.process_audio_segment(speech, 16000)
+    assert metadata['vad_active'] == True
+```
+
+### 10.7 Documentation
+
+- Write docstrings for all functions and classes
+- Create a simple README with setup and usage instructions
+- Comment complex logic or hardware-specific optimizations
+- Keep a development journal for lessons learned
+
+By following this comprehensive guide and adhering to these best practices, you will create a robust, efficient, and maintainable TCCC.ai system that fulfills all requirements while running effectively on the Jetson Orin Nano platform.
