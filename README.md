@@ -75,6 +75,17 @@ python -m tccc.cli start --modules audio_pipeline stt_engine
 
 ## Development
 
+### Critical Development Tasks
+
+- [ ] **TCCC Casualty Card (DD Form 1380) Implementation** - HIGH PRIORITY
+  - Purpose: Core functionality for documenting battlefield casualties
+  - Reference: https://tccc.org.ua/files/downloads/tccc-cpp-skill-card-55-dd-1380-tccc-casualty-card-en.pdf
+  - Requirements:
+    - Automated completion based on audio input and LLM analysis
+    - Digital form generation matching DD Form 1380 format
+    - Equal importance to 9-line MEDEVAC and ZMIST record capabilities
+  - Integration: Must connect with Document Library and LLM Analysis modules
+
 ### Project Structure
 
 ```
