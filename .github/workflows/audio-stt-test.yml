@@ -1,0 +1,64 @@
+name: Audio & STT Pipeline Test
+
+on:
+  pull_request:
+    paths:
+      - 'src/tccc/audio_pipeline/**'
+      - 'src/tccc/stt_engine/**'
+      - 'verification_script_audio_pipeline.py'
+      - 'verification_script_stt_engine.py'
+      - 'test_battlefield_audio.py'
+  workflow_dispatch:
+
+jobs:
+  audio-stt-test:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v3
+      
+      - name: Set up Python
+        uses: actions/setup-python@v4
+        with:
+          python-version: '3.10'
+          
+      - name: Install dependencies
+        run: |
+          python -m pip install --upgrade pip
+          pip install -r requirements.txt
+          
+      - name: Run STT engine verification
+        run: |
+          python verification_script_stt_engine.py --mock-mode
+          
+      - name: Run audio pipeline tests
+        run: |
+          python -m pytest tests/audio_pipeline/test_audio_pipeline.py -v
+          
+      - name: Test STT engine
+        run: |
+          python -m pytest tests/stt_engine/test_stt_engine.py -v
+          
+      - name: Generate audio pipeline report
+        run: |
+          echo "## Audio & STT Pipeline Test Results" > audio_pipeline_report.md
+          echo "" >> audio_pipeline_report.md
+          echo "### STT Engine Performance" >> audio_pipeline_report.md
+          grep "Processing time:" stt_engine_results.txt | awk '{print "- " $0}' >> audio_pipeline_report.md || echo "- No benchmark data available" >> audio_pipeline_report.md
+          echo "" >> audio_pipeline_report.md
+          echo "### Accuracy Results" >> audio_pipeline_report.md
+          grep "Word Error Rate:" stt_engine_results.txt | awk '{print "- " $0}' >> audio_pipeline_report.md || echo "- No accuracy data available" >> audio_pipeline_report.md
+          
+      - name: Add audio pipeline report to PR
+        uses: actions/github-script@v6
+        if: github.event_name == 'pull_request'
+        with:
+          github-token: ${{ secrets.GITHUB_TOKEN }}
+          script: |
+            const fs = require('fs');
+            const report = fs.readFileSync('audio_pipeline_report.md', 'utf8');
+            github.rest.issues.createComment({
+              issue_number: context.issue.number,
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              body: report
+            });

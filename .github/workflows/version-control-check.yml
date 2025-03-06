@@ -1,0 +1,57 @@
+name: Version Control Check
+
+on:
+  pull_request:
+    branches: [ main ]
+  push:
+    branches: [ main ]
+  workflow_dispatch:
+
+jobs:
+  version-control-check:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v3
+        with:
+          fetch-depth: 0
+          
+      - name: Set up Python
+        uses: actions/setup-python@v4
+        with:
+          python-version: '3.10'
+          
+      - name: Run Version Control Validator
+        run: |
+          python validate_version_control.py
+          
+      - name: Check Untracked Critical Files
+        run: |
+          # Check for untracked files in critical directories
+          UNTRACKED_CRITICAL=$(git ls-files --others --exclude-standard 'src/tccc/**' 'config/**' 'tests/**')
+          if [ -n "$UNTRACKED_CRITICAL" ]; then
+            echo "Error: The following critical files are not tracked in git:"
+            echo "$UNTRACKED_CRITICAL"
+            echo ""
+            echo "Please add these files to version control before merging."
+            exit 1
+          fi
+          
+      - name: Check Placeholder Files
+        run: |
+          # Check for placeholder/TODO comments in code
+          PLACEHOLDER_FILES=$(grep -r "TODO" --include="*.py" src/ tests/ || true)
+          if [ -n "$PLACEHOLDER_FILES" ]; then
+            echo "Warning: The following files contain TODO markers that should be addressed:"
+            echo "$PLACEHOLDER_FILES"
+            echo ""
+          fi
+          
+      - name: Check Large Files
+        run: |
+          # Find files larger than 5MB that aren't tracked with LFS
+          LARGE_FILES=$(find . -type f -size +5M -not -path "./venv/*" -not -path "./.git/*")
+          if [ -n "$LARGE_FILES" ]; then
+            echo "Warning: The following large files might need to be tracked with Git LFS:"
+            echo "$LARGE_FILES"
+            echo ""
+          fi

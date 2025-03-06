@@ -1,0 +1,54 @@
+name: RAG System Performance Test
+
+on:
+  pull_request:
+    paths:
+      - 'src/tccc/document_library/**'
+      - 'verification_script_rag.py'
+      - 'verification_script_rag_mock.py'
+  workflow_dispatch:
+
+jobs:
+  rag-performance-test:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v3
+      
+      - name: Set up Python
+        uses: actions/setup-python@v4
+        with:
+          python-version: '3.10'
+          
+      - name: Install dependencies
+        run: |
+          python -m pip install --upgrade pip
+          pip install -r requirements.txt
+          
+      - name: Run RAG system verification
+        run: |
+          python verification_script_rag_mock.py --benchmark
+          
+      - name: Generate performance report
+        run: |
+          echo "## RAG System Performance Results" > performance_report.md
+          echo "" >> performance_report.md
+          echo "### Query Performance" >> performance_report.md
+          grep "Query time:" rag_benchmark_results.txt | awk '{print "- " $0}' >> performance_report.md
+          echo "" >> performance_report.md
+          echo "### Retrieval Accuracy" >> performance_report.md
+          grep "Accuracy score:" rag_benchmark_results.txt | awk '{print "- " $0}' >> performance_report.md
+          
+      - name: Add performance report to PR
+        uses: actions/github-script@v6
+        if: github.event_name == 'pull_request'
+        with:
+          github-token: ${{ secrets.GITHUB_TOKEN }}
+          script: |
+            const fs = require('fs');
+            const report = fs.readFileSync('performance_report.md', 'utf8');
+            github.rest.issues.createComment({
+              issue_number: context.issue.number,
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              body: report
+            });
