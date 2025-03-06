@@ -2,14 +2,14 @@
 """
 TCCC.ai Display Interface
 ------------------------
-Enhanced display interface for WaveShare 6.25" touchscreen showing:
+Standard display interface for HDMI output showing:
 1. Transcribed text from STT engine 
 2. Significant events parsed by LLM
 3. TCCC Casualty Card (DD Form 1380) when care is complete
 
-This implementation provides full hardware support for the WaveShare display,
-with proper touch calibration, hardware acceleration, and adaptive UI based
-on orientation and display capabilities.
+This implementation uses standard HDMI output and supports any display connected
+to the system. It works seamlessly with any HDMI monitor or display, including
+the WaveShare display via standard HDMI connection.
 """
 
 import os
@@ -17,12 +17,8 @@ import sys
 import time
 import threading
 import logging
-import json
-import shutil
-import platform
 from datetime import datetime
-from pathlib import Path
-from typing import Dict, List, Optional, Tuple, Union, Any, Callable
+from typing import Dict, List, Optional
 
 # Set up logging
 logging.basicConfig(
@@ -31,7 +27,7 @@ logging.basicConfig(
 )
 logger = logging.getLogger("DisplayInterface")
 
-# Try to import pygame, install if needed
+# Import pygame for display
 try:
     import pygame
     from pygame.locals import *
@@ -47,14 +43,7 @@ except ImportError:
         logger.error(f"Failed to install pygame: {e}")
         raise
 
-# Try to import other optional dependencies
-try:
-    import yaml
-except ImportError:
-    logger.warning("PyYAML not installed, will use fallback configuration")
-    yaml = None
-
-# Default colors - will be updated from config if available
+# Default colors
 BLACK = (0, 0, 0)
 WHITE = (255, 255, 255)
 GRAY = (200, 200, 200)
@@ -63,7 +52,7 @@ GREEN = (0, 200, 0)
 BLUE = (0, 0, 255)
 GOLD = (255, 215, 0)
 
-# Font sizes adjusted for WaveShare 6.25" display - will be updated from config
+# Font sizes
 FONT_SMALL = 22
 FONT_MEDIUM = 28
 FONT_LARGE = 36
@@ -76,7 +65,7 @@ CARD_FIELDS = [
     "medications", "evacuation_priority"
 ]
 
-# Performance monitoring stats
+# Performance monitoring
 PERF_STATS = {
     'fps': 0,
     'frame_time': 0,
@@ -85,28 +74,21 @@ PERF_STATS = {
 }
 
 class DisplayInterface:
-    """Enhanced display interface for TCCC.ai with WaveShare hardware support"""
+    """Standard display interface for TCCC.ai using HDMI output"""
     
-    def __init__(self, width=1560, height=720, fullscreen=False, config_path=None):
+    def __init__(self, width=1280, height=720, fullscreen=False):
         """
-        Initialize the display interface with improved hardware support
+        Initialize the display interface for standard HDMI output
         
         Args:
-            width: Screen width (default 1560 for WaveShare 6.25" Display in landscape)
-            height: Screen height (default 720 for WaveShare 6.25" Display in landscape)
+            width: Screen width (default 1280 for standard HD resolution)
+            height: Screen height (default 720 for standard HD resolution)
             fullscreen: Whether to display in fullscreen mode
-            config_path: Optional path to configuration file
         """
         # Display dimensions
         self.width = width
         self.height = height
         self.fullscreen = fullscreen
-        
-        # Custom config path if provided
-        self.config_path = config_path
-        
-        # Flag to track if we're in portrait or landscape orientation
-        self.portrait = height > width
         
         # Runtime state
         self.active = False
@@ -115,14 +97,6 @@ class DisplayInterface:
         self.screen = None
         self.clock = None
         
-        # Hardware details
-        self.is_jetson = False
-        self.is_waveshare = False
-        self.display_driver = None
-        self.has_touch = False
-        self.touch_device_id = None
-        self.auto_detect = True
-        
         # Content to display
         self.transcription = []
         self.significant_events = []
@@ -130,8 +104,7 @@ class DisplayInterface:
         self.display_mode = "live"  # 'live' or 'card'
         self.last_update = time.time()
         
-        # UI settings - will be updated from config
-        self.theme = "dark"
+        # UI settings
         self.colors = {
             "background": BLACK,
             "text": WHITE,
@@ -142,629 +115,89 @@ class DisplayInterface:
         }
         self.max_transcription_items = 10
         self.max_event_items = 8
-        self.logo_path = None
-        self.alt_logo_path = None
         self.column_widths = {
             "transcription": 0.38,
             "events": 0.34,
             "card_preview": 0.28,
         }
         
-        # Animation settings
-        self.animations_enabled = True
-        self.transition_speed = 300  # ms
-        self.fade_in = True
-        self.smooth_scroll = True
-        
         # Performance settings
         self.target_fps = 30
-        self.fps_limit_battery = 15
-        self.power_save_mode = False
-        self.show_fps = False
-        
-        # Debug settings
-        self.debug_mode = False
-        self.show_touch_points = False
-        
-        # Touch input tracking
-        self.touch_regions = []
-        self.touch_points = []
-        self.touch_sensitivity = 1.0
-        self.touch_enabled = True
-        self.touch_calibration_enabled = True
-        self.touch_device_name = "WaveShare Touchscreen"
-        self.touch_transformation_matrix = [0, 1, 0, -1, 0, 1, 0, 0, 1]
         
         # Thread lock for thread-safe updates
         self.lock = threading.Lock()
         
-        # Load config first thing
-        self.load_config()
-        
-    def load_config(self):
-        """Load enhanced display configuration from file with hardware support"""
-        try:
-            if yaml is None:
-                logger.warning("PyYAML not available, using default configuration")
-                return False
-                
-            # Use custom config path if provided, otherwise use default
-            if self.config_path:
-                config_path = Path(self.config_path)
-            else:
-                config_path = Path(__file__).parent.parent.parent.parent / "config" / "display.yaml"
-            
-            if not config_path.exists():
-                logger.warning(f"Display config file not found at {config_path}, using defaults")
-                return False
-                
-            with open(config_path, 'r') as f:
-                config = yaml.safe_load(f)
-                
-            # Display settings
-            if 'display' in config:
-                display_config = config['display']
-                self.width = display_config.get('width', self.width)
-                self.height = display_config.get('height', self.height)
-                self.fullscreen = display_config.get('fullscreen', self.fullscreen)
-                
-                # Orientation
-                orientation = display_config.get('orientation', 'landscape')
-                self.portrait = orientation.lower() == 'portrait'
-                
-                # Touch settings
-                touch_config = display_config.get('touch', {})
-                self.touch_enabled = touch_config.get('enabled', True)
-                self.touch_device_name = touch_config.get('device', "WaveShare Touchscreen")
-                self.touch_calibration_enabled = touch_config.get('calibration_enabled', True)
-                
-                # Touch transformation matrix if specified
-                if 'transformation_matrix' in touch_config:
-                    self.touch_transformation_matrix = touch_config['transformation_matrix']
-                
-                # Touch sensitivity
-                self.touch_sensitivity = touch_config.get('sensitivity', 1.0)
-                
-                # Touch regions if specified
-                if 'regions' in touch_config:
-                    # We'll process these when defining touch regions
-                    self.touch_region_config = touch_config.get('regions', {})
-            
-            # UI settings
-            if 'ui' in config:
-                ui_config = config['ui']
-                font_scale = ui_config.get('font_scale', 1.0)
-                
-                # Update font sizes if specified
-                global FONT_SMALL, FONT_MEDIUM, FONT_LARGE
-                FONT_SMALL = ui_config.get('small_font_size', FONT_SMALL)
-                FONT_MEDIUM = ui_config.get('medium_font_size', FONT_MEDIUM)
-                FONT_LARGE = ui_config.get('large_font_size', FONT_LARGE)
-                
-                # Scale fonts if needed
-                if font_scale != 1.0:
-                    FONT_SMALL = int(FONT_SMALL * font_scale)
-                    FONT_MEDIUM = int(FONT_MEDIUM * font_scale)
-                    FONT_LARGE = int(FONT_LARGE * font_scale)
-                
-                # Theme and color scheme
-                self.theme = ui_config.get('theme', 'dark')
-                
-                # Load color scheme if specified
-                if 'color_schemes' in ui_config and self.theme in ui_config['color_schemes']:
-                    color_scheme = ui_config['color_schemes'][self.theme]
-                    for key, value in color_scheme.items():
-                        if key in self.colors:
-                            self.colors[key] = tuple(value)
-                
-                # Logo paths
-                self.logo_path = ui_config.get('logo', 'images/blue_logo.png')
-                self.alt_logo_path = ui_config.get('alt_logo', 'images/green_logo.png')
-                
-                # Maximum items
-                self.max_transcription_items = ui_config.get('max_transcription_items', self.max_transcription_items)
-                self.max_event_items = ui_config.get('max_event_items', self.max_event_items)
-                
-                # Animation settings
-                if 'animations' in ui_config:
-                    animation_config = ui_config['animations']
-                    self.animations_enabled = animation_config.get('enabled', True)
-                    self.transition_speed = animation_config.get('transition_speed_ms', 300)
-                    self.fade_in = animation_config.get('fade_in', True)
-                    self.smooth_scroll = animation_config.get('scroll_smooth', True)
-                
-                # Layout settings
-                if 'layout' in ui_config:
-                    layout_config = ui_config['layout']
-                    # Column width percentages
-                    if 'column_1_width' in layout_config:
-                        self.column_widths['transcription'] = layout_config['column_1_width']
-                    if 'column_2_width' in layout_config:
-                        self.column_widths['events'] = layout_config['column_2_width']
-                    # Calculate card preview width as remainder
-                    self.column_widths['card_preview'] = 1.0 - self.column_widths['transcription'] - self.column_widths['events']
-            
-            # Hardware settings
-            if 'hardware' in config:
-                hardware_config = config['hardware']
-                self.auto_detect = hardware_config.get('auto_detect', True)
-                
-                # WaveShare specific settings
-                if 'waveshare' in hardware_config:
-                    waveshare_config = hardware_config['waveshare']
-                    # Store for hardware detection
-                    self.waveshare_config = waveshare_config
-                
-                # Jetson hardware settings
-                if 'jetson' in hardware_config:
-                    jetson_config = hardware_config['jetson']
-                    # Handle Jetson-specific optimization settings
-                    if 'performance' in jetson_config:
-                        perf_config = jetson_config['performance']
-                        self.target_fps = perf_config.get('fps_limit_ac', 30)
-                        self.fps_limit_battery = perf_config.get('fps_limit_battery', 15)
-                    
-                    # Power save mode
-                    self.power_save_mode = jetson_config.get('power_save_mode', False)
-            
-            # Performance monitoring
-            if 'performance' in config:
-                perf_config = config['performance']
-                self.show_fps = perf_config.get('show_fps', False)
-                self.target_fps = perf_config.get('target_fps', self.target_fps)
-            
-            # Advanced settings
-            if 'advanced' in config:
-                adv_config = config['advanced']
-                self.debug_mode = adv_config.get('debug_mode', False)
-                self.show_touch_points = adv_config.get('show_touch_points', False)
-                
-                # SDL video/audio driver settings
-                sdl_videodriver = adv_config.get('sdl_videodriver', '')
-                sdl_audiodriver = adv_config.get('sdl_audiodriver', '')
-                
-                # Set environment variables if specified
-                if sdl_videodriver:
-                    os.environ["SDL_VIDEODRIVER"] = sdl_videodriver
-                if sdl_audiodriver:
-                    os.environ["SDL_AUDIODRIVER"] = sdl_audiodriver
-            
-            logger.info(f"Loaded display config: {self.width}x{self.height}, " 
-                      f"orientation: {'portrait' if self.portrait else 'landscape'}, "
-                      f"theme: {self.theme}")
+    def initialize(self):
+        """Initialize the display with standard HDMI settings"""
+        if self.initialized:
+            logger.info("Display already initialized")
             return True
             
-        except Exception as e:
-            logger.error(f"Error loading display config: {e}")
-            return False
-    
-    def detect_display(self):
-        """
-        Enhanced display hardware detection with WaveShare and Jetson optimizations
-        
-        This method detects display hardware and sets appropriate settings based on
-        the detected hardware. It supports WaveShare displays and Jetson hardware
-        with optimized configurations.
-        
-        Returns:
-            bool: True if display was detected and configured successfully
-        """
-        if not self.auto_detect:
-            logger.info("Auto detection disabled, using configured settings")
-            return False
-            
         try:
-            detected_waveshare = False
-            detected_display = False
-            detected_jetson = False
+            # Initialize pygame
+            pygame.init()
+            pygame.display.set_caption("TCCC.ai Field Assistant")
             
-            # First check for Jetson hardware
-            detected_jetson = self._detect_jetson_hardware()
+            # Create clock for FPS control
+            self.clock = pygame.time.Clock()
             
-            # Check for WaveShare display
-            detected_waveshare = self._detect_waveshare_display()
+            # Set up performance monitoring
+            global PERF_STATS
+            PERF_STATS['start_time'] = time.time()
+            PERF_STATS['frame_count'] = 0
             
-            # If neither WaveShare nor Jetson was detected, try generic display detection
-            if not detected_waveshare:
-                detected_display = self._detect_generic_display()
-            
-            # Return success if any display was detected
-            return detected_waveshare or detected_display
-            
-        except Exception as e:
-            logger.error(f"Error detecting display hardware: {e}")
-            return False
-    
-    def _detect_jetson_hardware(self):
-        """
-        Detect if running on NVIDIA Jetson hardware and configure optimizations
-        
-        Returns:
-            bool: True if Jetson hardware was detected
-        """
-        try:
-            # Method 1: Check via Jetson-specific system files
-            if os.path.exists("/proc/device-tree/model"):
-                with open("/proc/device-tree/model", "r") as f:
-                    model = f.read().lower()
-                    if any(jetson_name in model for jetson_name in ["jetson", "xavier", "nano", "orin"]):
-                        self.is_jetson = True
-                        logger.info(f"Detected Jetson hardware: {model.strip()}")
-                        
-                        # Apply Jetson-specific optimizations
-                        self._apply_jetson_optimizations()
-                        return True
-            
-            # Method 2: Check via our utility module if available
-            try:
-                from tccc.utils.jetson_integration import is_jetson_platform
-                if is_jetson_platform():
-                    self.is_jetson = True
-                    logger.info("Detected Jetson hardware via utility module")
-                    
-                    # Apply Jetson-specific optimizations
-                    self._apply_jetson_optimizations()
-                    return True
-            except ImportError:
-                logger.debug("Jetson integration module not available")
-            
-            # Method 3: Check via CUDA device name
-            try:
-                import torch
-                if torch.cuda.is_available():
-                    device_name = torch.cuda.get_device_name(0).lower()
-                    if any(name in device_name for name in ["tegra", "nvidia", "jetson", "xavier", "orin"]):
-                        self.is_jetson = True
-                        logger.info(f"Detected Jetson hardware via CUDA: {device_name}")
-                        
-                        # Apply Jetson-specific optimizations
-                        self._apply_jetson_optimizations()
-                        return True
-            except (ImportError, Exception) as e:
-                logger.debug(f"CUDA detection not available: {e}")
-            
-            return False
-        except Exception as e:
-            logger.error(f"Error detecting Jetson hardware: {e}")
-            return False
-            
-    def _apply_jetson_optimizations(self):
-        """Apply Jetson-specific optimizations for display performance"""
-        try:
-            # Set optimal video driver for Jetson
-            os.environ["SDL_VIDEODRIVER"] = "kmsdrm"
-            
-            # Adjust performance settings
-            if self.power_save_mode:
-                # Lower FPS target when in power save mode
-                self.target_fps = self.fps_limit_battery
-                logger.info(f"Power save mode enabled, limiting FPS to {self.target_fps}")
+            # Set up display
+            display_flags = 0
+            if self.fullscreen:
+                display_flags |= pygame.FULLSCREEN
                 
-            logger.info("Applied Jetson display optimizations")
-        except Exception as e:
-            logger.error(f"Error applying Jetson optimizations: {e}")
+            # Create the screen
+            logger.info(f"Creating display with resolution {self.width}x{self.height}")
+            self.screen = pygame.display.set_mode(
+                (self.width, self.height), 
+                display_flags
+            )
             
-    def _detect_waveshare_display(self):
-        """
-        Detect WaveShare display hardware via multiple methods
-        
-        Returns:
-            bool: True if WaveShare display was detected
-        """
-        try:
-            import subprocess
+            # Load fonts
+            self._load_fonts()
             
-            # Method 1: Check environment variables
-            if "DISPLAY_TYPE" in os.environ:
-                display_type = os.environ["DISPLAY_TYPE"].lower()
-                if "waveshare" in display_type:
-                    logger.info("Detected WaveShare display from environment variable")
-                    
-                    # Set WaveShare-specific settings
-                    if "6.25" in display_type:
-                        self.width = 1560
-                        self.height = 720
-                        self.is_waveshare = True
-                        logger.info("Using WaveShare 6.25\" display settings (1560x720)")
-                        return True
+            # Mark as initialized
+            self.initialized = True
             
-            # Method 2: Check for WaveShare configuration on X11
-            if os.path.exists("/etc/X11/xorg.conf.d"):
-                # Look for display configuration files
-                for config_file in os.listdir("/etc/X11/xorg.conf.d"):
-                    if "waveshare" in config_file.lower() or "display" in config_file.lower():
-                        with open(f"/etc/X11/xorg.conf.d/{config_file}", "r") as f:
-                            content = f.read().lower()
-                            if "waveshare" in content:
-                                logger.info("Detected WaveShare display from X11 configuration")
-                                self.is_waveshare = True
-                                
-                                # Try to extract resolution from configuration
-                                import re
-                                res_match = re.search(r'modes\s+[\"\']([\d]+x[\d]+)[\"\']\s*$', content, re.MULTILINE)
-                                if res_match:
-                                    resolution = res_match.group(1)
-                                    width, height = map(int, resolution.split("x"))
-                                    self.width = width
-                                    self.height = height
-                                    logger.info(f"Using resolution from config: {width}x{height}")
-                                
-                                return True
-            
-            # Method 3: Check for specific resolution with xrandr
-            try:
-                # The WaveShare 6.25" has a distinctive resolution of 1560x720 or 720x1560
-                output = subprocess.check_output(["xrandr"]).decode()
-                
-                if "1560x720" in output or "720x1560" in output:
-                    logger.info("Detected WaveShare 6.25\" display from resolution")
-                    self.is_waveshare = True
-                    
-                    # Ensure correct orientation
-                    if "1560x720" in output:
-                        self.width = 1560
-                        self.height = 720
-                        self.portrait = False
-                    else:
-                        self.width = 720
-                        self.height = 1560
-                        self.portrait = True
-                        
-                    return True
-            except (subprocess.SubprocessError, FileNotFoundError):
-                logger.debug("xrandr not available, skipping resolution detection")
-            
-            return False
-        except Exception as e:
-            logger.error(f"Error detecting WaveShare display: {e}")
-            return False
-            
-    def _detect_generic_display(self):
-        """
-        Detect generic display hardware and set resolution
-        
-        Returns:
-            bool: True if display was detected
-        """
-        try:
-            import subprocess
-            
-            # Try to detect using xrandr if available
-            try:
-                output = subprocess.check_output(["xrandr"]).decode()
-                
-                # Check for connected displays
-                for line in output.splitlines():
-                    if " connected " in line:
-                        # Extract resolution
-                        for resolution_line in output.splitlines()[output.splitlines().index(line)+1:]:
-                            if "*" in resolution_line:  # Current mode
-                                resolution = resolution_line.strip().split()[0]
-                                width, height = map(int, resolution.split("x"))
-                                
-                                # Update dimensions
-                                if width != self.width or height != self.height:
-                                    logger.info(f"Detected display resolution: {width}x{height}")
-                                    self.width = width
-                                    self.height = height
-                                    self.portrait = height > width
-                                return True
-            except (subprocess.SubprocessError, FileNotFoundError):
-                logger.debug("xrandr not available, skipping resolution detection")
-            
-            # Check SDL display info directly
-            try:
-                # Initialize pygame display subsystem if not already done
-                if not pygame.display.get_init():
-                    pygame.display.init()
-                
-                # Get display info
-                info = pygame.display.Info()
-                if info.current_w > 0 and info.current_h > 0:
-                    logger.info(f"Detected display via pygame: {info.current_w}x{info.current_h}")
-                    self.width = info.current_w
-                    self.height = info.current_h
-                    self.portrait = info.current_h > info.current_w
-                    return True
-            except Exception as e:
-                logger.debug(f"Failed to get pygame display info: {e}")
-            
-            # Check environment variable
-            if "DISPLAY_RESOLUTION" in os.environ:
-                try:
-                    resolution = os.environ["DISPLAY_RESOLUTION"]
-                    width, height = map(int, resolution.split("x"))
-                    logger.info(f"Using display resolution from environment: {width}x{height}")
-                    self.width = width
-                    self.height = height
-                    self.portrait = height > width
-                    return True
-                except Exception as e:
-                    logger.warning(f"Invalid DISPLAY_RESOLUTION format: {e}")
-            
-            # No specific display detected
-            logger.info("No specific display hardware detected, using defaults")
-            return False
-        except Exception as e:
-            logger.error(f"Error detecting generic display: {e}")
-            return False
-    
-    def setup_touch_input(self):
-        """
-        Enhanced touch input setup with hardware calibration
-        
-        Sets up touch input for the display with proper calibration,
-        transformation matrix, and device mapping for WaveShare hardware.
-        
-        Returns:
-            bool: True if touch input was set up successfully
-        """
-        if not self.touch_enabled:
-            logger.info("Touch input disabled in config")
-            return False
-            
-        try:
-            import subprocess
-            
-            # Skip if pygame doesn't support touch
-            if not hasattr(pygame, 'FINGERDOWN'):
-                logger.warning("pygame does not support touch events (old version?)")
-                return False
-                
-            # Enable touch events for pygame
-            os.environ["SDL_HINT_TOUCH_MOUSE_EVENTS"] = "1"
-            
-            # Try to detect touch device
-            touch_device_id = self._detect_touch_device()
-            
-            # Set up touch calibration if device found
-            if touch_device_id:
-                self.touch_device_id = touch_device_id
-                self.has_touch = True
-                
-                # Try to calibrate touchscreen if enabled
-                if self.touch_calibration_enabled:
-                    success = self._calibrate_touch_device(touch_device_id)
-                    if success:
-                        logger.info(f"Touch calibration successful for device ID {touch_device_id}")
-                    else:
-                        logger.warning("Touch calibration failed, touch input may not be accurate")
-                
-                return True
-            else:
-                logger.warning(f"Touch device '{self.touch_device_name}' not found")
-                return False
-                
-        except Exception as e:
-            logger.error(f"Error setting up touch input: {e}")
-            return False
-            
-    def _detect_touch_device(self):
-        """
-        Detect touch input device using multiple methods
-        
-        Returns:
-            str: Device ID if found, None otherwise
-        """
-        try:
-            import subprocess
-            
-            device_id = None
-            
-            # Method 1: Check via xinput if available
-            try:
-                # Check if xinput is available
-                if subprocess.call(["which", "xinput"], stdout=subprocess.PIPE) == 0:
-                    # List input devices
-                    output = subprocess.check_output(["xinput", "list"]).decode()
-                    
-                    # Look for touchscreen device
-                    for line in output.splitlines():
-                        if self.touch_device_name.lower() in line.lower():
-                            # Extract the ID
-                            import re
-                            match = re.search(r'id=(\d+)', line)
-                            if match:
-                                device_id = match.group(1)
-                                logger.info(f"Detected touch device: {self.touch_device_name} (ID: {device_id})")
-                                return device_id
-            except (subprocess.SubprocessError, FileNotFoundError):
-                logger.debug("xinput not available, trying other touch detection methods")
-            
-            # Method 2: Check via /dev/input for touch devices
-            try:
-                if os.path.exists("/dev/input"):
-                    # Check input device info
-                    import glob
-                    for device in glob.glob("/dev/input/event*"):
-                        try:
-                            # Try to get device info using libevdev if available
-                            output = subprocess.check_output(["evtest", "--info", device], stderr=subprocess.DEVNULL).decode()
-                            if "touch" in output.lower() or "screen" in output.lower():
-                                # Extract device number
-                                device_num = device.split("event")[-1]
-                                logger.info(f"Detected touch device via evtest: {device} (ID: {device_num})")
-                                return device_num
-                        except (subprocess.SubprocessError, FileNotFoundError):
-                            pass
-            except Exception as e:
-                logger.debug(f"Error checking input devices: {e}")
-            
-            # Method 3: Check if WaveShare was detected
-            if self.is_waveshare:
-                # WaveShare displays have known touch device names
-                logger.info("WaveShare display detected, assuming touch input is available")
-                # Set touch enabled for pygame but return None for device ID
-                self.has_touch = True
-                return "auto"
-            
-            return None
-        except Exception as e:
-            logger.error(f"Error detecting touch device: {e}")
-            return None
-            
-    def _calibrate_touch_device(self, device_id):
-        """
-        Calibrate touch device with proper transformation matrix
-        
-        Args:
-            device_id: ID of touch device to calibrate
-            
-        Returns:
-            bool: True if calibration was successful
-        """
-        try:
-            import subprocess
-            
-            # Skip if device_id is "auto" (pygame will handle it)
-            if device_id == "auto":
-                logger.info("Using automatic touch handling")
-                return True
-                
-            # Try to calibrate using xinput if available
-            try:
-                # Check if xinput is available
-                if subprocess.call(["which", "xinput"], stdout=subprocess.PIPE) == 0:
-                    # Apply transformation matrix for orientation
-                    matrix_str = " ".join(str(v) for v in self.touch_transformation_matrix)
-                    
-                    # Apply transformation matrix
-                    subprocess.call(["xinput", "set-prop", device_id, 
-                                    "--type=float", "Coordinate Transformation Matrix", 
-                                    *matrix_str.split()])
-                    
-                    # Map touch to correct output
-                    # Find the right output name
-                    output = subprocess.check_output(["xrandr"]).decode()
-                    output_name = None
-                    
-                    for line in output.splitlines():
-                        if " connected" in line:
-                            output_name = line.split()[0]
-                            break
-                    
-                    if output_name:
-                        subprocess.call(["xinput", "map-to-output", device_id, output_name])
-                        logger.info(f"Touch input mapped to output {output_name}")
-                    
-                    return True
-            except (subprocess.SubprocessError, FileNotFoundError):
-                logger.debug("xinput not available, skipping touch calibration")
-            
-            # Touch handling will fall back to pygame's built-in support
-            logger.info("Using pygame's built-in touch input handling")
+            logger.info(f"Display interface initialized successfully: {self.width}x{self.height}")
             return True
-            
         except Exception as e:
-            logger.error(f"Error calibrating touch device: {e}")
+            logger.error(f"Failed to initialize display: {e}")
             return False
+    
+    def _load_fonts(self):
+        """Load fonts with proper fallbacks for different platforms"""
+        try:
+            # Default font or use system font
+            self.fonts = {
+                'small': pygame.font.SysFont(None, FONT_SMALL),
+                'medium': pygame.font.SysFont(None, FONT_MEDIUM),
+                'large': pygame.font.SysFont(None, FONT_LARGE),
+                'bold_small': pygame.font.SysFont(None, FONT_SMALL, bold=True),
+                'bold_medium': pygame.font.SysFont(None, FONT_MEDIUM, bold=True),
+                'bold_large': pygame.font.SysFont(None, FONT_LARGE, bold=True)
+            }
+            logger.info("Loaded system fonts")
+        except Exception as e:
+            logger.error(f"Error loading fonts: {e}")
+            # Create emergency fallback fonts
+            self.fonts = {
+                'small': pygame.font.Font(None, FONT_SMALL),
+                'medium': pygame.font.Font(None, FONT_MEDIUM),
+                'large': pygame.font.Font(None, FONT_LARGE),
+                'bold_small': pygame.font.Font(None, FONT_SMALL),
+                'bold_medium': pygame.font.Font(None, FONT_MEDIUM),
+                'bold_large': pygame.font.Font(None, FONT_LARGE),
+            }
     
     def initialize(self):
         """
-        Initialize display interface with hardware detection and optimization
-        
-        This method initializes pygame, detects and configures hardware,
-        sets up the display with proper settings, and loads resources.
+        Initialize the display interface for standard HDMI output
         
         Returns:
             bool: True if initialization was successful
@@ -946,9 +379,6 @@ class DisplayInterface:
     def stop(self):
         """
         Stop the display interface and clean up resources
-        
-        Signals the display loop to stop, waits for the thread to finish,
-        and cleans up pygame resources.
         """
         self.active = False
         if self.display_thread and self.display_thread.is_alive():
@@ -965,9 +395,6 @@ class DisplayInterface:
     def _display_loop(self):
         """
         Main display loop (runs in background thread)
-        
-        Handles events, updates display state, and renders the interface
-        with hardware-optimized performance.
         """
         try:
             # Initialize frame timing
@@ -975,18 +402,25 @@ class DisplayInterface:
             PERF_STATS['start_time'] = time.time()
             PERF_STATS['frame_count'] = 0
             
-            # Define touch regions for common actions
-            self.define_touch_regions()
-            
             # Main loop
             while self.active:
-                # Start frame timing
-                frame_start = time.time()
-                
                 # Handle input events
-                self._handle_events()
+                for event in pygame.event.get():
+                    # Handle quit events
+                    if event.type == QUIT:
+                        self.active = False
+                        break
+                    # Keyboard input
+                    elif event.type == KEYDOWN:
+                        if event.key == K_ESCAPE:
+                            self.active = False
+                            break
+                        elif event.key == K_t or event.key == K_TAB:
+                            # Toggle display mode
+                            with self.lock:
+                                self.display_mode = "card" if self.display_mode == "live" else "live"
                 
-                # Clear screen with theme background color
+                # Clear screen
                 self.screen.fill(self.colors["background"])
                 
                 # Draw the appropriate screen
@@ -995,44 +429,17 @@ class DisplayInterface:
                 else:
                     self._draw_card_screen()
                 
-                # Draw debug info if enabled
-                if self.debug_mode:
-                    self._draw_debug_info()
-                
-                # Display performance information if enabled
-                if self.show_fps:
-                    self._draw_performance_info()
-                
                 # Update display
                 pygame.display.flip()
                 
                 # Update performance metrics
                 PERF_STATS['frame_count'] += 1
-                frame_time = time.time() - frame_start
-                PERF_STATS['frame_time'] = frame_time
                 
-                # Calculate current FPS (as rolling average)
-                if PERF_STATS['frame_count'] > 10:  # Start calculating after 10 frames
-                    elapsed = time.time() - PERF_STATS['start_time']
-                    current_fps = PERF_STATS['frame_count'] / elapsed if elapsed > 0 else 0
-                    # Smooth FPS calculation
-                    if PERF_STATS['fps'] == 0:
-                        PERF_STATS['fps'] = current_fps
-                    else:
-                        PERF_STATS['fps'] = 0.95 * PERF_STATS['fps'] + 0.05 * current_fps
-                
-                # Cap framerate based on platform and settings
-                target_fps = self.target_fps
-                if self.is_jetson and self.power_save_mode:
-                    target_fps = self.fps_limit_battery
-                
-                # Use clock to cap framerate
-                self.clock.tick(target_fps)
+                # Cap framerate
+                self.clock.tick(self.target_fps)
                 
         except Exception as e:
             logger.error(f"Error in display loop: {e}")
-            import traceback
-            logger.error(traceback.format_exc())
         finally:
             # Ensure pygame is properly shut down on exit
             try:
@@ -1040,289 +447,6 @@ class DisplayInterface:
             except Exception:
                 pass
             
-    def _handle_events(self):
-        """
-        Handle pygame events including touch input
-        
-        Processes keyboard, mouse, touch, and system events with support
-        for both traditional input and touchscreen interaction.
-        """
-        for event in pygame.event.get():
-            # Handle quit events
-            if event.type == QUIT:
-                self.active = False
-                return
-                
-            # Keyboard input
-            elif event.type == KEYDOWN:
-                if event.key == K_ESCAPE:
-                    self.active = False
-                    return
-                elif event.key == K_t or event.key == K_TAB:
-                    # Toggle display mode between live and card
-                    with self.lock:
-                        self.display_mode = "card" if self.display_mode == "live" else "live"
-                        # Regenerate touch regions for new mode
-                        self.define_touch_regions()
-                elif event.key == K_d and (event.mod & KMOD_CTRL):
-                    # Toggle debug mode with Ctrl+D
-                    self.debug_mode = not self.debug_mode
-                    logger.info(f"Debug mode {'enabled' if self.debug_mode else 'disabled'}")
-                elif event.key == K_f and (event.mod & KMOD_CTRL):
-                    # Toggle FPS display with Ctrl+F
-                    self.show_fps = not self.show_fps
-                        
-            # Touch events (pygame 2.0+)
-            elif hasattr(pygame, 'FINGERDOWN') and event.type == pygame.FINGERDOWN:
-                # Convert normalized touch position to screen coordinates
-                x = event.x * self.width
-                y = event.y * self.height
-                
-                # Apply touch sensitivity
-                if self.touch_sensitivity != 1.0:
-                    # Adjust coordinates toward the center based on sensitivity
-                    center_x = self.width / 2
-                    center_y = self.height / 2
-                    x = center_x + (x - center_x) * self.touch_sensitivity
-                    y = center_y + (y - center_y) * self.touch_sensitivity
-                
-                # Add to touch points for debugging
-                if self.show_touch_points:
-                    self.touch_points.append((x, y, time.time()))
-                    # Keep only recent points
-                    if len(self.touch_points) > 10:
-                        self.touch_points.pop(0)
-                
-                # Check defined touch regions
-                self._check_touch_regions(x, y)
-                
-            # Mouse input (also handles touch input on some platforms)
-            elif event.type == MOUSEBUTTONDOWN:
-                # Get mouse position
-                x, y = event.pos
-                
-                # Add to touch points for debugging
-                if self.show_touch_points:
-                    self.touch_points.append((x, y, time.time()))
-                    # Keep only recent points
-                    if len(self.touch_points) > 10:
-                        self.touch_points.pop(0)
-                
-                # Check defined touch regions
-                self._check_touch_regions(x, y)
-                
-    def define_touch_regions(self):
-        """
-        Define interactive regions on the screen with enhanced configuration support
-        
-        Creates touchable regions with associated actions based on current display mode,
-        screen dimensions, and configuration settings. Supports dynamic region definition
-        from configuration file.
-        """
-        # Clear existing regions
-        self.touch_regions = []
-        
-        # Add footer region for toggling between views (always present)
-        self.touch_regions.append({
-            'name': 'toggle_view',
-            'rect': pygame.Rect(0, self.height - 50, self.width, 50),
-            'action': self.toggle_display_mode,
-            'highlight_color': GRAY,
-            'visible': True
-        })
-        
-        # Add more regions based on the display mode
-        if self.display_mode == 'live':
-            # Quick button to view card
-            self.touch_regions.append({
-                'name': 'show_card',
-                'rect': pygame.Rect(self.width - 100, 60, 100, 40),
-                'action': lambda: self.set_display_mode('card'),
-                'highlight_color': BLUE,
-                'visible': True
-            })
-            
-            # Scrollable regions for transcription and events
-            # Calculate column widths based on settings
-            total_width = self.width
-            column_1_width = int(total_width * self.column_widths['transcription'])
-            column_2_width = int(total_width * self.column_widths['events'])
-            
-            # Add transcription scroll region
-            self.touch_regions.append({
-                'name': 'transcription_scroll',
-                'rect': pygame.Rect(0, 110, column_1_width, self.height - 160),
-                'action': self._handle_transcription_scroll,
-                'highlight_color': None,  # No highlight
-                'visible': False  # Invisible interaction region
-            })
-            
-            # Add events scroll region
-            self.touch_regions.append({
-                'name': 'events_scroll',
-                'rect': pygame.Rect(column_1_width, 110, column_2_width, self.height - 160),
-                'action': self._handle_events_scroll,
-                'highlight_color': None,
-                'visible': False
-            })
-        else:
-            # Card view regions
-            self.touch_regions.append({
-                'name': 'show_live',
-                'rect': pygame.Rect(self.width - 100, 60, 100, 40),
-                'action': lambda: self.set_display_mode('live'),
-                'highlight_color': RED,
-                'visible': True
-            })
-            
-            # Add region for anatomical diagram interaction
-            diagram_section_width = int(self.width * 0.35)
-            self.touch_regions.append({
-                'name': 'anatomical_diagram',
-                'rect': pygame.Rect(20, 100, diagram_section_width - 40, self.height - 160),
-                'action': self._handle_diagram_interaction,
-                'highlight_color': None,
-                'visible': False
-            })
-        
-        # Add any regions defined in config
-        if hasattr(self, 'touch_region_config'):
-            for region_name, region_config in self.touch_region_config.items():
-                if not region_config.get('enabled', True):
-                    continue
-                    
-                # Get rect from config
-                if 'rect' in region_config:
-                    rect = region_config['rect']
-                    # Handle special values: -1 = full width/height, negative = from right/bottom
-                    x, y, w, h = rect
-                    if x < 0:
-                        x = self.width + x if x < 0 else x  # negative x = from right edge
-                    if y < 0:
-                        y = self.height + y  # negative y = from bottom edge
-                    if w < 0:
-                        w = self.width - x  # negative width = full remaining width
-                    if h < 0:
-                        h = self.height - y  # negative height = full remaining height
-                        
-                    # Create rectangle
-                    rect_obj = pygame.Rect(x, y, w, h)
-                    
-                    # Add to touch regions with default action (for now)
-                    self.touch_regions.append({
-                        'name': region_name,
-                        'rect': rect_obj,
-                        'action': lambda: logger.info(f"Touch region '{region_name}' activated"),
-                        'highlight_color': None,
-                        'visible': False
-                    })
-        
-        logger.debug(f"Defined {len(self.touch_regions)} touch regions for mode '{self.display_mode}'")
-    
-    def _handle_transcription_scroll(self):
-        """Handle scrolling in the transcription region"""
-        # To be implemented for scrolling functionality
-        logger.debug("Transcription scroll area touched")
-    
-    def _handle_events_scroll(self):
-        """Handle scrolling in the events region"""
-        # To be implemented for scrolling functionality
-        logger.debug("Events scroll area touched")
-    
-    def _handle_diagram_interaction(self):
-        """Handle interaction with the anatomical diagram"""
-        # To be implemented for anatomical diagram interaction
-        logger.debug("Anatomical diagram touched")
-            
-    def _check_touch_regions(self, x, y):
-        """
-        Check if a touch/click is within defined interactive regions
-        
-        Args:
-            x: X coordinate of touch/click
-            y: Y coordinate of touch/click
-            
-        Returns:
-            bool: True if a region was activated
-        """
-        for region in self.touch_regions:
-            if region['rect'].collidepoint(x, y):
-                # Call the associated action
-                if 'action' in region and region['action']:
-                    region['action']()
-                    
-                    # Visual feedback for touch if debug is enabled
-                    if self.debug_mode and region.get('highlight_color'):
-                        # Flash region briefly
-                        original_surface = self.screen.copy()
-                        pygame.draw.rect(self.screen, region['highlight_color'], region['rect'])
-                        pygame.display.update(region['rect'])
-                        pygame.time.wait(100)  # Brief flash
-                        self.screen.blit(original_surface, (0, 0))
-                        pygame.display.update(region['rect'])
-                        
-                return True
-        return False
-        
-    def _draw_debug_info(self):
-        """Draw debug information on the screen"""
-        if not self.debug_mode:
-            return
-            
-        # Draw touch regions with semi-transparent overlay
-        for region in self.touch_regions:
-            if region.get('visible', True):  # Only draw visible regions
-                # Create semi-transparent surface
-                s = pygame.Surface((region['rect'].width, region['rect'].height), pygame.SRCALPHA)
-                s.fill((255, 255, 255, 50))  # Semi-transparent white
-                self.screen.blit(s, region['rect'])
-                
-                # Draw region outline
-                pygame.draw.rect(self.screen, (255, 255, 0), region['rect'], 1)
-                
-                # Draw region name
-                name_text = self.fonts['small'].render(region['name'], True, (255, 255, 0))
-                self.screen.blit(name_text, (region['rect'].x + 5, region['rect'].y + 5))
-        
-        # Draw touch points
-        for i, (x, y, t) in enumerate(self.touch_points):
-            # Calculate age of touch point
-            age = time.time() - t
-            if age > 3.0:  # Older than 3 seconds, don't show
-                continue
-                
-            # Fade out based on age
-            alpha = int(255 * (1.0 - age / 3.0))
-            color = (255, 0, 0, alpha)
-            
-            # Draw circle at touch point
-            radius = 20 - int(age * 5)  # Shrink over time
-            if radius > 0:
-                pygame.draw.circle(self.screen, color, (int(x), int(y)), radius, 2)
-                
-                # Draw label
-                label = self.fonts['small'].render(f"{i+1}", True, (255, 255, 0))
-                self.screen.blit(label, (int(x) - 5, int(y) - 10))
-        
-        # Draw device info
-        info_text = (
-            f"Display: {self.width}x{self.height} | "
-            f"Driver: {self.display_driver} | "
-            f"Touch: {'Yes' if self.has_touch else 'No'} | "
-            f"FPS: {int(PERF_STATS['fps'])}"
-        )
-        info_surface = self.fonts['small'].render(info_text, True, (255, 255, 0))
-        self.screen.blit(info_surface, (10, 10))
-        
-    def _draw_performance_info(self):
-        """Draw performance metrics on the screen"""
-        if not self.show_fps:
-            return
-            
-        # Draw simple FPS counter in corner
-        fps_text = f"{int(PERF_STATS['fps'])} FPS"
-        fps_surface = self.fonts['small'].render(fps_text, True, (255, 255, 0))
-        self.screen.blit(fps_surface, (self.width - fps_surface.get_width() - 10, 10))
     
     def _draw_live_screen(self):
         """Draw the live view with transcription and significant events (optimized for landscape display)"""
