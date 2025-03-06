@@ -449,353 +449,344 @@ class DisplayInterface:
             
     
     def _draw_live_screen(self):
-        """Draw the live view with transcription and significant events (optimized for landscape display)"""
-        # Draw header
+        """Draw the live view with transcription and significant events (single screen clean UI)"""
+        # Draw modern clean header
         header_rect = pygame.Rect(0, 0, self.width, 60)
         pygame.draw.rect(self.screen, BLUE, header_rect)
         
-        # Draw avatar if available
-        if self.avatar:
-            # Resize avatar for the header
-            avatar_size = 50
-            avatar = pygame.transform.scale(self.avatar, (avatar_size, avatar_size))
-            self.screen.blit(avatar, (10, 5))
-            header_text = self.fonts['bold_large'].render("TCCC.ai FIELD ASSISTANT", True, WHITE)
-            self.screen.blit(header_text, (avatar_size + 20, 15))
-        else:
-            header_text = self.fonts['bold_large'].render("TCCC.ai FIELD ASSISTANT", True, WHITE)
-            self.screen.blit(header_text, (20, 15))
+        # Draw title with bold font
+        header_text = self.fonts['bold_large'].render("TCCC.ai FIELD ASSISTANT", True, WHITE)
+        self.screen.blit(header_text, (self.width//2 - header_text.get_width()//2, 15))
         
         # Draw current time
         current_time = datetime.now().strftime("%H:%M:%S")
         time_text = self.fonts['medium'].render(current_time, True, WHITE)
         self.screen.blit(time_text, (self.width - time_text.get_width() - 20, 20))
         
-        # For landscape layout - use a three-column design
-        # Calculate column widths
+        # Two-column layout for clarity
         total_width = self.width
-        column_1_width = int(total_width * 0.38)  # 38% for transcription
-        column_2_width = int(total_width * 0.34)  # 34% for events
-        column_3_width = total_width - column_1_width - column_2_width  # Remainder for card preview
+        column_1_width = int(total_width * 0.6)  # 60% for transcription
+        column_2_width = total_width - column_1_width  # 40% for events
         
-        # Column divider positions
-        first_divider_x = column_1_width
-        second_divider_x = first_divider_x + column_2_width
+        # Column divider position
+        divider_x = column_1_width
         
-        # Draw vertical dividers between columns
-        pygame.draw.line(self.screen, GRAY, (first_divider_x, 60), (first_divider_x, self.height - 50), 2)
-        pygame.draw.line(self.screen, GRAY, (second_divider_x, 60), (second_divider_x, self.height - 50), 2)
+        # Draw vertical divider between columns
+        pygame.draw.line(self.screen, GRAY, (divider_x, 60), (divider_x, self.height - 50), 2)
         
-        # Column titles
-        transcription_title = self.fonts['bold_medium'].render("SPEECH TRANSCRIPTION", True, GOLD)
-        events_title = self.fonts['bold_medium'].render("SIGNIFICANT EVENTS", True, GOLD)
-        card_preview_title = self.fonts['bold_medium'].render("TCCC CARD PREVIEW", True, GOLD)
+        # Column titles - cleaner look
+        transcription_title = self.fonts['bold_medium'].render("LIVE TRANSCRIPTION", True, GOLD)
+        events_title = self.fonts['bold_medium'].render("CRITICAL EVENTS", True, GOLD)
         
         # Position column titles
-        self.screen.blit(transcription_title, (first_divider_x//2 - transcription_title.get_width()//2, 70))
-        self.screen.blit(events_title, (first_divider_x + (column_2_width//2) - events_title.get_width()//2, 70))
-        self.screen.blit(card_preview_title, (second_divider_x + (column_3_width//2) - card_preview_title.get_width()//2, 70))
+        self.screen.blit(transcription_title, (divider_x//2 - transcription_title.get_width()//2, 70))
+        self.screen.blit(events_title, (divider_x + (column_2_width//2) - events_title.get_width()//2, 70))
         
-        # Column 1: Transcription
+        # Column 1: Transcription - clean, readable text display
         with self.lock:
             transcription_items = self.transcription[-self.max_transcription_items:] if self.transcription else []
         
-        column_width = first_divider_x - 30  # Leave margin
+        column_width = divider_x - 30  # Leave margin for readability
         y_pos = 110
         
-        for item in transcription_items:
-            wrapped_lines = self._wrap_text(item, self.fonts['small'], column_width)
-            for line in wrapped_lines:
-                text = self.fonts['small'].render(line, True, WHITE)
-                self.screen.blit(text, (15, y_pos))
+        # Draw text area background for better readability
+        transcription_bg = pygame.Rect(10, 100, column_width, self.height - 160)
+        pygame.draw.rect(self.screen, (30, 30, 40), transcription_bg)
+        pygame.draw.rect(self.screen, GRAY, transcription_bg, 1)  # Border
+        
+        # Display transcriptions with highlighted speaker turns
+        for i, item in enumerate(transcription_items):
+            wrapped_lines = self._wrap_text(item, self.fonts['small'], column_width - 20)
+            
+            # Add speaker indicator for clarity
+            if i % 2 == 0:  # Alternate for speaker turns
+                speaker_indicator = "▶ "
+            else:
+                speaker_indicator = "◀ "
+                
+            for j, line in enumerate(wrapped_lines):
+                # First line of each item gets speaker indicator
+                if j == 0:
+                    text = self.fonts['small'].render(speaker_indicator + line, True, WHITE)
+                else:
+                    text = self.fonts['small'].render("  " + line, True, WHITE)  # Indent continuation lines
+                    
+                self.screen.blit(text, (20, y_pos))
                 y_pos += 25
                 
-                # Stop if we're approaching the footer
-                if y_pos > self.height - 60:
+                # Stop if approaching footer
+                if y_pos > self.height - 70:
                     break
             
-            # Add a small gap between transcription items
-            y_pos += 5
+            # Add gap between items
+            y_pos += 10
             
-            # Stop if we're approaching the footer
-            if y_pos > self.height - 60:
+            # Stop if approaching footer
+            if y_pos > self.height - 70:
                 break
         
-        # Column 2: Significant Events
+        # Column 2: Significant Events - clear, hierarchical display
         with self.lock:
             events = self.significant_events[-self.max_event_items:] if self.significant_events else []
         
         column_width = column_2_width - 30  # Leave margin
         y_pos = 110
         
+        # Event area background
+        events_bg = pygame.Rect(divider_x + 10, 100, column_width - 20, self.height - 160)
+        pygame.draw.rect(self.screen, (30, 30, 40), events_bg)
+        pygame.draw.rect(self.screen, GRAY, events_bg, 1)  # Border
+        
         for event in events:
-            # Draw timestamp if available
-            if isinstance(event, dict) and 'time' in event:
-                time_str = event.get('time', '')
-                text = self.fonts['small'].render(time_str, True, GREEN)
-                self.screen.blit(text, (first_divider_x + 15, y_pos))
-                
-                # Draw event description
+            # Use visual indicators for event severity/type
+            indicator = "■ "  # Default
+            
+            if isinstance(event, dict):
+                time_str = event.get('time', datetime.now().strftime("%H:%M"))
                 desc = event.get('description', '')
-                wrapped_lines = self._wrap_text(desc, self.fonts['small'], column_width - 20)
+                
+                # Visual indicator based on content keywords
+                lower_desc = desc.lower()
+                if any(word in lower_desc for word in ["critical", "severe", "bleeding", "airway", "breathing"]):
+                    indicator = "⚠ "  # Warning indicator for critical events
+                elif any(word in lower_desc for word in ["applied", "administered", "tourniquet", "bandage"]):
+                    indicator = "✓ "  # Check for treatment given
+                
+                # Time with highlight color
+                time_text = self.fonts['small'].render(time_str, True, GREEN)
+                self.screen.blit(time_text, (divider_x + 20, y_pos))
+                
+                # Description with indicator
+                wrapped_lines = self._wrap_text(desc, self.fonts['small'], column_width - 40)
                 y_pos += 25
-                for line in wrapped_lines:
-                    text = self.fonts['small'].render(line, True, WHITE)
-                    self.screen.blit(text, (first_divider_x + 25, y_pos))
+                
+                for j, line in enumerate(wrapped_lines):
+                    prefix = indicator if j == 0 else "  "  # Only first line gets indicator
+                    text = self.fonts['small'].render(prefix + line, True, WHITE)
+                    self.screen.blit(text, (divider_x + 20, y_pos))
                     y_pos += 25
                     
-                    # Stop if we're approaching the footer
-                    if y_pos > self.height - 60:
+                    if y_pos > self.height - 70:
                         break
             else:
                 # Simple string event
-                wrapped_lines = self._wrap_text(str(event), self.fonts['small'], column_width)
-                for line in wrapped_lines:
-                    text = self.fonts['small'].render(line, True, WHITE)
-                    self.screen.blit(text, (first_divider_x + 15, y_pos))
+                wrapped_lines = self._wrap_text(str(event), self.fonts['small'], column_width - 40)
+                
+                for j, line in enumerate(wrapped_lines):
+                    prefix = indicator if j == 0 else "  "
+                    text = self.fonts['small'].render(prefix + line, True, WHITE)
+                    self.screen.blit(text, (divider_x + 20, y_pos))
                     y_pos += 25
                     
-                    # Stop if we're approaching the footer
-                    if y_pos > self.height - 60:
+                    if y_pos > self.height - 70:
                         break
             
-            # Add a small gap between events
+            # Gap between events
             y_pos += 10
             
-            # Stop if we're approaching the footer
-            if y_pos > self.height - 60:
+            if y_pos > self.height - 70:
                 break
         
-        # Column 3: Card Preview
-        with self.lock:
-            card_data = self.card_data.copy()
-        
-        column_width = column_3_width - 30  # Leave margin
-        
-        # Draw a compact anatomical figure at the top of the card preview
-        figure_y = 120
-        figure_x = second_divider_x + column_3_width // 2
-        
-        # Draw figure - keep it smaller for landscape mode
-        # Head
-        pygame.draw.circle(self.screen, WHITE, (figure_x, figure_y), 15, 2)
-        # Body
-        pygame.draw.line(self.screen, WHITE, (figure_x, figure_y + 15), (figure_x, figure_y + 60), 2)
-        # Arms
-        pygame.draw.line(self.screen, WHITE, (figure_x, figure_y + 25), (figure_x - 25, figure_y + 40), 2)
-        pygame.draw.line(self.screen, WHITE, (figure_x, figure_y + 25), (figure_x + 25, figure_y + 40), 2)
-        # Legs
-        pygame.draw.line(self.screen, WHITE, (figure_x, figure_y + 60), (figure_x - 25, figure_y + 100), 2)
-        pygame.draw.line(self.screen, WHITE, (figure_x, figure_y + 60), (figure_x + 25, figure_y + 100), 2)
-        
-        # Start card fields below the figure
-        y_pos = figure_y + 120
-        
-        # Most important card fields for preview
-        preview_fields = [
-            ("Name:", card_data.get("name", "")),
-            ("Rank:", card_data.get("rank", "")),
-            ("Injuries:", card_data.get("injuries", "")),
-            ("Treatment:", card_data.get("treatment_given", "")),
-            ("Vital Signs:", card_data.get("vital_signs", ""))
-        ]
-        
-        # Draw card fields
-        for field_name, field_value in preview_fields:
-            # Draw field name
-            field_text = self.fonts['bold_small'].render(field_name, True, GOLD)
-            self.screen.blit(field_text, (second_divider_x + 15, y_pos))
-            
-            # Draw field value
-            if len(field_name) > 5:  # Multi-line fields like "Injuries:"
-                # These fields can be multi-line, but keep them concise in preview
-                max_lines = 2 if y_pos < self.height - 150 else 1
-                wrapped_lines = self._wrap_text(field_value, self.fonts['small'], column_width - 20)
-                for j, line in enumerate(wrapped_lines[:max_lines]):
-                    value_text = self.fonts['small'].render(line, True, WHITE)
-                    self.screen.blit(value_text, (second_divider_x + 15, y_pos + 25 + (j * 25)))
-                y_pos += 25 * (max_lines + 1)
-            else:
-                # Single line for short fields
-                value_text = self.fonts['small'].render(field_value, True, WHITE)
-                self.screen.blit(value_text, (second_divider_x + 110, y_pos))
-                y_pos += 25
-            
-            # Add space between fields
-            y_pos += 5
-            
-            # Stop if we're approaching the footer
-            if y_pos > self.height - 60:
-                break
-        
-        # Footer with instructions
+        # Modern footer with status indicators and instructions
         footer_rect = pygame.Rect(0, self.height - 50, self.width, 50)
-        pygame.draw.rect(self.screen, GRAY, footer_rect)
-        instruction_text = self.fonts['medium'].render("Press 'T' for TCCC Card View", True, BLACK)
+        pygame.draw.rect(self.screen, (50, 50, 60), footer_rect)  # Darker footer
+        
+        # Status indicators
+        status_text = self.fonts['bold_small'].render("● RECORDING", True, GREEN)
+        self.screen.blit(status_text, (20, self.height - 35))
+        
+        # Center button prompt
+        button_rect = pygame.Rect(self.width//2 - 130, self.height - 40, 260, 30)
+        pygame.draw.rect(self.screen, (70, 70, 80), button_rect, border_radius=15)
+        pygame.draw.rect(self.screen, (100, 100, 110), button_rect, 1, border_radius=15)  # Button border
+        
+        instruction_text = self.fonts['medium'].render("Press 'T' for TCCC Card", True, WHITE)
         self.screen.blit(instruction_text, (self.width//2 - instruction_text.get_width()//2, self.height - 35))
     
     def _draw_card_screen(self):
-        """Draw the TCCC Casualty Card (DD Form 1380) for landscape display"""
+        """Draw the TCCC Casualty Card with modern clean design"""
         # Draw card header
         header_rect = pygame.Rect(0, 0, self.width, 60)
         pygame.draw.rect(self.screen, RED, header_rect)
         
-        # Draw title in a single line for landscape display
-        title_text = self.fonts['bold_large'].render("TCCC CASUALTY CARD (DD FORM 1380)", True, WHITE)
-        subtitle_text = self.fonts['small'].render("MEDICAL RECORD - SUPPLEMENTAL MEDICAL DATA", True, WHITE)
+        # Draw title with modern typography 
+        title_text = self.fonts['bold_large'].render("TCCC CASUALTY CARD", True, WHITE)
+        subtitle_text = self.fonts['small'].render("DD FORM 1380 - TACTICAL COMBAT CASUALTY CARE", True, WHITE)
         
-        # Center align the text
+        # Center align text
         self.screen.blit(title_text, (self.width//2 - title_text.get_width()//2, 10))
         self.screen.blit(subtitle_text, (self.width//2 - subtitle_text.get_width()//2, 40))
         
-        # Draw card data
+        # Card data
         with self.lock:
             card_data = self.card_data.copy()
         
-        # For landscape, use a two-section layout:
-        # Left section (35% width): Anatomical diagram
-        # Right section (65% width): Patient data in columns
+        # Main card background for better readability
+        card_bg = pygame.Rect(20, 70, self.width - 40, self.height - 130)
+        pygame.draw.rect(self.screen, (30, 30, 40), card_bg)
+        pygame.draw.rect(self.screen, (100, 100, 110), card_bg, 2, border_radius=5)  # Border with rounded corners
         
-        # Calculate section widths
-        diagram_section_width = int(self.width * 0.35)
-        data_section_width = self.width - diagram_section_width
+        # Create three distinct sections
+        section_width = (self.width - 60) // 3
         
-        # Draw divider between diagram and data
-        pygame.draw.line(self.screen, GRAY, (diagram_section_width, 60), (diagram_section_width, self.height - 50), 2)
+        # Section 1: Patient identity (left)
+        identity_title = self.fonts['bold_medium'].render("PATIENT IDENTITY", True, GOLD)
+        self.screen.blit(identity_title, (40, 85))
         
-        # Left section: Anatomical diagram
-        # Draw section title
-        diagram_title = self.fonts['bold_medium'].render("ANATOMICAL DIAGRAM", True, GOLD)
-        self.screen.blit(diagram_title, (diagram_section_width//2 - diagram_title.get_width()//2, 70))
+        # Identity section background
+        identity_bg = pygame.Rect(30, 110, section_width, self.height - 170)
+        pygame.draw.rect(self.screen, (40, 40, 50), identity_bg, border_radius=5)
         
-        # Draw anatomical diagram centered in left section
-        diagram_x = diagram_section_width // 2
-        diagram_y = self.height // 2 - 70  # Centered vertically, adjusted for header
-        
-        # Draw figure border
-        diagram_rect = pygame.Rect(20, 100, diagram_section_width - 40, self.height - 160)
-        pygame.draw.rect(self.screen, WHITE, diagram_rect, 2)
-        
-        # Draw larger stick figure for better visibility
-        # Head
-        head_radius = 30
-        pygame.draw.circle(self.screen, WHITE, (diagram_x, diagram_y - 60), head_radius, 2)
-        
-        # Body
-        body_length = 120
-        pygame.draw.line(self.screen, WHITE, (diagram_x, diagram_y - 30), (diagram_x, diagram_y + body_length - 30), 3)
-        
-        # Arms
-        arm_length = 70
-        pygame.draw.line(self.screen, WHITE, (diagram_x, diagram_y), (diagram_x - arm_length, diagram_y + 20), 3)
-        pygame.draw.line(self.screen, WHITE, (diagram_x, diagram_y), (diagram_x + arm_length, diagram_y + 20), 3)
-        
-        # Legs
-        leg_length = 120
-        pygame.draw.line(self.screen, WHITE, (diagram_x, diagram_y + body_length - 30), (diagram_x - 50, diagram_y + body_length + 90), 3)
-        pygame.draw.line(self.screen, WHITE, (diagram_x, diagram_y + body_length - 30), (diagram_x + 50, diagram_y + body_length + 90), 3)
-        
-        # Right section: Patient data in a 2-column grid
-        # Draw section title
-        info_title = self.fonts['bold_medium'].render("PATIENT INFORMATION", True, GOLD)
-        self.screen.blit(info_title, (diagram_section_width + (data_section_width//2) - info_title.get_width()//2, 70))
-        
-        # Calculate column widths for patient data (split into 2 columns)
-        col_width = data_section_width // 2
-        col1_x = diagram_section_width + 20  # Start of first column
-        col2_x = diagram_section_width + col_width + 10  # Start of second column
-        data_y_start = 110  # Start below the title
-        
-        # Organize fields into two columns for efficient use of space
-        # Column 1: Patient identification and incident info
-        col1_fields = [
-            ("Name:", card_data.get("name", "")),
+        # Identity fields
+        identity_fields = [
+            ("Name:", card_data.get("name", "UNKNOWN")),
             ("Rank:", card_data.get("rank", "")),
             ("Unit:", card_data.get("unit", "")),
+            ("Service ID:", card_data.get("service_id", "")),
             ("Date:", card_data.get("date", datetime.now().strftime("%Y-%m-%d"))),
-            ("Time:", card_data.get("time", datetime.now().strftime("%H:%M"))),
-            ("MOI:", card_data.get("mechanism_of_injury", ""))
+            ("Time:", card_data.get("time", datetime.now().strftime("%H:%M")))
         ]
         
-        # Column 2: Medical assessment and treatment
-        col2_fields = [
-            ("Injuries:", card_data.get("injuries", "")),
-            ("Vital Signs:", card_data.get("vital_signs", "")),
-            ("Treatment:", card_data.get("treatment_given", "")),
-            ("Medications:", card_data.get("medications", "")),
-            ("Evacuation:", card_data.get("evacuation_priority", ""))
-        ]
-        
-        # Draw first column fields
-        y_pos = data_y_start
-        field_height = 30
-        
-        for field_name, field_value in col1_fields:
-            # Draw field name
-            field_text = self.fonts['bold_small'].render(field_name, True, GOLD)
-            self.screen.blit(field_text, (col1_x, y_pos))
+        # Draw identity fields
+        y_pos = 125
+        for field_name, field_value in identity_fields:
+            # Field name
+            name_text = self.fonts['bold_small'].render(field_name, True, GOLD)
+            self.screen.blit(name_text, (40, y_pos))
             
-            # Draw field value
-            value_x = col1_x + 70  # Offset for field name
-            wrapped_lines = self._wrap_text(field_value, self.fonts['small'], col_width - 90)
-            
-            for j, line in enumerate(wrapped_lines[:2]):  # Limit to 2 lines per field
-                value_text = self.fonts['small'].render(line, True, WHITE)
-                self.screen.blit(value_text, (value_x, y_pos + j*25))
-            
-            # Move to next field
-            y_pos += field_height + (0 if len(wrapped_lines) <= 1 else 20)
-            
-            # Stop if we're approaching the footer
-            if y_pos > self.height - 60:
-                break
-        
-        # Draw second column fields (medical info)
-        y_pos = data_y_start
-        
-        for field_name, field_value in col2_fields:
-            # Draw field name
-            field_text = self.fonts['bold_small'].render(field_name, True, GOLD)
-            self.screen.blit(field_text, (col2_x, y_pos))
-            
-            # Draw field value - multiline for medical fields
-            value_x = col2_x + 110  # Wider offset for longer field names
-            
-            # Handle long fields specially
-            if field_name in ["Injuries:", "Treatment:", "Vital Signs:"]:
-                # These fields get more space - up to 4 lines
-                wrapped_lines = self._wrap_text(field_value, self.fonts['small'], col_width - 130)
-                # Start on same line for better space usage
-                self.screen.blit(self.fonts['small'].render(wrapped_lines[0] if wrapped_lines else "", True, WHITE), 
-                                (value_x, y_pos))
-                
-                # Remaining lines with indent
-                for j, line in enumerate(wrapped_lines[1:4]):  # Show up to 3 more lines (4 total)
-                    value_text = self.fonts['small'].render(line, True, WHITE)
-                    self.screen.blit(value_text, (col2_x + 20, y_pos + (j+1)*25))
-                
-                # Move to next field with space for the lines we used
-                line_count = min(4, len(wrapped_lines))
-                y_pos += 25 * line_count
+            # Field value with highlight for certain fields
+            if field_name in ["Name:", "Rank:"]:
+                # Use larger font for key fields
+                value_text = self.fonts['medium'].render(field_value, True, WHITE)
             else:
-                # Standard fields get 2 lines
-                wrapped_lines = self._wrap_text(field_value, self.fonts['small'], col_width - 130)
-                for j, line in enumerate(wrapped_lines[:2]):  # Limit to 2 lines
-                    value_text = self.fonts['small'].render(line, True, WHITE)
-                    self.screen.blit(value_text, (value_x, y_pos + j*25))
+                value_text = self.fonts['small'].render(field_value, True, WHITE)
                 
-                # Move to next field
-                y_pos += field_height + (0 if len(wrapped_lines) <= 1 else 20)
+            self.screen.blit(value_text, (40, y_pos + 25))
             
-            # Stop if we're approaching the footer
-            if y_pos > self.height - 60:
-                break
+            # Separator line
+            pygame.draw.line(self.screen, (60, 60, 70), 
+                          (40, y_pos + 50), 
+                          (section_width + 20, y_pos + 50), 1)
+            
+            y_pos += 60
         
-        # Footer with instructions
+        # Section 2: Injury & Treatment (middle)
+        injury_title = self.fonts['bold_medium'].render("INJURY & TREATMENT", True, GOLD)
+        self.screen.blit(injury_title, (section_width + 50, 85))
+        
+        # Injury section background
+        injury_bg = pygame.Rect(section_width + 40, 110, section_width, self.height - 170)
+        pygame.draw.rect(self.screen, (40, 40, 50), injury_bg, border_radius=5)
+        
+        # Injury fields
+        injury_fields = [
+            ("Mechanism:", card_data.get("mechanism_of_injury", "")),
+            ("Injuries:", card_data.get("injuries", "")),
+            ("Treatment:", card_data.get("treatment_given", "")),
+            ("Medications:", card_data.get("medications", ""))
+        ]
+        
+        # Draw injury fields - allow more space for text
+        y_pos = 125
+        for field_name, field_value in injury_fields:
+            # Field name
+            name_text = self.fonts['bold_small'].render(field_name, True, GOLD)
+            self.screen.blit(name_text, (section_width + 50, y_pos))
+            
+            # Multi-line field values
+            wrapped_lines = self._wrap_text(field_value, self.fonts['small'], section_width - 20)
+            line_y = y_pos + 25
+            
+            # Show up to 4 lines per field
+            for i, line in enumerate(wrapped_lines[:4]):
+                value_text = self.fonts['small'].render(line, True, WHITE)
+                self.screen.blit(value_text, (section_width + 50, line_y))
+                line_y += 22
+            
+            # Separator line
+            pygame.draw.line(self.screen, (60, 60, 70), 
+                          (section_width + 50, line_y + 5), 
+                          (section_width * 2 + 30, line_y + 5), 1)
+            
+            y_pos = line_y + 15
+        
+        # Section 3: Vital Signs & Evacuation (right)
+        vitals_title = self.fonts['bold_medium'].render("VITALS & EVACUATION", True, GOLD)
+        self.screen.blit(vitals_title, (section_width * 2 + 50, 85))
+        
+        # Vitals section background
+        vitals_bg = pygame.Rect(section_width * 2 + 40, 110, section_width, self.height - 170)
+        pygame.draw.rect(self.screen, (40, 40, 50), vitals_bg, border_radius=5)
+        
+        # Vital signs with visual indicators
+        y_pos = 125
+        vitals_title = self.fonts['bold_small'].render("Vital Signs:", True, GOLD)
+        self.screen.blit(vitals_title, (section_width * 2 + 50, y_pos))
+        
+        # Parse and display vital signs with visual indicators
+        vitals_str = card_data.get("vital_signs", "")
+        vitals_parts = vitals_str.split(',')
+        
+        y_pos += 30
+        for part in vitals_parts:
+            part = part.strip()
+            if part:
+                # Highlight abnormal values in red
+                if ('HR' in part and any(str(n) in part for n in range(120, 220))):
+                    color = RED  # Elevated heart rate
+                elif ('BP' in part and any(n in part for n in ['<90', '<100'])):
+                    color = RED  # Low blood pressure
+                elif ('RR' in part and any(str(n) in part for n in range(30, 100))):
+                    color = RED  # Elevated respiratory rate
+                else:
+                    color = WHITE
+                
+                value_text = self.fonts['small'].render(part, True, color)
+                self.screen.blit(value_text, (section_width * 2 + 60, y_pos))
+                y_pos += 25
+        
+        # Evacuation priority with color-coded visual
+        y_pos += 20
+        evac_title = self.fonts['bold_small'].render("Evacuation Priority:", True, GOLD)
+        self.screen.blit(evac_title, (section_width * 2 + 50, y_pos))
+        
+        # Color code based on evacuation priority
+        evac_priority = card_data.get("evacuation_priority", "").lower()
+        if "urgent" in evac_priority:
+            priority_color = RED
+            priority_text = "URGENT"
+        elif "priority" in evac_priority:
+            priority_color = (255, 165, 0)  # Orange
+            priority_text = "PRIORITY"
+        elif "routine" in evac_priority:
+            priority_color = GREEN
+            priority_text = "ROUTINE"
+        else:
+            priority_color = WHITE
+            priority_text = evac_priority.upper()
+        
+        # Priority display with visual emphasis
+        priority_box = pygame.Rect(section_width * 2 + 60, y_pos + 30, section_width - 80, 40)
+        pygame.draw.rect(self.screen, priority_color, priority_box, border_radius=5)
+        pygame.draw.rect(self.screen, WHITE, priority_box, 2, border_radius=5)
+        
+        # Priority text
+        priority_text = self.fonts['bold_medium'].render(priority_text, True, BLACK if priority_color == GREEN else WHITE)
+        self.screen.blit(priority_text, 
+                       (priority_box.centerx - priority_text.get_width()//2, 
+                        priority_box.centery - priority_text.get_height()//2))
+        
+        # Footer with button to return to live view
         footer_rect = pygame.Rect(0, self.height - 50, self.width, 50)
-        pygame.draw.rect(self.screen, GRAY, footer_rect)
-        instruction_text = self.fonts['medium'].render("Press 'T' for Live View", True, BLACK)
-        self.screen.blit(instruction_text, (self.width//2 - instruction_text.get_width()//2, self.height - 35))
+        pygame.draw.rect(self.screen, (50, 50, 60), footer_rect)
+        
+        # Back button
+        button_rect = pygame.Rect(self.width//2 - 130, self.height - 40, 260, 30)
+        pygame.draw.rect(self.screen, (70, 70, 80), button_rect, border_radius=15)
+        pygame.draw.rect(self.screen, (100, 100, 110), button_rect, 1, border_radius=15)
+        
+        back_text = self.fonts['medium'].render("Return to Live View (T)", True, WHITE)
+        self.screen.blit(back_text, (self.width//2 - back_text.get_width()//2, self.height - 35))
     
     def _wrap_text(self, text, font, max_width):
         """Wrap text to fit within a given width"""
