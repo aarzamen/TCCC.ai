@@ -109,6 +109,32 @@ python -m tccc.cli start --log-level debug
 
 ## Core Components
 
+### 🔄 System Integration
+
+The TCCCSystem class provides a unified integration layer for all components:
+
+- **Centralized Management**: Single interface to control all system components
+- **Event-Driven Architecture**: Process events from audio pipeline and external sources
+- **Dependency Injection**: Configurable mock components for testing
+- **Resource Management**: Adaptive resource allocation based on system load
+- **Comprehensive Verification**: Multi-stage verification of system integration
+
+```python
+from tccc.system.system import TCCCSystem
+import asyncio
+
+# Create and initialize system
+system = TCCCSystem()
+async def init():
+    await system.initialize({})
+asyncio.run(init())
+
+# Process events and generate reports
+system.start_audio_capture()
+reports = system.generate_reports(["zmist", "tccc"])
+system.shutdown()
+```
+
 ### 🔍 RAG Database & Document Library
 
 The TCCC.ai system leverages a fully-optimized Retrieval-Augmented Generation system for edge devices:

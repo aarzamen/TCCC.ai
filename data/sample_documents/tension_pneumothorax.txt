@@ -1,0 +1,52 @@
+# Treatment Protocol for Tension Pneumothorax
+
+## Identification
+Signs and symptoms of tension pneumothorax:
+1. Severe respiratory distress
+2. Absent or decreased breath sounds on affected side
+3. Hypotension
+4. Tracheal deviation away from affected side
+5. Distended neck veins
+6. Increased respiratory difficulty after penetrating or blunt chest trauma
+7. Chest pain and air hunger
+
+## Treatment Procedure
+For suspected tension pneumothorax in tactical field care:
+
+1. Expose the chest and identify the decompression site:
+   - 2nd intercostal space at the midclavicular line (traditional approach)
+   - 5th intercostal space at the anterior axillary line (preferred in TCCC)
+
+2. Prepare the site:
+   - Clean the site with antiseptic if available
+   - Not critical in life-threatening situations
+
+3. Perform needle decompression:
+   - Use a 14-gauge, 3.25-inch (8cm) needle/catheter
+   - Insert the needle perpendicular to the chest wall, just above the rib
+   - Advance until you feel a "pop" and hear rush of air
+   - Remove the needle but leave the catheter in place
+   - Secure the catheter with tape
+
+4. Assess effectiveness:
+   - Look for improved respiratory status
+   - Monitor for return of breath sounds
+   - Watch for improved hemodynamic status (blood pressure, pulse)
+
+5. Apply a one-way valve:
+   - Commercial chest seal with valve
+   - Improvised valve using finger of glove if necessary
+
+6. Prepare for potential repeat decompression:
+   - Tension pneumothorax may recur
+   - Be prepared to repeat the procedure if symptoms return
+
+7. Evacuate as soon as possible:
+   - Needle decompression is a temporary measure
+   - Definitive treatment requires chest tube placement at higher level of care
+
+## Special Considerations
+- If available, ultrasound can confirm diagnosis
+- Document procedure on TCCC card, including time performed
+- A successfully treated tension pneumothorax is a critical evacuation priority
+- In prolonged field care situations, consider placing a chest tube if trained to do so

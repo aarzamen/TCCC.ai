@@ -1,0 +1,9 @@
+[Desktop Entry]
+Name=TCCC RAG Explorer
+Comment=Explore and query the TCCC RAG Database
+Exec=python3 /home/ama/tccc-project/rag_explorer.py
+Icon=/home/ama/tccc-project/images/blue_logo.png
+Terminal=false
+Type=Application
+Categories=Utility;
+StartupNotify=true

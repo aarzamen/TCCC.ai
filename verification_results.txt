@@ -1,0 +1,94 @@
+
+[0;33mRUNNING MODULE-LEVEL VERIFICATIONS[0m
+==================================================
+
+[0;33mRunning verification for: Processing Core[0m
+------------------------------------------------
+
+[0;32mVerification PASSED: Processing Core (9s)[0m
+
+[0;33mRunning verification for: Data Store[0m
+------------------------------------------------
+
+[0;32mVerification PASSED: Data Store (0s)[0m
+
+[0;33mRunning verification for: Document Library[0m
+------------------------------------------------
+
+[0;32mVerification PASSED: Document Library (12s)[0m
+
+[0;33mRunning verification for: Audio Pipeline[0m
+------------------------------------------------
+
+[0;32mVerification PASSED: Audio Pipeline (6s)[0m
+
+[0;33mRunning verification for: STT Engine[0m
+------------------------------------------------
+
+[0;32mVerification PASSED: STT Engine (3s)[0m
+
+[0;34mSkipping non-essential verification in quick mode: LLM Analysis[0m
+
+[0;34mSkipping non-essential verification in quick mode: Display Interface[0m
+
+[0;34mSkipping non-essential verification in quick mode: Jetson Optimizer[0m
+
+[0;33mRUNNING SYSTEM-LEVEL VERIFICATION[0m
+==================================================
+
+[0;34mSkipping non-essential verification in quick mode: System Integration (Mock)[0m
+
+[0;33mRunning verification for: System Integration[0m
+------------------------------------------------
+
+[0;31mVerification FAILED: System Integration (26s)[0m
+
+[0;34mSkipping non-essential verification in quick mode: RAG System[0m
+
+[0;34mSkipping non-essential verification in quick mode: Phi2+Whisper Integration[0m
+
+[0;33mVERIFICATION SUMMARY[0m
+==================================================
+Total execution time: 56 seconds
+
+Results by status:
+----------------
+
+[0;32mPASSED tests:[0m
+[0;32m✓ Document Library (12s)[0m
+[0;32m✓ Data Store (0s)[0m
+[0;32m✓ STT Engine (3s)[0m
+[0;32m✓ Audio Pipeline (6s)[0m
+[0;32m✓ Processing Core (9s)[0m
+
+[0;31mFAILED tests:[0m
+[0;31m✗ System Integration (26s)[0m
+
+[0;34mSKIPPED tests:[0m
+[0;34m⏩ LLM Analysis[0m
+[0;34m⏩ RAG System[0m
+[0;34m⏩ Jetson Optimizer[0m
+[0;34m⏩ Display Interface[0m
+[0;34m⏩ Phi2+Whisper Integration[0m
+[0;34m⏩ System Integration (Mock)[0m
+
+[0;33mMISSING tests:[0m
+
+[0;33mStatistics:[0m
+----------------
+Total Passed:  5
+Total Failed:  1
+Total Skipped: 6
+Total Missing: 0
+Overall tests: 12
+
+[0;33mTests by execution time (slowest first):[0m
+----------------
+26s - System Integration
+12s - Document Library
+9s - Processing Core
+6s - Audio Pipeline
+3s - STT Engine
+
+[0;31mCRITICAL VERIFICATIONS FAILED! System may not function correctly.[0m
+[0;33mPlease fix the above issues before proceeding.[0m

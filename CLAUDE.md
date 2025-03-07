@@ -1,5 +1,13 @@
 # TCCC Project Commands
 
+## Development Principles
+- Avoid mock stand-ins, notional functionality, place holders, and cheap demos
+- Focus on robust, production-quality implementations
+- All code should be fully operational, not simulated functionality
+- Don't nag for confirmation or approvals; prioritize making progress
+- Only ask for input on vision, goals, or specific information that cannot be inferred
+- Minimize safety checks in favor of efficient completion
+
 ## Environment Setup
 - `source venv/bin/activate` - Activate the virtual environment
 - `deactivate` - Deactivate the virtual environment
@@ -29,8 +37,20 @@
 - List modified files: `git status -s`
 - Save current branch work: `git add . && git commit -m "WIP: Save current progress" && git push origin HEAD`
 
-## Current Focus - STT Engine Improvements
-- Reference document: `STT_MODULE_NEXT_STEPS.md`
-- Run STT verification: `python verification_script_stt_engine.py`
-- Test battlefield audio: `python test_battlefield_audio.py`
-- Test mock implementation: `python -c "from tccc.stt_engine.mock_stt import MockSTTEngine; m = MockSTTEngine(); m.initialize({}); print(m.transcribe_segment(None))"`
+## Current Focus - System Integration
+- Run system verification: `python verification_script_system_enhanced.py`
+- Test data flow: `python test_system_data_flow.py`
+- Debug event processing: `python -c "from tccc.system.system import TCCCSystem; s = TCCCSystem(); s.initialize({}); s.process_event({'type': 'test', 'data': 'test'}); print(s.get_status())"`
+
+## Multi-Agent Collaboration
+- Split tasks between multiple Claude instances for parallel work
+- Each agent focuses on specific components:
+  - Agent 1: Audio pipeline and STT engine
+  - Agent 2: LLM analysis and document library
+  - Agent 3: Processing core and system integration
+- Use shared documentation for coordination:
+  - Create task files with naming pattern: `AGENT<N>_TASK.md`
+  - Update shared status in `AGENT_STATUS.md`
+  - Leave code comments with `<!-- AGENT<N>: comment -->` format
+- Before merging changes, run `./check_agent_conflicts.sh` to verify no conflicts
+- Use workflow: `python create_multi_agent_workspace.py --agents 3 --task "System Integration"`

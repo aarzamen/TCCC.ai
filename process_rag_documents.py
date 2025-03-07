@@ -299,7 +299,7 @@ def main() -> int:
         Exit code (0 for success, 1 for failure)
     """
     parser = argparse.ArgumentParser(description="Process documents for TCCC.ai RAG database")
-    parser.add_argument("--input", "-i", type=str, default="data/rag_documents",
+    parser.add_argument("--input", "-i", type=str, default="data/documents",
                         help="Input directory containing downloaded documents")
     parser.add_argument("--config", "-c", type=str, default="config/document_library.yaml",
                         help="Document library configuration file")

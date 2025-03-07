@@ -79,7 +79,9 @@ def main():
     engine_type = args.engine
     print(f"Creating STT engine with type: {engine_type}")
     engine = create_stt_engine(engine_type, verification_config)
-    result = True
+    
+    # Initialize the engine
+    result = engine.initialize(verification_config)
     print(f"Initialization result: {result}")
     
     if not result:

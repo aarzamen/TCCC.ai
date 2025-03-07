@@ -1171,3 +1171,30 @@ class DataStore:
         """
         # Not implemented - would include version-specific migration scripts
         raise NotImplementedError("Schema migration not implemented")
+        
+    def shutdown(self) -> bool:
+        """
+        Shutdown the data store, releasing resources.
+        
+        Returns:
+            True if successful, False otherwise
+        """
+        if not self.initialized:
+            return True
+            
+        try:
+            # Close all database connections
+            if self.db_manager:
+                self.db_manager.close_all_connections()
+                
+            # Clear caches
+            self.query_cache.clear()
+            self.query_timestamp.clear()
+            
+            self.initialized = False
+            logger.info("DataStore shutdown complete")
+            return True
+            
+        except Exception as e:
+            logger.error(f"Error shutting down DataStore: {e}")
+            return False

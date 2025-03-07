@@ -1,0 +1,88 @@
+#!/bin/bash
+
+# Pre-commit hook for TCCC.ai project
+# Validates version control standards are met
+
+echo "Running pre-commit checks..."
+
+# 1. Run version control validation script
+echo "Validating version control..."
+python validate_version_control.py
+if [ $? -ne 0 ]; then
+  echo "Version control validation failed. Please address the issues before committing."
+  exit 1
+fi
+
+# 2. Check for sensitive information in staged files
+echo "Checking for sensitive information..."
+SENSITIVE_PATTERNS=(
+  "api[_-]key"
+  "password"
+  "secret"
+  "token"
+  "credential"
+  "ssh[-_]key"
+)
+
+for pattern in "${SENSITIVE_PATTERNS[@]}"; do
+  FOUND=$(git diff --cached --name-only | xargs grep -l -i "$pattern" 2>/dev/null)
+  if [ -n "$FOUND" ]; then
+    echo "WARNING: Potential sensitive information found in files:"
+    echo "$FOUND"
+    echo "Please review these files carefully before committing."
+    echo "To proceed anyway, use 'git commit --no-verify'"
+    exit 1
+  fi
+done
+
+# 3. Validate semantic commit messages
+COMMIT_MSG_FILE=$1
+COMMIT_MSG=$(cat "$COMMIT_MSG_FILE")
+SEMANTIC_PATTERN="^(feat|fix|docs|style|refactor|perf|test|chore|ci|build|revert)(\([a-zA-Z0-9_-]+\))?: .+"
+
+if ! [[ "$COMMIT_MSG" =~ $SEMANTIC_PATTERN ]]; then
+  echo "ERROR: Commit message does not follow semantic format:"
+  echo "  type(scope): description"
+  echo "Valid types: feat, fix, docs, style, refactor, perf, test, chore, ci, build, revert"
+  echo ""
+  echo "Your commit message: $COMMIT_MSG"
+  echo ""
+  echo "To bypass this check, use 'git commit --no-verify'"
+  exit 1
+fi
+
+# 4. Check for large files not using LFS
+LARGE_FILES=$(git diff --cached --name-only | xargs find 2>/dev/null | xargs du -h 2>/dev/null | grep -E '^[0-9]+M' | cut -f2-)
+if [ -n "$LARGE_FILES" ]; then
+  echo "WARNING: Large files detected that might need Git LFS:"
+  echo "$LARGE_FILES"
+  echo ""
+  echo "Consider using Git LFS for these files. See VERSION_CONTROL.md for instructions."
+fi
+
+# 5. Ensure Python files have proper imports
+PYTHON_FILES=$(git diff --cached --name-only | grep -E '\.py$')
+if [ -n "$PYTHON_FILES" ]; then
+  # Check if isort is available
+  if command -v isort >/dev/null 2>&1; then
+    echo "Checking Python imports with isort..."
+    echo "$PYTHON_FILES" | xargs isort --check-only --profile black
+    if [ $? -ne 0 ]; then
+      echo "Python import sorting issues detected. Please run 'isort --profile black' on your files."
+      exit 1
+    fi
+  fi
+  
+  # Check if black is available
+  if command -v black >/dev/null 2>&1; then
+    echo "Checking Python formatting with black..."
+    echo "$PYTHON_FILES" | xargs black --check
+    if [ $? -ne 0 ]; then
+      echo "Python formatting issues detected. Please run 'black' on your files."
+      exit 1
+    fi
+  fi
+fi
+
+echo "Pre-commit checks passed!"
+exit 0

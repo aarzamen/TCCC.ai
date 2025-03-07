@@ -1030,6 +1030,45 @@ class ProcessingCore:
             }
         
         return metrics
+        
+    def get_status(self) -> Dict[str, Any]:
+        """
+        Get the current status of the processing core.
+        
+        Returns:
+            A dictionary with status information.
+        """
+        if not self.initialized:
+            return {"status": "not_initialized", "initialized": False}
+            
+        try:
+            # Get module status
+            module_status = self.get_module_status()
+            
+            # Get processing metrics
+            metrics = self.getProcessingMetrics()
+            
+            # Build status dictionary
+            status = {
+                "status": "ok",
+                "initialized": self.initialized,
+                "operational_state": self.operational_state.name,
+                "modules": module_status,
+                "metrics": metrics,
+                "conversation_count": len(self.conversations),
+                "concurrent_tasks": self.current_concurrent_tasks if hasattr(self, 'current_concurrent_tasks') else None
+            }
+            
+            return status
+            
+        except Exception as e:
+            logger.error(f"Error getting processing core status: {e}")
+            return {
+                "status": "error",
+                "initialized": self.initialized,
+                "error": str(e),
+                "operational_state": self.operational_state.name if hasattr(self, 'operational_state') else "UNKNOWN"
+            }
     
     def shutdown(self):
         """

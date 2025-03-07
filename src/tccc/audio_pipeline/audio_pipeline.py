@@ -676,6 +676,13 @@ class AudioProcessor:
             logger.warning("webrtcvad not installed. Falling back to energy-based VAD only.")
             self.vad_enabled = True  # Still enable VAD, just use energy-based
             self.vad_processor = None
+            # Make sure energy threshold is initialized even when webrtcvad is not available
+            self.vad_energy_threshold = 0.005  # RMS energy threshold, will adapt
+            self.vad_speech_frames = 0
+            self.vad_nonspeech_frames = 0
+            self.vad_speech_detected = False
+            self.vad_holdover_counter = 0
+            self.speech_history = [False] * 10
     
     def process(self, audio_data: np.ndarray) -> Tuple[np.ndarray, bool]:
         """

@@ -12,6 +12,7 @@ import time
 import numpy as np
 import logging
 import concurrent.futures
+import importlib
 from typing import Dict, List, Any, Optional, Tuple, Union
 from dataclasses import dataclass, field
 from collections import deque
@@ -961,6 +962,121 @@ class FasterWhisperSTT:
                     logger.warning(f"Could not get detailed Jetson status: {str(e)}")
         
         return status
+        
+    def transcribe_segment(self, audio: np.ndarray, metadata: Dict[str, Any] = None) -> Dict[str, Any]:
+        """
+        Transcribe an audio segment with optional metadata.
+        
+        Args:
+            audio: Audio data as numpy array
+            metadata: Additional metadata for transcription
+            
+        Returns:
+            Dictionary with transcription result
+        """
+        if not self.initialized or self.model is None:
+            logger.error("Model not initialized")
+            return {'error': 'Model not initialized', 'text': ''}
+            
+        # Handle None or empty audio input
+        if audio is None or (isinstance(audio, np.ndarray) and len(audio) == 0):
+            logger.warning("Empty audio segment received")
+            return {'text': '', 'segments': [], 'is_partial': False, 'language': self.language}
+        
+        try:
+            # Start timing
+            start_time = time.time()
+            
+            # Create TranscriptionConfig from metadata
+            config = TranscriptionConfig()
+            if metadata:
+                if 'word_timestamps' in metadata:
+                    config.word_timestamps = metadata['word_timestamps']
+                if 'include_punctuation' in metadata:
+                    config.include_punctuation = metadata['include_punctuation']
+                if 'include_capitalization' in metadata:
+                    config.include_capitalization = metadata['include_capitalization']
+                if 'confidence_threshold' in metadata:
+                    config.confidence_threshold = metadata['confidence_threshold']
+                
+                # Check if this is battlefield audio to adjust VAD parameters
+                is_battlefield = metadata.get('battlefield_audio', False)
+                if is_battlefield:
+                    # Adjust VAD parameters for battlefield conditions
+                    # More aggressive settings to better filter out battlefield noise
+                    self.vad_parameters = {
+                        'threshold': 0.6,  # Higher threshold to avoid false detections
+                        'min_speech_duration_ms': 300,  # Longer minimum speech duration
+                        'max_speech_duration_s': 30.0,
+                        'min_silence_duration_ms': 700  # Longer silence before ending segment
+                    }
+            
+            # Transcribe audio
+            result = self.transcribe(audio, config)
+            
+            # Convert to dictionary format
+            result_dict = self._result_to_dict(result)
+            
+            # Add performance metrics
+            processing_time = time.time() - start_time
+            audio_duration = len(audio) / 16000  # Assuming 16kHz sample rate
+            real_time_factor = processing_time / audio_duration if audio_duration > 0 else 0
+            
+            result_dict['metrics'] = {
+                'audio_duration': audio_duration,
+                'processing_time': processing_time,
+                'real_time_factor': real_time_factor
+            }
+            
+            return result_dict
+            
+        except Exception as e:
+            logger.error(f"Transcription segment error: {str(e)}")
+            self.metrics['error_count'] += 1
+            return {'error': str(e), 'text': ''}
+    
+    def _result_to_dict(self, result: TranscriptionResult) -> Dict[str, Any]:
+        """
+        Convert TranscriptionResult to dictionary.
+        
+        Args:
+            result: TranscriptionResult object
+            
+        Returns:
+            Dictionary representation
+        """
+        segments = []
+        for segment in result.segments:
+            seg_dict = {
+                'text': segment.text,
+                'start_time': segment.start_time,
+                'end_time': segment.end_time,
+                'confidence': segment.confidence
+            }
+            
+            if hasattr(segment, 'speaker') and segment.speaker is not None:
+                seg_dict['speaker'] = segment.speaker
+            
+            if segment.words:
+                seg_dict['words'] = [
+                    {
+                        'text': word.text,
+                        'start_time': word.start_time,
+                        'end_time': word.end_time,
+                        'confidence': word.confidence,
+                        'speaker': word.speaker if hasattr(word, 'speaker') else None
+                    }
+                    for word in segment.words
+                ]
+            
+            segments.append(seg_dict)
+        
+        return {
+            'text': result.text,
+            'segments': segments,
+            'is_partial': result.is_partial,
+            'language': result.language
+        }
         
     def shutdown(self) -> bool:
         """

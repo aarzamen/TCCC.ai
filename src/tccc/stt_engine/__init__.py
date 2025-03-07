@@ -74,24 +74,35 @@ def create_stt_engine(engine_type: str = "auto", config: Optional[Dict[str, Any]
                         self.faster_whisper = FasterWhisperSTT(config)
                         success = self.faster_whisper.initialize()
                         self.initialized = success
+                        logger.info(f"FasterWhisperSTT initialization result: {success}")
                         return success
                     
                     def transcribe_segment(self, audio, metadata=None):
                         """Use FasterWhisperSTT for transcription"""
-                        if not self.initialized:
+                        if not self.initialized or not self.faster_whisper:
                             return {'error': 'STT Engine not initialized', 'text': ''}
                         
-                        # Create transcription config from metadata
-                        config = TranscriptionConfig()
-                        if metadata:
-                            if 'word_timestamps' in metadata:
-                                config.word_timestamps = metadata['word_timestamps']
-                        
-                        # Transcribe using FasterWhisperSTT
-                        result = self.faster_whisper.transcribe(audio, config)
-                        
-                        # Convert to dictionary
-                        return self._result_to_dict(result)
+                        # Check if FasterWhisperSTT has a transcribe_segment method
+                        if hasattr(self.faster_whisper, 'transcribe_segment'):
+                            # Use the native transcribe_segment method
+                            logger.debug("Using native transcribe_segment method")
+                            return self.faster_whisper.transcribe_segment(audio, metadata)
+                        else:
+                            # Fall back to using transcribe method with manual conversion
+                            logger.debug("Using transcribe method with conversion")
+                            # Create transcription config from metadata
+                            config = TranscriptionConfig()
+                            if metadata:
+                                if 'word_timestamps' in metadata:
+                                    config.word_timestamps = metadata['word_timestamps']
+                                if 'include_punctuation' in metadata:
+                                    config.include_punctuation = metadata['include_punctuation']
+                            
+                            # Transcribe using FasterWhisperSTT
+                            result = self.faster_whisper.transcribe(audio, config)
+                            
+                            # Convert to dictionary
+                            return self._result_to_dict(result)
                     
                     def _result_to_dict(self, result: TranscriptionResult) -> Dict[str, Any]:
                         """Convert TranscriptionResult to dictionary"""
@@ -133,7 +144,11 @@ def create_stt_engine(engine_type: str = "auto", config: Optional[Dict[str, Any]
                         if not self.initialized or not self.faster_whisper:
                             return {'initialized': False}
                         
-                        return self.faster_whisper.get_status()
+                        # Get status from FasterWhisperSTT and ensure initialized field is set
+                        status = self.faster_whisper.get_status()
+                        status['initialized'] = self.initialized
+                        logger.info(f"Get status: {self.initialized}")
+                        return status
                     
                     def shutdown(self):
                         """Shutdown FasterWhisperSTT"""

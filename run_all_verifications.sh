@@ -50,7 +50,7 @@ run_verification "./verification_script_llm_analysis.py" "LLM Analysis"
 echo -e "\n${YELLOW}RUNNING SYSTEM-LEVEL VERIFICATION${NC}"
 echo "=================================================="
 
-run_verification "./mock_tccc_system.py" "System Integration (Mock)" 
+run_verification "./test_system_integration.py" "Basic System Integration" 
 run_verification "./verification_script_system_enhanced.py" "System Integration" "--mock all"
 
 # Calculate elapsed time
