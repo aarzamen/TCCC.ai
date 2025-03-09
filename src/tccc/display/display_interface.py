@@ -808,15 +808,6 @@ class DisplayInterface:
         
         # Position metrics surface on screen
         self.screen.blit(metrics_surface, (10, 70))
-                
-        except Exception as e:
-            logger.error(f"Error in display loop: {e}")
-        finally:
-            # Ensure pygame is properly shut down on exit
-            try:
-                pygame.quit()
-            except Exception:
-                pass
             
     
     def _draw_live_screen(self, surface=None):
