@@ -97,10 +97,40 @@ class InteractiveRAGTerminal:
 export TCCC_PROJECT_DIR="$(pwd)"
 export PYTHONPATH="$TCCC_PROJECT_DIR:$PYTHONPATH"
 
-# Function to process a PDF file
-process_pdf() {
-    if [[ -f "$1" ]] && [[ "${1,,}" == *".pdf" ]]; then
-        python -c "
+# Run the document processor extension to add support for additional file formats
+echo "Extending document processor with additional format support..."
+python -m extend_document_processor
+
+# Function to process any document file
+process_document() {
+    local file="$1"
+    if [[ ! -f "$file" ]]; then
+        echo "Error: File not found: $file"
+        return 1
+    fi
+    
+    # Get file extension
+    ext="${file##*.}"
+    ext=$(echo "$ext" | tr '[:upper:]' '[:lower:]')
+    
+    # List of supported file extensions
+    local supported_exts=("pdf" "txt" "md" "docx" "py" "html" "htm" "xml" "json" "csv" "yaml" "yml")
+    
+    # Check if extension is supported
+    local is_supported=0
+    for supported in "${supported_exts[@]}"; do
+        if [[ "$ext" == "$supported" ]]; then
+            is_supported=1
+            break
+        fi
+    done
+    
+    if [[ $is_supported -eq 0 ]]; then
+        echo "Warning: File type .$ext may not be fully supported"
+    fi
+    
+    # Process the document
+    python -c "
 from tccc.utils import ConfigManager
 from tccc.document_library import DocumentLibrary
 import os, sys, shutil
@@ -113,35 +143,49 @@ config = ConfigManager().load_config('document_library')
 doc_lib = DocumentLibrary()
 doc_lib.initialize(config)
 
-# Process the PDF file
-pdf_path = '$1'
-print(f'\\n🔄 Processing PDF: {os.path.basename(pdf_path)}')
-print('Please wait, this may take a minute...')
+# File paths
+file_path = '$file'
+file_name = os.path.basename(file_path)
+print(f'\\n🔄 Processing document: {file_name}')
+print('Please wait, this may take a moment...')
 
 # Copy to documents directory
 docs_dir = Path('data/documents')
 docs_dir.mkdir(exist_ok=True, parents=True)
-dest_path = docs_dir / os.path.basename(pdf_path)
-shutil.copy2(pdf_path, dest_path)
+dest_path = docs_dir / file_name
+shutil.copy2(file_path, dest_path)
 
 # Process document
-document = doc_lib.document_processor.process_file(str(dest_path))
-if not document:
-    print(f'Error: Failed to process PDF file {pdf_path}')
+result = doc_lib.document_processor.process_document(str(dest_path))
+if not result or not result.get('success', False):
+    error_msg = result.get('error', 'Unknown error') if result else 'Failed to process document'
+    print(f'Error: {error_msg}')
     sys.exit(1)
 
+# Create document data
+doc_data = {
+    'text': result.get('text', ''),
+    'metadata': result.get('metadata', {}),
+    'source': str(dest_path)
+}
+
 # Add to database
-doc_lib.add_document(document)
+doc_id = doc_lib.add_document(doc_data)
+if not doc_id:
+    print(f'Error: Failed to add document to database')
+    sys.exit(1)
 
 # Get document stats
 total_docs = len(doc_lib.documents)
 total_chunks = len(doc_lib.chunks)
+file_type = result.get('format', 'unknown').upper()
 
-print(f'✅ Successfully added PDF to database (Total: {total_docs} documents, {total_chunks} chunks)')
+print(f'✅ Successfully added {file_type} document to database')
+print(f'   Document ID: {doc_id}')
+print(f'   Total documents: {total_docs}')
+print(f'   Total chunks: {total_chunks}')
+print(f'   Content length: {len(result.get(\"text\", \"\"))} characters')
 "
-    else
-        echo "Error: File '$1' is not a valid PDF file"
-    fi
 }
 
 # Function to query the database
@@ -190,22 +234,25 @@ cat << 'EOF'
 
 EOF
 
-# Process any PDF provided as argument
+# Process any document provided as argument
 if [[ $# -eq 1 ]]; then
-    if [[ -f "$1" ]] && [[ "${1,,}" == *".pdf" ]]; then
-        process_pdf "$1"
+    if [[ -f "$1" ]]; then
+        process_document "$1"
     elif [[ -d "$1" ]]; then
-        # Process all PDFs in a directory
-        echo "Processing all PDFs in directory: $1"
-        for pdf in "$1"/*.pdf; do
-            if [[ -f "$pdf" ]]; then
-                process_pdf "$pdf"
-            fi
+        # Process all documents in a directory
+        echo "Processing all documents in directory: $1"
+        
+        # Find and process all supported document types
+        for ext in pdf txt md py docx html htm xml json csv yaml yml; do
+            for file in "$1"/*.$ext "$1"/*.${ext^^}; do
+                # Check if file exists (to handle cases where no matches are found)
+                if [[ -f "$file" ]]; then
+                    process_document "$file"
+                fi
+            done
         done
-    elif [[ "${1,,}" == *".pdf" ]]; then
-        echo "Error: File not found: $1"
     else
-        echo "Warning: $1 is not a PDF file or directory"
+        echo "Error: File or directory not found: $1"
     fi
 fi
 
@@ -221,16 +268,24 @@ while true; do
     elif [[ "$input" == "help" ]]; then
         cat << 'EOF'
 Available commands:
-  • Drag and drop a PDF file  - Process and add to database
-  • q: <query>                - Search the database
-  • q! <query>                - Deep search (uses all strategies)
-  • stats                     - Show database statistics
-  • clear                     - Clear the screen
-  • help                      - Show this help message
-  • exit                      - Exit the program
+  • Drag and drop any document  - Process and add to database
+  • q: <query>                  - Search the database
+  • q! <query>                  - Deep search (uses all strategies)
+  • stats                       - Show database statistics
+  • formats                     - Show supported file formats
+  • clear                       - Clear the screen
+  • help                        - Show this help message
+  • exit                        - Exit the program
+
+Supported file types:
+  • PDF files (.pdf)            - With metadata extraction
+  • Text files (.txt, .md)      - Plain text and markdown
+  • Code files (.py, etc)       - Treated as text documents
+  • Word documents (.docx)      - With metadata extraction
+  • Other formats (.html, .xml, .json, .csv, .yaml)
 
 Tips:
-  • You can drag a folder to process all PDFs within it
+  • You can drag a folder to process all documents within it
   • For medical queries, use precise terminology
   • Longer, more specific queries often yield better results
 EOF
@@ -316,15 +371,34 @@ for i, (doc_id, doc) in enumerate(sorted_docs[:3]):
         print(f'  • {os.path.basename(source)}')
 "
     elif [[ -f "$input" ]]; then
-        process_pdf "$input"
+        # Process any document file
+        process_document "$input"
     elif [[ -d "$input" ]]; then
-        # Process all PDFs in directory
-        echo "Processing all PDFs in directory: $input"
-        for pdf in "$input"/*.pdf; do
-            if [[ -f "$pdf" ]]; then
-                process_pdf "$pdf"
-            fi
+        # Process all documents in a directory
+        echo "Processing all documents in directory: $input"
+        
+        # Find and process all supported document types
+        for ext in pdf txt md py docx html htm xml json csv yaml yml; do
+            for file in "$input"/*.$ext "$input"/*.${ext^^}; do
+                # Check if file exists (to handle cases where no matches are found)
+                if [[ -f "$file" ]]; then
+                    process_document "$file"
+                fi
+            done
         done
+    elif [[ "$input" == "formats" ]]; then
+        # Show supported formats
+        echo -e "\n📄 Supported Document Formats:"
+        echo "================================="
+        echo "• PDF files (.pdf) - Full support with metadata extraction"
+        echo "• Text files (.txt) - Plain text with basic metadata"
+        echo "• Markdown files (.md) - Treated as text with markdown formatting"
+        echo "• Word documents (.docx) - Full support with metadata extraction"
+        echo "• HTML files (.html, .htm) - Extracts text content from HTML"
+        echo "• Python files (.py) - Code files treated as text documents"
+        echo "• Data files (.json, .xml, .csv, .yaml, .yml) - Structured data as text"
+        echo ""
+        echo "Note: All text-based files will be properly processed and added to the knowledge base."
     else
         echo "Unknown command or file not found. Type 'help' for available commands."
     fi

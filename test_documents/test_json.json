@@ -1,0 +1,133 @@
+{
+  "metadata": {
+    "title": "TCCC Protocol Reference",
+    "version": "2.1.0",
+    "last_updated": "2025-03-09",
+    "category": "medical_reference"
+  },
+  "protocols": [
+    {
+      "name": "Hemorrhage Control",
+      "priority": 1,
+      "steps": [
+        "Apply direct pressure to wound",
+        "Apply tourniquet 2-3 inches above wound for limb hemorrhage",
+        "Apply hemostatic dressing for wounds not amenable to tourniquet",
+        "Apply pressure dressing",
+        "Mark time of tourniquet application"
+      ],
+      "supplies_needed": [
+        "CAT Tourniquet",
+        "Hemostatic Gauze",
+        "Pressure Bandage",
+        "Marker or Time Tape"
+      ],
+      "considerations": [
+        "Reassess tourniquet effectiveness",
+        "Consider tourniquet conversion if evacuation > 2 hours",
+        "Multiple tourniquets may be needed for large wounds"
+      ]
+    },
+    {
+      "name": "Airway Management",
+      "priority": 2,
+      "steps": [
+        "Position casualty to protect airway",
+        "Chin lift or jaw thrust maneuver",
+        "Clear airway of foreign objects",
+        "Insert nasopharyngeal airway if needed",
+        "Consider surgical airway for complete obstruction"
+      ],
+      "supplies_needed": [
+        "Nasopharyngeal Airway (NPA)",
+        "Surgical Airway Kit",
+        "Suction Device"
+      ],
+      "considerations": [
+        "Continually reassess airway patency",
+        "Reposition as needed",
+        "Avoid NPA with facial or skull fractures"
+      ]
+    },
+    {
+      "name": "Tension Pneumothorax Management",
+      "priority": 3,
+      "indicators": [
+        "Progressive respiratory distress",
+        "Absent or decreased breath sounds on affected side",
+        "Jugular vein distention",
+        "Tracheal deviation away from affected side",
+        "Hypotension",
+        "Tachycardia"
+      ],
+      "steps": [
+        "Expose chest and identify 2nd intercostal space",
+        "Clean site with antiseptic",
+        "Insert 14G needle at 2nd ICS, midclavicular line, superior to rib",
+        "Listen for rush of air",
+        "Remove needle, leave catheter in place",
+        "Secure catheter and monitor casualty"
+      ],
+      "supplies_needed": [
+        "14G needle, 3.25 inch",
+        "Antiseptic solution",
+        "Occlusive dressing"
+      ],
+      "considerations": [
+        "May need to repeat if symptoms return",
+        "Document time of procedure",
+        "Prepare for chest tube at higher level of care"
+      ]
+    }
+  ],
+  "casualties": {
+    "classification": [
+      {
+        "category": "Immediate (T1)",
+        "color": "Red",
+        "description": "Life-threatening injuries requiring immediate intervention"
+      },
+      {
+        "category": "Delayed (T2)",
+        "color": "Yellow",
+        "description": "Serious injuries requiring intervention, but can wait"
+      },
+      {
+        "category": "Minimal (T3)",
+        "color": "Green",
+        "description": "Minor injuries that can self-treat or wait"
+      },
+      {
+        "category": "Expectant (T4)",
+        "color": "Black",
+        "description": "Unlikely to survive given available resources"
+      }
+    ],
+    "triage_criteria": {
+      "immediate": [
+        "Airway obstruction",
+        "Tension pneumothorax",
+        "Uncontrolled major hemorrhage",
+        "Decreased level of consciousness",
+        "Shock"
+      ],
+      "delayed": [
+        "Open abdominal wounds without shock",
+        "Open fractures",
+        "Soft tissue injuries requiring surgery",
+        "Eyes, ears and maxillofacial injuries"
+      ],
+      "minimal": [
+        "Minor lacerations",
+        "Closed fractures",
+        "Strain/sprain injuries",
+        "Minor burns"
+      ],
+      "expectant": [
+        "Catastrophic brain injury",
+        "Multiple major trauma with CPR > 15 min",
+        "Burns > 85% BSA"
+      ]
+    }
+  }
+}
