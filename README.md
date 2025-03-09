@@ -1,51 +1,134 @@
-# TCCC.ai 🧠
+# TCCC.ai
 
-<p align="center">
-  <img src="images/green_logo.png" alt="TCCC.ai Logo" width="200"/>
-</p>
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 500 500" width="200" height="200" style="display: block; margin: 0 auto;">
+  <!-- Define the layering order -->
+  <defs>
+    <clipPath id="clipMicrophone">
+      <circle cx="250" cy="250" r="40"/>
+    </clipPath>
+  </defs>
+  <!-- Main circle background - military olive green -->
+  <circle cx="250" cy="250" r="240" fill="#5D6C41" stroke="#333333" stroke-width="10"/>
+  
+  <!-- Clipboard base -->
+  <rect x="125" y="100" width="250" height="320" rx="10" ry="10" fill="#E6E6C8" stroke="#333333" stroke-width="8"/>
+  
+  <!-- Document lines -->
+  <line x1="150" y1="160" x2="350" y2="160" stroke="#8A8F61" stroke-width="6"/>
+  <line x1="150" y1="200" x2="350" y2="200" stroke="#8A8F61" stroke-width="6"/>
+  <line x1="150" y1="240" x2="350" y2="240" stroke="#8A8F61" stroke-width="6"/>
+  <line x1="150" y1="280" x2="350" y2="280" stroke="#8A8F61" stroke-width="6"/>
+  <line x1="150" y1="320" x2="350" y2="320" stroke="#8A8F61" stroke-width="6"/>
+  <line x1="150" y1="360" x2="350" y2="360" stroke="#8A8F61" stroke-width="6"/>
+  
+  <!-- Medical cross - red -->
+  <rect x="170" y="60" width="40" height="80" fill="#E62020"/>
+  <rect x="150" y="80" width="80" height="40" fill="#E62020"/>
+  
+  <!-- EKG heartbeat line - more prominent and extends through the microphone -->
+  <path d="M120,230 L160,230 L175,160 L200,300 L225,180 L250,260 L275,200 L300,150 L325,230 L380,230" 
+        fill="none" stroke="#E62020" stroke-width="12" stroke-linecap="round" stroke-linejoin="round"/>
+        
+  <!-- EKG highlight for extra visibility -->
+  <path d="M120,230 L160,230 L175,160 L200,300 L225,180 L250,260 L275,200 L300,150 L325,230 L380,230" 
+        fill="none" stroke="#FF4444" stroke-width="5" stroke-linecap="round" stroke-linejoin="round"/>
+  
+  <!-- Microphone/audio circle - moved to appear above the EKG line -->
+  <circle cx="250" cy="250" r="40" fill="#5D6C41" stroke="#333333" stroke-width="4"/>
+  
+  <!-- Microphone icon -->
+  <rect x="240" y="230" width="20" height="40" rx="10" ry="10" fill="#000000"/>
+  <path d="M230,255 L230,265 C230,280 240,290 250,290 C260,290 270,280 270,265 L270,255" 
+        fill="none" stroke="#000000" stroke-width="6" stroke-linecap="round"/>
+  <line x1="250" y1="290" x2="250" y2="300" stroke="#000000" stroke-width="6" stroke-linecap="round"/>
+  <line x1="235" y1="300" x2="265" y2="300" stroke="#000000" stroke-width="6" stroke-linecap="round"/>
+</svg>
 
-> Edge-deployed intelligence for mission-critical communications
+## Project Overview
 
-[![Project Status: Active](https://img.shields.io/badge/Status-Active-green.svg)](https://github.com/tccc-ai/tccc-project)
-[![Jetson Optimized](https://img.shields.io/badge/Jetson-Optimized-76B900.svg)](https://developer.nvidia.com/embedded/jetson-orin)
-[![License: MIT](https://img.shields.io/badge/License-MIT-blue.svg)](LICENSE)
+TCCC.ai (Tactical Combat Casualty Care AI) is an edge-deployed AI system designed to function as a "black box recorder" for combat medicine. Operating completely offline on the NVIDIA Jetson Orin Nano platform, it captures and processes audio during medical procedures to create structured documentation and timeline records without requiring network connectivity.
 
-TCCC.ai is an edge-first AI system delivering privacy-preserving transcription, analysis, and decision support capabilities on resource-constrained hardware. Built specifically for the NVIDIA Jetson Orin Nano platform, it processes sensitive communications with zero cloud dependencies.
+This project modernizes the traditional field documentation process, replacing the paper-based DD Form 1380s that are typically hastily completed with Sharpie markers and taped or zip-tied to patients' arms. These forms are often difficult to read, can be damaged by blood or environmental conditions, and risk being blown away during helicopter evacuations due to rotor wash. Unlike conventional medical scribes or EMR systems, TCCC.ai is purpose-built for the practical challenges of combat medicine documentation, providing a more durable and legible alternative that preserves critical patient information throughout the evacuation chain.
 
-## Key Capabilities
+## Current Status
 
-⚡ **Real-time processing** with sub-200ms latency on edge hardware  
-🛡️ **Zero-cloud operation** for air-gapped and sensitive environments  
-🧠 **Fully quantized models** optimized for Jetson's limited resources  
-🔄 **Adaptive resource allocation** balancing performance and power  
-🔌 **Modular architecture** supporting component customization
+The project has reached a significant milestone with approximately 22,000 lines of original Python code developed across six core functional modules. Remarkably, this entire codebase was created using Anthropic's Claude Code CLI (beta) tool, which allowed me to bring my field medical background into software development without traditional programming experience. The core system architecture and module interfaces have been defined and implemented, with most individual components working in isolation but requiring further integration testing.
 
-## System Architecture
+### Component Status
 
-<p align="center">
-  <img src="images/blue_logo.png" alt="TCCC.ai Architecture" width="250"/>
-</p>
+| Module | Status |
+|--------|--------|
+| Audio Pipeline | Passes verification but needs integration work |
+| STT Engine | Fixed and working properly |
+| Processing Core | Passes verification but needs integration |
+| LLM Analysis | Fixed with tensor optimization implemented |
+| Document Library | Working properly in isolation |
+| Data Store | Working with no issues identified |
+| System Integration | Currently failing at the verification stage |
 
-TCCC.ai employs a modular edge-optimized architecture with six specialized components:
+**Primary Development Focus:** Fixing system integration and event flow between components.
 
-1. **Audio Pipeline** - Low-latency audio capture and preprocessing pipeline
-2. **STT Engine** - On-device transcription using Nexa AI's faster-whisper-5 (quantized)
-3. **Processing Core** - Real-time NLP with context-aware entity and intent extraction
-4. **LLM Analysis** - Edge-optimized Phi-2 (4-bit quantized) for advanced reasoning
-5. **Data Store** - Efficient on-device persistence with encryption capabilities
-6. **Document Library** - Vector search using all-MiniLM-L12-v2 embeddings and FAISS
+## Technical Architecture
 
-## Technology Stack
+The system follows a modular architecture with clean interfaces between components:
 
-<p align="center">
-  <img src="https://developer.nvidia.com/sites/default/files/akamai/embedded/images/jetsonNano/jetson-nano-som.png" alt="NVIDIA Jetson" width="180"/>
-  &nbsp;&nbsp;&nbsp;
-  <img src="https://upload.wikimedia.org/wikipedia/commons/c/c3/Python-logo-notext.svg" alt="Python" width="120"/>
-  &nbsp;&nbsp;&nbsp;
-  <img src="https://developer.nvidia.com/blog/wp-content/uploads/2018/11/NV_TensorRT_Visual_2C_RGB-625x625-1.png" alt="TensorRT" width="120"/>
-  &nbsp;&nbsp;&nbsp;
-  <img src="https://onnxruntime.ai/images/ONNX-Runtime-logo.png" alt="ONNX Runtime" width="120"/>
-</p>
+1. **Audio Pipeline:** Captures and processes speech input using PyAudio with Silero VAD for voice activity detection
+2. **Speech-to-Text:** Implements a fine-tuned Whisper model (faster-whisper-tiny.en) optimized for medical terminology
+3. **LLM Analysis:** Utilizes Microsoft's Phi-2 model (quantized for edge deployment) to extract medical events and procedures
+4. **RAG System:** Employs all-MiniLM-L12-v2 embedding model with a local vector database (FAISS/Chroma) for document retrieval
+5. **Timeline Database:** SQLite database with WAL mode optimized for the Jetson's NVMe storage
+6. **Report Generation:** Jinja2-based templating system for standardized medical documentation output
+
+All models are heavily quantized (INT8/INT4) and optimized using TensorRT for the Jetson's ARM architecture. The system uses ZeroMQ for lightweight inter-module communication and implements custom resource management to handle the 8GB memory constraint.
+
+### Memory Allocation Strategy
+
+```
+┌─────────────────────────────────────────────┐
+│ Total System Memory (8GB on Jetson Orin)    │
+├─────────────┬───────────────┬───────────────┤
+│ STT Engine  │ LLM Analysis  │  Doc Library  │
+│ (1-2GB)     │ (2-3GB)       │  (1GB)        │
+├─────────────┴───────────────┴───────────────┤
+│ System Overhead + Processing Core (2-3GB)   │
+└─────────────────────────────────────────────┘
+```
+
+## Hardware Implementation
+
+The current implementation runs on custom hardware consisting of:
+
+- NVIDIA Jetson Orin Nano 8GB (67 TOPS processing power)
+- Custom 3D-printed enclosures in a clamshell/pocket PC form factor
+- DIY 20V Li-ion Molicel 21700 battery packs in rifle magazine form factor (6-8 hour operation)
+- Waveshare 6.25" display with HDMI interface
+- Removable wireless components for EMCON compliance
+
+The device is specifically designed to fit inside the center chest admin pouch commonly used in military flak jackets, with battery packs that slot into standard magazine pouches for easy swapping in the field.
+
+## Why This Matters
+
+Combat medicine presents unique documentation challenges that standard systems aren't designed to address. In battlefield conditions, providers face:
+
+- **Environmental Factors:** Documentation materials exposed to weather, bodily fluids, and physical damage
+- **Cognitive Demands:** Managing multiple casualties while maintaining situational awareness
+- **Time Constraints:** Critical interventions like tourniquets demand immediate attention, often at the expense of documentation
+- **Protocol Complexity:** TCCC guidelines require specific procedures and timing that are difficult to track manually
+- **Continuity of Care:** Information must follow patients through complex evacuation chains
+- **Accountability:** Clear records protect providers from retrospective criticism of decisions made under duress
+
+Current methods fall short in these environments. Paper documentation is vulnerable to destruction, electronic systems require connectivity and time that isn't available, and retrospective documentation results in significant information gaps and timeline inaccuracies.
+
+## Development Approach
+
+This project was developed using Claude Code CLI (beta) - an AI-assisted development approach that bridged the gap between field medicine knowledge and software implementation. This approach represents a shift where domain understanding can directly translate into functional systems without requiring extensive programming background.
+
+The development process followed these principles:
+
+- Creating clean module interfaces first
+- Implementing basic functionality module by module
+- Optimizing for edge deployment on constrained hardware
+- Testing each component in isolation
 
 ## Installation & Setup
 
@@ -54,170 +137,91 @@ TCCC.ai employs a modular edge-optimized architecture with six specialized compo
 - NVIDIA Jetson Orin Nano (4GB+ RAM)
 - JetPack 5.1.1 or later
 - 15GB+ storage (SSD recommended)
-- Optional: USB microphone for audio input
+- Optional: USB microphone for audio input (Razer Seiren V3 Mini supported)
 
-### Quick Start
+### Basic Setup
 
 ```bash
 # Clone repository
-git clone https://github.com/tccc-ai/tccc-project.git
-cd tccc-project
+git clone https://github.com/aarzamen/TCCC.ai.git
+cd TCCC.ai
 
 # Environment setup
 python -m venv venv
 source venv/bin/activate
 
-# Installation options
-pip install -e .              # Basic installation
-pip install -e ".[dev]"       # Development mode
-pip install -e ".[gpu]"       # With GPU acceleration
+# Installation
+pip install -e .
 
-# Start system
-python -m tccc.cli start
+# Run individual module verification
+python verification_script_audio_pipeline.py
 ```
 
-### Configuration
+## Current Challenges
 
-The system uses YAML configuration in the `config/` directory with sensible defaults for Jetson hardware. Key settings:
+While individual components function as expected in isolation, several integration issues remain:
 
-```yaml
-# config/stt_engine.yaml
-model:
-  provider: local
-  name: faster-whisper-5-int8
-  path: /path/to/models/whisper
-  quantization: int8
-  compute_type: int8_float16
-  
-hardware:
-  enable_acceleration: true
-  cuda_device: 0
-  memory_limit_mb: 2048
-```
+1. **Inter-module Communication:** Event passing between components requires refinement
+2. **System Event Loop:** The core orchestration mechanism needs restructuring
+3. **Data Flow Management:** Information transfer between modules faces bottlenecks
+4. **Event Standardization:** Common format specifications needed across the system
+5. **Error Handling:** A consistent approach to failure management is required
 
-### Component Control
+These challenges center on creating a system that maintains functionality under suboptimal conditions rather than failing completely.
 
-You can launch specific components as needed:
+## Next Steps
 
-```bash
-# Run only audio pipeline and STT
-python -m tccc.cli start --modules audio_pipeline stt_engine
+The immediate focus areas include:
 
-# Run with detailed logging
-python -m tccc.cli start --log-level debug
-```
+1. Resolving the core system event loop architecture
+2. Implementing a reliable module initialization sequence
+3. Streamlining event passing between components
+4. Enhancing system-wide logging for better diagnostics
+5. Conducting integrated testing on physical hardware
+6. Further optimizing models for the Jetson platform constraints
 
-## Core Components
+The goal is to achieve a system stable enough for field testing within two months.
 
-### 🔄 System Integration
+## Personal Perspective
 
-The TCCCSystem class provides a unified integration layer for all components:
+This project stems from my experiences as a General Medical Officer with Marine Corps infantry units over the past decade. Working in field conditions provided firsthand insight into documentation challenges: casualty cards damaged or lost during care, critical information missing during handoffs, and the gap between enterprise medical systems and frontline needs.
 
-- **Centralized Management**: Single interface to control all system components
-- **Event-Driven Architecture**: Process events from audio pipeline and external sources
-- **Dependency Injection**: Configurable mock components for testing
-- **Resource Management**: Adaptive resource allocation based on system load
-- **Comprehensive Verification**: Multi-stage verification of system integration
+With military service gradually winding down, this project serves dual purposes – addressing a practical need I've encountered repeatedly and developing a skill set that combines field medicine understanding with technology development. 
 
-```python
-from tccc.system.system import TCCCSystem
-import asyncio
-
-# Create and initialize system
-system = TCCCSystem()
-async def init():
-    await system.initialize({})
-asyncio.run(init())
-
-# Process events and generate reports
-system.start_audio_capture()
-reports = system.generate_reports(["zmist", "tccc"])
-system.shutdown()
-```
-
-### 🔍 RAG Database & Document Library
-
-The TCCC.ai system leverages a fully-optimized Retrieval-Augmented Generation system for edge devices:
-
-- **Vector Database**: FAISS-powered embedding store (99% smaller than traditional vector DBs)
-- **Document Processing**: Efficient chunking with 1000-character/200-overlap strategy
-- **Embedding Model**: all-MiniLM-L12-v2 with INT8 quantization (~90MB)
-- **Query Optimization**: Multi-strategy retrieval (semantic, keyword, hybrid)
-- **Context Management**: Dynamic context window handling with adaptive sizing
-- **Medical Vocabulary**: Specialized medical term processing for TCCC applications
-
-```python
-# Access the RAG system
-from tccc.document_library import DocumentLibrary
-
-# Initialize with defaults optimized for Jetson
-doc_lib = DocumentLibrary()
-doc_lib.initialize(config)
-
-# Query with different strategies
-results = doc_lib.advanced_query(
-    "How to treat a tension pneumothorax?",
-    strategy="hybrid",
-    limit=3
-)
-```
-
-### 🧠 Edge-Optimized LLM Analysis
-
-The LLM Analysis module provides advanced reasoning with strict resource constraints:
-
-- **Primary Model**: Microsoft Phi-2 (4-bit quantized) for <600MB footprint
-- **Context Integration**: Dynamically sized context window adapting to device capabilities
-- **Specialized Extraction**: Targeted medical entity and procedure recognition
-- **Offline Operation**: Zero-reliance on cloud APIs for sensitive environments
-- **Adaptive Processor**: Automatically scales to available compute resources
-
-### 📋 TCCC Casualty Card Implementation (In Progress)
-
-Our current development focus is the TCCC Casualty Card (DD Form 1380) implementation:
-
-- Automated form completion from transcribed communications
-- Temporal sequence extraction for medical timeline construction
-- Procedure and medication tracking with digital documentation
-- Integration with established medical evacuation protocols
-- Conforms to DoD documentation requirements while operating fully offline
-
-## Project Structure
-
-```
-tccc-project/
-├── config/                # Hardware-specific configurations
-├── src/tccc/              # Core module implementations
-│   ├── audio_pipeline/    # Audio processing optimized for Jetson
-│   ├── stt_engine/        # faster-whisper integration (INT8)
-│   ├── processing_core/   # Lightweight NLP pipeline
-│   ├── llm_analysis/      # Edge-optimized Phi-2 integration
-│   ├── data_store/        # Efficient on-device storage
-│   └── document_library/  # RAG database implementation
-├── tests/                 # Test suite with hardware simulation
-└── references/            # Technical specifications
-```
-
-## Performance Optimization
-
-TCCC.ai achieves edge performance through targeted optimizations:
-
-- **Model Quantization**: INT8/FP16 precision for 60-80% size reduction
-- **Inference Batching**: Grouped operations for higher throughput
-- **Memory Management**: Progressive loading with configurable limits
-- **CUDA Acceleration**: Custom CUDA kernels for Jetson architecture
-- **Benchmarking**: Continuous performance monitoring with power metrics
-
-## Contributing
-
-We welcome contributions that align with our focus on edge AI deployment. See [CONTRIBUTING.md](CONTRIBUTING.md) for our development guidelines.
+What distinguishes TCCC.ai from many healthcare AI projects is its design philosophy: instead of requiring ideal conditions, it embraces constraints like limited power, absence of connectivity, and harsh environments as fundamental design parameters. The result prioritizes reliability and practicality in conditions where conventional systems fail.
 
 ## License
 
-This project is licensed under the MIT License - see the [LICENSE](LICENSE) file for details.
+This project is licensed under the MIT License - see the LICENSE file for details.
 
-## References
+## Additional Technical Features
 
-- [System Architecture](references/architecture/system_architecture.md)
-- [Edge Deployment Guide](references/best_practices/development_guide.md)
-- [TCCC Protocol Standards](references/module_specs/)
+_[Claude thinking... pondering the silicon depths... consulting my neural pathways...]_
+
+Claude suggested the following items be included for completeness (and to justify where all those extra API calls went):
+
+1. **Display Interface Implementation**: The project includes a comprehensive UI for the WaveShare 6.25" display with dual-mode interface: a "live view" showing real-time transcription with event timeline, and a "TCCC card view" with digital representation of the DD Form 1380 including an interactive anatomical diagram. Touch input supports mode switching and interactive data entry.
+
+2. **Advanced Tensor Optimization Framework**: A custom tensor optimization layer manages constrained hardware operation through:
+   - Mixed precision operations (FP16/INT8)
+   - Memory-efficient tensor chunking
+   - TensorRT acceleration with cached engines
+   - Adaptive precision selection based on available resources
+
+3. **Jetson-Specific Adaptations**: Hardware-aware features including:
+   - Dynamic model size selection based on platform capabilities
+   - Precision adjustments optimized for Ampere architecture
+   - Memory usage monitoring during transcription
+   - Automatic warmup procedures for consistent performance
+
+4. **Performance Profile System**: Three operational modes with distinct resource priorities:
+   - Emergency Mode: Maximum performance for critical situations
+   - Field Mode: Balanced performance and power efficiency
+   - Training Mode: Extended battery life with higher precision
+
+5. **Touch Interface Technology**: Full support for the WaveShare 6.25" capacitive touchscreen:
+   - Auto-calibration for different orientation modes
+   - Multi-touch gesture recognition for zooming anatomical diagrams
+   - Customizable touch regions for quick actions
+
+_[Claude has completed his rumination and declared these extra technical details with algorithmic confidence]_
