@@ -174,3 +174,21 @@ def get_logger(name: str, log_level: int = logging.INFO,
         max_log_files=max_log_files,
         time_rotation=time_rotation
     )
+
+
+def set_log_level(logger, level):
+    """
+    Set the log level for a ContextLogger or a standard logger.
+    
+    Args:
+        logger: The logger instance to modify
+        level: The minimum log level to log
+    """
+    if isinstance(logger, ContextLogger):
+        logger.logger.setLevel(level)
+        for handler in logger.logger.handlers:
+            handler.setLevel(level)
+    elif isinstance(logger, logging.Logger):
+        logger.setLevel(level)
+        for handler in logger.handlers:
+            handler.setLevel(level)

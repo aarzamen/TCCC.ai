@@ -1,58 +1,99 @@
-# Agent 2: LLM Analysis & System Integration Implementation Notes
+# Agent 2: LLM Analysis & Document Library Integration Notes
 
-## LLM Analysis Module
+## System Analysis
 
 ### Current Status
-- [ ] Code structure review complete
-- [ ] Model selection complete
-- [ ] Model download script created
-- [ ] Inference optimization implemented
-- [ ] Medical entity extraction working
-- [ ] Verification testing passed
+- LLM Analysis: Works in isolation but integration failing
+- Document Library: Ready in isolation
+- Integration Point: Processing Core → LLM: Data not flowing
+- Integration Point: LLM → Document Library: Query formatting issues
 
-### Key Files
-- `src/tccc/llm_analysis/phi_model.py`
+### Key Issues Identified
+1. Inconsistent method names for LLM processing
+2. Event format incompatibilities between components
+3. Query formatting issues when accessing Document Library
+4. Missing result handling between LLM and Document Library
+
+## Interface Standardization Plan
+
+### Processing Core → LLM Analysis
+- Processing Core outputs processed text events
+- LLM Analysis needs standardized input format
+- Need proper event type identifiers and metadata
+
+### LLM Analysis → Document Library
+- Query formatting between components is inconsistent
+- Document Library expects specific query format
+- Results handling needs proper integration
+
+## Implementation Strategy
+
+### Step 1: Define Standard Event Schema for LLM
+```python
+# Standard LLM Input Event Schema
+{
+    "type": "processed_text",       # Event type identifier
+    "text": "...",                  # Text to analyze
+    "entities": [...],              # Extracted entities
+    "intent": {...},                # Detected intent
+    "metadata": {                   # Required metadata
+        "source": "processing_core",
+        "timestamp": 1234567890,
+        "session_id": "abc123"
+    }
+}
+
+# Standard LLM Output Schema
+{
+    "type": "llm_analysis",         # Event type identifier
+    "summary": "...",               # Text summary
+    "topics": [...],                # Extracted topics
+    "medical_terms": [...],         # Medical terminology
+    "actions": [...],               # Recommended actions
+    "metadata": {                   # Result metadata
+        "model": "phi-2",
+        "timestamp": 1234567890,
+        "latency_ms": 250
+    },
+    "document_results": [...]       # Document query results
+}
+```
+
+### Step 2: Standardize LLM Analysis Interface
+- Update `analyze_transcription()` method to handle standard input
+- Add proper metadata to results
+- Implement error handling for input formatting issues
+
+### Step 3: Fix Document Library Query Interface
+- Standardize query format
+- Add error handling for query failures
+- Enhance result formatting
+
+### Step 4: Create Integration Tests
+- Test LLM analysis with different input formats
+- Verify document queries with various medical terms
+- Test end-to-end flow with mock components
+
+## Component Interface Updates
+
+### LLMAnalysis Class Updates
+- Update method signatures to accept standard events
+- Implement proper error handling and recovery
+- Add input validation and format conversion
+
+### DocumentLibrary Interface Updates
+- Standardize query method parameters
+- Enhance result formatting for integration
+- Add error handling for query failures
+
+## Verification Methods
+1. Run LLM analysis verification in isolation
+2. Verify Document Library query handling
+3. Test LLM → Document integration
+4. Run end-to-end test with all components
+
+## Related Files
 - `src/tccc/llm_analysis/llm_analysis.py`
+- `src/tccc/document_library/document_library.py`
 - `verification_script_llm_analysis.py`
-
-### Implementation Steps
-1. Review current mockups and interfaces
-2. Download appropriate LLM (Phi-2 or Llama-2)
-3. Implement model loading and inference
-4. Optimize for Jetson hardware
-5. Create medical entity extraction pipeline
-6. Test and validate
-
-### Resources
-- Model storage: `models/llm/`
-- Memory budget: 2-3GB
-- Expected inference time: <2s per request
-
-## System Integration Module
-
-### Current Status
-- [ ] Module interface analysis complete
-- [ ] Configuration files updated
-- [ ] Resource monitoring implemented
-- [ ] Integration tests created
-- [ ] End-to-end verification passing
-
-### Key Files
-- `src/tccc/system/system.py`
-- `verification_script_system.py`
-- `run_system.py`
-- `config/*.yaml`
-
-### Implementation Steps
-1. Review module interfaces
-2. Update configuration files
-3. Implement resource monitoring
-4. Create integration tests
-5. Run end-to-end verification
-
-### Integration Checklist
-1. STT Engine ↔ Audio Pipeline
-2. STT Engine ↔ LLM Analysis
-3. LLM Analysis ↔ Document Library
-4. Document Library ↔ Processing Core
-5. All modules ↔ System Integration
+- `verification_script_document_library.py`

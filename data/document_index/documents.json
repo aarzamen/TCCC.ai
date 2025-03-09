@@ -1483,5 +1483,815 @@
     },
     "file_path": "/home/ama/tccc-project/data/documents/tccc_procedures.txt",
     "added_at": "2025-03-06T21:40:47.417692"
-  }
-}
+  },
+  "112": {
+    "id": "112",
+    "metadata": {
+      "category": "TCCC Reference",
+      "type": "Text",
+      "source": "Verification Script",
+      "created_at": "2025-03-09 04:50:25",
+      "file_name": "medical_procedures.txt",
+      "content_type": "text/plain",
+      "file_size": 1028
+    },
+    "file_path": "/home/ama/tccc-project/data/sample_documents/medical_procedures.txt",
+    "added_at": "2025-03-09T04:50:25.471199"
+  },
+  "113": {
+    "id": "113",
+    "metadata": {
+      "category": "TCCC Reference",
+      "type": "Text",
+      "source": "Verification Script",
+      "created_at": "2025-03-09 04:50:26",
+      "file_name": "tactical_considerations.txt",
+      "content_type": "text/plain",
+      "file_size": 996
+    },
+    "file_path": "/home/ama/tccc-project/data/sample_documents/tactical_considerations.txt",
+    "added_at": "2025-03-09T04:50:26.299006"
+  },
+  "114": {
+    "id": "114",
+    "metadata": {
+      "category": "TCCC Reference",
+      "type": "Text",
+      "source": "Verification Script",
+      "created_at": "2025-03-09 04:50:26",
+      "file_name": "medical_equipment.txt",
+      "content_type": "text/plain",
+      "file_size": 753
+    },
+    "file_path": "/home/ama/tccc-project/data/sample_documents/medical_equipment.txt",
+    "added_at": "2025-03-09T04:50:26.563768"
+  },
+  "115": {
+    "id": "115",
+    "metadata": {
+      "category": "Medical Procedures",
+      "type": "Reference",
+      "source": "TCCC Guidelines",
+      "file_name": "tccc_procedures.txt",
+      "content_type": "text/plain",
+      "file_size": 937
+    },
+    "file_path": "/home/ama/tccc-project/data/documents/tccc_procedures.txt",
+    "added_at": "2025-03-09T04:50:49.391784"
+  },
+  "116": {
+    "id": "116",
+    "metadata": {
+      "category": "TCCC Reference",
+      "type": "Text",
+      "source": "Verification Script",
+      "created_at": "2025-03-09 04:54:35",
+      "file_name": "medical_procedures.txt",
+      "content_type": "text/plain",
+      "file_size": 1028
+    },
+    "file_path": "/home/ama/tccc-project/data/sample_documents/medical_procedures.txt",
+    "added_at": "2025-03-09T04:54:35.289584"
+  },
+  "117": {
+    "id": "117",
+    "metadata": {
+      "category": "TCCC Reference",
+      "type": "Text",
+      "source": "Verification Script",
+      "created_at": "2025-03-09 04:54:35",
+      "file_name": "tactical_considerations.txt",
+      "content_type": "text/plain",
+      "file_size": 996
+    },
+    "file_path": "/home/ama/tccc-project/data/sample_documents/tactical_considerations.txt",
+    "added_at": "2025-03-09T04:54:35.576666"
+  },
+  "118": {
+    "id": "118",
+    "metadata": {
+      "category": "TCCC Reference",
+      "type": "Text",
+      "source": "Verification Script",
+      "created_at": "2025-03-09 04:54:35",
+      "file_name": "medical_equipment.txt",
+      "content_type": "text/plain",
+      "file_size": 753
+    },
+    "file_path": "/home/ama/tccc-project/data/sample_documents/medical_equipment.txt",
+    "added_at": "2025-03-09T04:54:35.983763"
+  },
+  "119": {
+    "id": "119",
+    "metadata": {
+      "category": "Medical Procedures",
+      "type": "Reference",
+      "source": "TCCC Guidelines",
+      "file_name": "tccc_procedures.txt",
+      "content_type": "text/plain",
+      "file_size": 937
+    },
+    "file_path": "/home/ama/tccc-project/data/documents/tccc_procedures.txt",
+    "added_at": "2025-03-09T04:54:58.101341"
+  },
+  "120": {
+    "id": "120",
+    "metadata": {
+      "category": "TCCC Reference",
+      "type": "Text",
+      "source": "Verification Script",
+      "created_at": "2025-03-09 05:00:04",
+      "file_name": "medical_procedures.txt",
+      "content_type": "text/plain",
+      "file_size": 1028
+    },
+    "file_path": "/home/ama/tccc-project/data/sample_documents/medical_procedures.txt",
+    "added_at": "2025-03-09T05:00:04.946895"
+  },
+  "121": {
+    "id": "121",
+    "metadata": {
+      "category": "TCCC Reference",
+      "type": "Text",
+      "source": "Verification Script",
+      "created_at": "2025-03-09 05:00:05",
+      "file_name": "tactical_considerations.txt",
+      "content_type": "text/plain",
+      "file_size": 996
+    },
+    "file_path": "/home/ama/tccc-project/data/sample_documents/tactical_considerations.txt",
+    "added_at": "2025-03-09T05:00:05.247356"
+  },
+  "122": {
+    "id": "122",
+    "metadata": {
+      "category": "TCCC Reference",
+      "type": "Text",
+      "source": "Verification Script",
+      "created_at": "2025-03-09 05:00:05",
+      "file_name": "medical_equipment.txt",
+      "content_type": "text/plain",
+      "file_size": 753
+    },
+    "file_path": "/home/ama/tccc-project/data/sample_documents/medical_equipment.txt",
+    "added_at": "2025-03-09T05:00:05.557205"
+  },
+  "123": {
+    "id": "123",
+    "metadata": {
+      "category": "Medical Procedures",
+      "type": "Reference",
+      "source": "TCCC Guidelines",
+      "file_name": "tccc_procedures.txt",
+      "content_type": "text/plain",
+      "file_size": 937
+    },
+    "file_path": "/home/ama/tccc-project/data/documents/tccc_procedures.txt",
+    "added_at": "2025-03-09T05:00:27.776572"
+  },
+  "124": {
+    "id": "124",
+    "metadata": {
+      "category": "TCCC Reference",
+      "type": "Text",
+      "source": "Verification Script",
+      "created_at": "2025-03-09 05:02:11",
+      "file_name": "medical_procedures.txt",
+      "content_type": "text/plain",
+      "file_size": 1028
+    },
+    "file_path": "/home/ama/tccc-project/data/sample_documents/medical_procedures.txt",
+    "added_at": "2025-03-09T05:02:11.128137"
+  },
+  "125": {
+    "id": "125",
+    "metadata": {
+      "category": "TCCC Reference",
+      "type": "Text",
+      "source": "Verification Script",
+      "created_at": "2025-03-09 05:02:11",
+      "file_name": "tactical_considerations.txt",
+      "content_type": "text/plain",
+      "file_size": 996
+    },
+    "file_path": "/home/ama/tccc-project/data/sample_documents/tactical_considerations.txt",
+    "added_at": "2025-03-09T05:02:11.432034"
+  },
+  "126": {
+    "id": "126",
+    "metadata": {
+      "category": "TCCC Reference",
+      "type": "Text",
+      "source": "Verification Script",
+      "created_at": "2025-03-09 05:02:11",
+      "file_name": "medical_equipment.txt",
+      "content_type": "text/plain",
+      "file_size": 753
+    },
+    "file_path": "/home/ama/tccc-project/data/sample_documents/medical_equipment.txt",
+    "added_at": "2025-03-09T05:02:11.766969"
+  },
+  "127": {
+    "id": "127",
+    "metadata": {
+      "category": "Medical Procedures",
+      "type": "Reference",
+      "source": "TCCC Guidelines",
+      "file_name": "tccc_procedures.txt",
+      "content_type": "text/plain",
+      "file_size": 937
+    },
+    "file_path": "/home/ama/tccc-project/data/documents/tccc_procedures.txt",
+    "added_at": "2025-03-09T05:02:34.020396"
+  },
+  "128": {
+    "id": "128",
+    "metadata": {
+      "category": "Medical Procedures",
+      "type": "Reference",
+      "source": "TCCC Guidelines",
+      "file_name": "tccc_procedures.txt",
+      "content_type": "text/plain",
+      "file_size": 937
+    },
+    "file_path": "/home/ama/tccc-project/data/documents/tccc_procedures.txt",
+    "added_at": "2025-03-09T08:23:56.884646"
+  },
+  "129": {
+    "id": "129",
+    "metadata": {
+      "category": "TCCC Reference",
+      "type": "Text",
+      "source": "Verification Script",
+      "created_at": "2025-03-09 08:24:19",
+      "file_name": "medical_procedures.txt",
+      "content_type": "text/plain",
+      "file_size": 1028
+    },
+    "file_path": "/home/ama/tccc-project/data/sample_documents/medical_procedures.txt",
+    "added_at": "2025-03-09T08:24:19.144550"
+  },
+  "130": {
+    "id": "130",
+    "metadata": {
+      "category": "TCCC Reference",
+      "type": "Text",
+      "source": "Verification Script",
+      "created_at": "2025-03-09 08:24:19",
+      "file_name": "tactical_considerations.txt",
+      "content_type": "text/plain",
+      "file_size": 996
+    },
+    "file_path": "/home/ama/tccc-project/data/sample_documents/tactical_considerations.txt",
+    "added_at": "2025-03-09T08:24:19.977310"
+  },
+  "131": {
+    "id": "131",
+    "metadata": {
+      "category": "TCCC Reference",
+      "type": "Text",
+      "source": "Verification Script",
+      "created_at": "2025-03-09 08:24:20",
+      "file_name": "medical_equipment.txt",
+      "content_type": "text/plain",
+      "file_size": 753
+    },
+    "file_path": "/home/ama/tccc-project/data/sample_documents/medical_equipment.txt",
+    "added_at": "2025-03-09T08:24:20.428864"
+  },
+  "132": {
+    "id": "132",
+    "metadata": {
+      "category": "Medical Procedures",
+      "type": "Reference",
+      "source": "TCCC Guidelines",
+      "file_name": "tccc_procedures.txt",
+      "content_type": "text/plain",
+      "file_size": 937
+    },
+    "file_path": "/home/ama/tccc-project/data/documents/tccc_procedures.txt",
+    "added_at": "2025-03-09T08:28:00.539009"
+  },
+  "133": {
+    "id": "133",
+    "metadata": {
+      "category": "Medical Procedures",
+      "type": "Reference",
+      "source": "TCCC Guidelines",
+      "file_name": "tccc_procedures.txt",
+      "content_type": "text/plain",
+      "file_size": 937
+    },
+    "file_path": "/home/ama/tccc-project/data/documents/tccc_procedures.txt",
+    "added_at": "2025-03-09T08:42:36.277183"
+  },
+  "134": {
+    "id": "134",
+    "metadata": {
+      "category": "TCCC Reference",
+      "type": "Text",
+      "source": "Verification Script",
+      "created_at": "2025-03-09 08:45:43",
+      "file_name": "medical_procedures.txt",
+      "content_type": "text/plain",
+      "file_size": 1028
+    },
+    "file_path": "/home/ama/tccc-project/data/sample_documents/medical_procedures.txt",
+    "added_at": "2025-03-09T08:45:43.160045"
+  },
+  "135": {
+    "id": "135",
+    "metadata": {
+      "category": "TCCC Reference",
+      "type": "Text",
+      "source": "Verification Script",
+      "created_at": "2025-03-09 08:45:43",
+      "file_name": "tactical_considerations.txt",
+      "content_type": "text/plain",
+      "file_size": 996
+    },
+    "file_path": "/home/ama/tccc-project/data/sample_documents/tactical_considerations.txt",
+    "added_at": "2025-03-09T08:45:43.949073"
+  },
+  "136": {
+    "id": "136",
+    "metadata": {
+      "category": "TCCC Reference",
+      "type": "Text",
+      "source": "Verification Script",
+      "created_at": "2025-03-09 08:45:44",
+      "file_name": "medical_equipment.txt",
+      "content_type": "text/plain",
+      "file_size": 753
+    },
+    "file_path": "/home/ama/tccc-project/data/sample_documents/medical_equipment.txt",
+    "added_at": "2025-03-09T08:45:44.362803"
+  },
+  "137": {
+    "id": "137",
+    "metadata": {
+      "category": "Medical Procedures",
+      "type": "Reference",
+      "source": "TCCC Guidelines",
+      "file_name": "tccc_procedures.txt",
+      "content_type": "text/plain",
+      "file_size": 937
+    },
+    "file_path": "/home/ama/tccc-project/data/documents/tccc_procedures.txt",
+    "added_at": "2025-03-09T08:46:07.334380"
+  },
+  "138": {
+    "id": "138",
+    "metadata": {
+      "category": "Medical Procedures",
+      "type": "Reference",
+      "source": "TCCC Guidelines",
+      "file_name": "tccc_procedures.txt",
+      "content_type": "text/plain",
+      "file_size": 937
+    },
+    "file_path": "/home/ama/tccc-project/data/documents/tccc_procedures.txt",
+    "added_at": "2025-03-09T08:51:51.778026"
+  },
+  "139": {
+    "id": "139",
+    "metadata": {
+      "category": "Medical Procedures",
+      "type": "Reference",
+      "source": "TCCC Guidelines",
+      "file_name": "tccc_procedures.txt",
+      "content_type": "text/plain",
+      "file_size": 937
+    },
+    "file_path": "/home/ama/tccc-project/data/documents/tccc_procedures.txt",
+    "added_at": "2025-03-09T08:52:26.916975"
+  },
+  "140": {
+    "id": "140",
+    "metadata": {
+      "category": "Medical Procedures",
+      "type": "Reference",
+      "source": "TCCC Guidelines",
+      "file_name": "tccc_procedures.txt",
+      "content_type": "text/plain",
+      "file_size": 937
+    },
+    "file_path": "/home/ama/tccc-project/data/documents/tccc_procedures.txt",
+    "added_at": "2025-03-09T08:53:21.885041"
+  },
+  "141": {
+    "id": "141",
+    "metadata": {
+      "category": "Medical Procedures",
+      "type": "Reference",
+      "source": "TCCC Guidelines",
+      "file_name": "tccc_procedures.txt",
+      "content_type": "text/plain",
+      "file_size": 937
+    },
+    "file_path": "/home/ama/tccc-project/data/documents/tccc_procedures.txt",
+    "added_at": "2025-03-09T09:13:19.383996"
+  },
+  "142": {
+    "id": "142",
+    "metadata": {
+      "category": "Medical Procedures",
+      "type": "Reference",
+      "source": "TCCC Guidelines",
+      "file_name": "tccc_procedures.txt",
+      "content_type": "text/plain",
+      "file_size": 937
+    },
+    "file_path": "/home/ama/tccc-project/data/documents/tccc_procedures.txt",
+    "added_at": "2025-03-09T09:36:57.182439"
+  },
+  "143": {
+    "id": "143",
+    "metadata": {
+      "title": "clinical-guidelines-2024-en",
+      "source_file": "clinical-guidelines-2024-en.pdf",
+      "category": "temp_documents",
+      "source": "TCCC.ai RAG Documents",
+      "created_at": "2025-03-09 10:28:31",
+      "file_name": "clinical-guidelines-2024-en.txt",
+      "content_type": "text/plain",
+      "file_size": 35529
+    },
+    "file_path": "data/temp_documents/processed/clinical-guidelines-2024-en.txt",
+    "added_at": "2025-03-09T10:28:34.400893"
+  },
+  "144": {
+    "id": "144",
+    "metadata": {
+      "title": "clinical-guidelines-2024-en",
+      "source_file": "clinical-guidelines-2024-en.pdf",
+      "category": "temp_documents",
+      "source": "TCCC.ai RAG Documents",
+      "created_at": "2025-03-09 10:29:14",
+      "file_name": "clinical-guidelines-2024-en.txt",
+      "content_type": "text/plain",
+      "file_size": 35529
+    },
+    "file_path": "data/temp_documents/processed/clinical-guidelines-2024-en.txt",
+    "added_at": "2025-03-09T10:29:17.841228"
+  },
+  "145": {
+    "id": "145",
+    "metadata": {
+      "title": "clinical-guidelines-2024-en",
+      "source_file": "clinical-guidelines-2024-en.pdf",
+      "category": "temp_documents",
+      "source": "TCCC.ai RAG Documents",
+      "created_at": "2025-03-09 10:30:25",
+      "file_name": "clinical-guidelines-2024-en.txt",
+      "content_type": "text/plain",
+      "file_size": 35529
+    },
+    "file_path": "data/temp_documents/processed/clinical-guidelines-2024-en.txt",
+    "added_at": "2025-03-09T10:30:28.273284"
+  },
+  "146": {
+    "id": "146",
+    "metadata": {
+      "title": "tactical_considerations",
+      "source_file": "tactical_considerations.txt",
+      "category": "documents",
+      "source": "TCCC.ai RAG Documents",
+      "created_at": "2025-03-09 10:51:49",
+      "file_name": "tactical_considerations.txt",
+      "content_type": "text/plain",
+      "file_size": 996
+    },
+    "file_path": "data/documents/processed/tactical_considerations.txt",
+    "added_at": "2025-03-09T10:51:49.379153"
+  },
+  "147": {
+    "id": "147",
+    "metadata": {
+      "title": "MilitaryDoctorReferenceSheet",
+      "source_file": "MilitaryDoctorReferenceSheet.docx",
+      "category": "documents",
+      "source": "TCCC.ai RAG Documents",
+      "created_at": "2025-03-09 10:51:50",
+      "file_name": "MilitaryDoctorReferenceSheet.txt",
+      "content_type": "text/plain",
+      "file_size": 2308
+    },
+    "file_path": "data/documents/processed/MilitaryDoctorReferenceSheet.txt",
+    "added_at": "2025-03-09T10:51:50.689642"
+  },
+  "148": {
+    "id": "148",
+    "metadata": {
+      "title": "test_pneumothorax",
+      "source_file": "test_pneumothorax.txt",
+      "category": "documents",
+      "source": "TCCC.ai RAG Documents",
+      "created_at": "2025-03-09 10:51:51",
+      "file_name": "test_pneumothorax.txt",
+      "content_type": "text/plain",
+      "file_size": 53
+    },
+    "file_path": "data/documents/processed/test_pneumothorax.txt",
+    "added_at": "2025-03-09T10:51:51.687013"
+  },
+  "149": {
+    "id": "149",
+    "metadata": {
+      "title": "medical_procedures",
+      "source_file": "medical_procedures.txt",
+      "category": "documents",
+      "source": "TCCC.ai RAG Documents",
+      "created_at": "2025-03-09 10:51:51",
+      "file_name": "medical_procedures.txt",
+      "content_type": "text/plain",
+      "file_size": 1028
+    },
+    "file_path": "data/documents/processed/medical_procedures.txt",
+    "added_at": "2025-03-09T10:51:51.947301"
+  },
+  "150": {
+    "id": "150",
+    "metadata": {
+      "title": "tccc_procedures",
+      "source_file": "tccc_procedures.txt",
+      "category": "documents",
+      "source": "TCCC.ai RAG Documents",
+      "created_at": "2025-03-09 10:51:52",
+      "file_name": "tccc_procedures.txt",
+      "content_type": "text/plain",
+      "file_size": 937
+    },
+    "file_path": "data/documents/processed/tccc_procedures.txt",
+    "added_at": "2025-03-09T10:51:52.729976"
+  },
+  "151": {
+    "id": "151",
+    "metadata": {
+      "title": "medical_equipment",
+      "source_file": "medical_equipment.txt",
+      "category": "documents",
+      "source": "TCCC.ai RAG Documents",
+      "created_at": "2025-03-09 10:51:53",
+      "file_name": "medical_equipment.txt",
+      "content_type": "text/plain",
+      "file_size": 753
+    },
+    "file_path": "data/documents/processed/medical_equipment.txt",
+    "added_at": "2025-03-09T10:51:53.602129"
+  },
+  "152": {
+    "id": "152",
+    "metadata": {
+      "title": "clinical-guidelines-2024-en",
+      "source_file": "clinical-guidelines-2024-en.pdf",
+      "category": "documents",
+      "source": "TCCC.ai RAG Documents",
+      "created_at": "2025-03-09 10:51:54",
+      "file_name": "clinical-guidelines-2024-en.txt",
+      "content_type": "text/plain",
+      "file_size": 35529
+    },
+    "file_path": "data/documents/processed/clinical-guidelines-2024-en.txt",
+    "added_at": "2025-03-09T10:51:57.704374"
+  },
+  "153": {
+    "id": "153",
+    "metadata": {
+      "title": "tccc-cpp-skill-card-55-dd-1380-tccc-casualty-card-en",
+      "source_file": "tccc-cpp-skill-card-55-dd-1380-tccc-casualty-card-en.pdf",
+      "category": "pdfs",
+      "source": "TCCC.ai RAG Documents",
+      "created_at": "2025-03-09 10:52:06",
+      "file_name": "tccc-cpp-skill-card-55-dd-1380-tccc-casualty-card-en.txt",
+      "content_type": "text/plain",
+      "file_size": 5828
+    },
+    "file_path": "data/documents/pdfs/processed/tccc-cpp-skill-card-55-dd-1380-tccc-casualty-card-en.txt",
+    "added_at": "2025-03-09T10:52:08.621490"
+  },
+  "154": {
+    "id": "154",
+    "metadata": {
+      "title": "cls student",
+      "source_file": "cls student.pdf",
+      "category": "pdfs",
+      "source": "TCCC.ai RAG Documents",
+      "created_at": "2025-03-09 10:52:10",
+      "file_name": "cls student.txt",
+      "content_type": "text/plain",
+      "file_size": 114908
+    },
+    "file_path": "data/documents/pdfs/processed/cls student.txt",
+    "added_at": "2025-03-09T10:52:21.375299"
+  },
+  "155": {
+    "id": "155",
+    "metadata": {
+      "title": "TCCC_Quick_Reference_Guide_2017",
+      "source_file": "TCCC_Quick_Reference_Guide_2017.pdf",
+      "category": "pdfs",
+      "source": "TCCC.ai RAG Documents",
+      "created_at": "2025-03-09 10:52:48",
+      "file_name": "TCCC_Quick_Reference_Guide_2017.txt",
+      "content_type": "text/plain",
+      "file_size": 89858
+    },
+    "file_path": "data/documents/pdfs/processed/TCCC_Quick_Reference_Guide_2017.txt",
+    "added_at": "2025-03-09T10:53:07.052373"
+  },
+  "156": {
+    "id": "156",
+    "metadata": {
+      "title": "tcc vocab list",
+      "source_file": "tcc vocab list.pdf",
+      "category": "pdfs",
+      "source": "TCCC.ai RAG Documents",
+      "created_at": "2025-03-09 10:53:29",
+      "file_name": "tcc vocab list.txt",
+      "content_type": "text/plain",
+      "file_size": 45566
+    },
+    "file_path": "data/documents/pdfs/processed/tcc vocab list.txt",
+    "added_at": "2025-03-09T10:53:41.138911"
+  },
+  "157": {
+    "id": "157",
+    "metadata": {
+      "title": "tccc-cpp-skill-card-57-after-action-report-en",
+      "source_file": "tccc-cpp-skill-card-57-after-action-report-en.pdf",
+      "category": "pdfs",
+      "source": "TCCC.ai RAG Documents",
+      "created_at": "2025-03-09 10:54:16",
+      "file_name": "tccc-cpp-skill-card-57-after-action-report-en.txt",
+      "content_type": "text/plain",
+      "file_size": 2578
+    },
+    "file_path": "data/documents/pdfs/processed/tccc-cpp-skill-card-57-after-action-report-en.txt",
+    "added_at": "2025-03-09T10:54:16.605678"
+  },
+  "158": {
+    "id": "158",
+    "metadata": {
+      "title": "tccc-cpp-skill-card-56-9-line-medevac-and-mist-preparation-en",
+      "source_file": "tccc-cpp-skill-card-56-9-line-medevac-and-mist-preparation-en.pdf",
+      "category": "pdfs",
+      "source": "TCCC.ai RAG Documents",
+      "created_at": "2025-03-09 10:54:23",
+      "file_name": "tccc-cpp-skill-card-56-9-line-medevac-and-mist-preparation-en.txt",
+      "content_type": "text/plain",
+      "file_size": 3667
+    },
+    "file_path": "data/documents/pdfs/processed/tccc-cpp-skill-card-56-9-line-medevac-and-mist-preparation-en.txt",
+    "added_at": "2025-03-09T10:54:24.032521"
+  },
+  "159": {
+    "id": "159",
+    "metadata": {
+      "title": "401",
+      "source_file": "401.pdf",
+      "category": "pdfs",
+      "source": "TCCC.ai RAG Documents",
+      "created_at": "2025-03-09 10:54:30",
+      "file_name": "401.txt",
+      "content_type": "text/plain",
+      "file_size": 17132
+    },
+    "file_path": "data/documents/pdfs/processed/401.txt",
+    "added_at": "2025-03-09T10:54:33.304428"
+  },
+  "160": {
+    "id": "160",
+    "metadata": {
+      "title": "jp4_02",
+      "source_file": "jp4_02.pdf",
+      "category": "pdfs",
+      "source": "TCCC.ai RAG Documents",
+      "created_at": "2025-03-09 10:55:06",
+      "file_name": "jp4_02.txt",
+      "content_type": "text/plain",
+      "file_size": 698864
+    },
+    "file_path": "data/documents/pdfs/processed/jp4_02.txt",
+    "added_at": "2025-03-09T10:56:13.884309"
+  },
+  "161": {
+    "id": "161",
+    "metadata": {
+      "title": "clinical-guidelines-2024-en",
+      "source_file": "clinical-guidelines-2024-en.pdf",
+      "category": "pdfs",
+      "source": "TCCC.ai RAG Documents",
+      "created_at": "2025-03-09 10:59:27",
+      "file_name": "clinical-guidelines-2024-en.txt",
+      "content_type": "text/plain",
+      "file_size": 35529
+    },
+    "file_path": "data/documents/pdfs/processed/clinical-guidelines-2024-en.txt",
+    "added_at": "2025-03-09T10:59:30.172159"
+  },
+  "162": {
+    "id": "162",
+    "metadata": {
+      "category": "TCCC Reference",
+      "type": "Text",
+      "source": "Verification Script",
+      "created_at": "2025-03-09 11:01:22",
+      "file_name": "medical_procedures.txt",
+      "content_type": "text/plain",
+      "file_size": 1028
+    },
+    "file_path": "/home/ama/tccc-project/data/sample_documents/medical_procedures.txt",
+    "added_at": "2025-03-09T11:01:22.329780"
+  },
+  "163": {
+    "id": "163",
+    "metadata": {
+      "category": "TCCC Reference",
+      "type": "Text",
+      "source": "Verification Script",
+      "created_at": "2025-03-09 11:01:23",
+      "file_name": "tactical_considerations.txt",
+      "content_type": "text/plain",
+      "file_size": 996
+    },
+    "file_path": "/home/ama/tccc-project/data/sample_documents/tactical_considerations.txt",
+    "added_at": "2025-03-09T11:01:23.188279"
+  },
+  "164": {
+    "id": "164",
+    "metadata": {
+      "category": "TCCC Reference",
+      "type": "Text",
+      "source": "Verification Script",
+      "created_at": "2025-03-09 11:01:23",
+      "file_name": "medical_equipment.txt",
+      "content_type": "text/plain",
+      "file_size": 753
+    },
+    "file_path": "/home/ama/tccc-project/data/sample_documents/medical_equipment.txt",
+    "added_at": "2025-03-09T11:01:23.764715"
+  },
+  "165": {
+    "id": "165",
+    "metadata": {
+      "category": "Medical Procedures",
+      "type": "Reference",
+      "source": "TCCC Guidelines",
+      "file_name": "tccc_procedures.txt",
+      "content_type": "text/plain",
+      "file_size": 937
+    },
+    "file_path": "/home/ama/tccc-project/data/documents/tccc_procedures.txt",
+    "added_at": "2025-03-09T11:01:44.832914"
+  },
+  "166": {
+    "id": "166",
+    "metadata": {
+      "title": "Tactical Considerations",
+      "source": "TCCC Guidelines",
+      "category": "training",
+      "file_name": "tactical_considerations.txt",
+      "content_type": "text/plain",
+      "file_size": 996
+    },
+    "file_path": "/home/ama/tccc-project/data/sample_documents/tactical_considerations.txt",
+    "added_at": "2025-03-09T12:05:40.726296"
+  },
+  "167": {
+    "id": "167",
+    "metadata": {
+      "title": "Tension Pneumothorax Treatment Protocol",
+      "category": "medical procedure",
+      "file_name": "tension_pneumothorax.txt"
+    },
+    "file_path": "data/sample_documents/tension_pneumothorax.txt",
+    "added_at": "2025-03-09T12:12:11.009054"
+  },
+  "168": {
+    "id": "168",
+    "metadata": {
+      "title": "Tension Pneumothorax",
+      "source": "data/sample_documents/tension_pneumothorax.txt",
+      "file_name": "tension_pneumothorax.txt",
+      "format": "text"
+    },
+    "file_path": "data/sample_documents/tension_pneumothorax.txt",
+    "added_at": "2025-03-09T12:14:16.538232"
+  },
+  "169": {
+    "id": "169",
+    "metadata": {
+      "title": "Tension Pneumothorax",
+      "source": "data/sample_documents/tension_pneumothorax.txt",
+      "file_name": "tension_pneumothorax.txt",
+      "format": "text"
+    },
+    "file_path": "data/sample_documents/tension_pneumothorax.txt",
+    "added_at": "2025-03-09T12:15:02.826075"
+  },
+  "170": {
+    "id": "170",
+    "metadata": {
+      "title": "Tactical Considerations",
+      "source": 

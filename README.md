@@ -72,8 +72,12 @@ The project has reached a significant milestone with approximately 22,000 lines 
 
 The system follows a modular architecture with clean interfaces between components:
 
-1. **Audio Pipeline:** Captures and processes speech input using PyAudio with Silero VAD for voice activity detection
-2. **Speech-to-Text:** Implements a fine-tuned Whisper model (faster-whisper-tiny.en) optimized for medical terminology
+1. **Audio Pipeline:** Captures and processes speech input using PyAudio with Silero VAD and multi-stage battlefield audio enhancement, including:
+   - Battlefield-specific noise filtering for gunshots, explosions, vehicle noise, and wind noise
+   - FullSubNet neural speech enhancement for challenging acoustic conditions
+   - Adaptive distance compensation and voice isolation techniques
+   - Real-time processing optimized for Jetson hardware
+2. **Speech-to-Text:** Implements a fine-tuned Whisper model (faster-whisper-tiny.en) with battlefield-optimized VAD parameters and enhanced accuracy through audio pre-processing
 3. **LLM Analysis:** Utilizes Microsoft's Phi-2 model (quantized for edge deployment) to extract medical events and procedures
 4. **RAG System:** Employs all-MiniLM-L12-v2 embedding model with a local vector database (FAISS/Chroma) for document retrieval
 5. **Timeline Database:** SQLite database with WAL mode optimized for the Jetson's NVMe storage
@@ -157,17 +161,25 @@ pip install -e .
 python verification_script_audio_pipeline.py
 ```
 
-## Current Challenges
+## Current Capabilities
 
-While individual components function as expected in isolation, several integration issues remain:
+The system now has several enhanced capabilities:
 
-1. **Inter-module Communication:** Event passing between components requires refinement
-2. **System Event Loop:** The core orchestration mechanism needs restructuring
-3. **Data Flow Management:** Information transfer between modules faces bottlenecks
-4. **Event Standardization:** Common format specifications needed across the system
-5. **Error Handling:** A consistent approach to failure management is required
+1. **Battlefield Audio Processing:** Multi-stage noise reduction pipeline with neural enhancement
+   - Specialized filters for battlefield acoustic conditions (gunfire, explosions, vehicles)
+   - Adaptive processing based on environmental conditions
+   - Distance compensation for varying speaker positions
+   - Wind and background noise suppression optimized for outdoor environments
+2. **Robust Speech Recognition:** STT engine with enhanced accuracy through audio pre-processing
+   - Battlefield-optimized voice activity detection parameters
+   - Integration with FullSubNet neural speech enhancement
+   - Automatic adjustment to varying audio conditions
+3. **Real-time Operation:** Complete pipeline from audio capture to transcription and analysis
+   - Efficient processing optimized for Jetson hardware
+   - CUDA acceleration for neural speech enhancement
+   - Automatic resource management for constrained hardware
 
-These challenges center on creating a system that maintains functionality under suboptimal conditions rather than failing completely.
+While individual components now function effectively, several integration challenges remain in creating a system that maintains functionality under suboptimal conditions rather than failing completely.
 
 ## Next Steps
 

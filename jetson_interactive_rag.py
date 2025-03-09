@@ -370,16 +370,37 @@ for i, (doc_id, doc) in enumerate(sorted_docs[:3]):
             source = source['filename']
         print(f'  • {os.path.basename(source)}')
 "
-    elif [[ -f "$input" ]]; then
-        # Process any document file
+    # Handle all types of quotes by creating a clean version of the input
+    clean_input="${input//\'/}"     # Remove single quotes
+    clean_input="${clean_input//\"/}" # Remove double quotes
+    
+    # Now check the clean input for files or directories
+    if [[ -f "$input" ]]; then
+        # Process any document file (unquoted)
         process_document "$input"
+    elif [[ -f "$clean_input" ]]; then
+        # Handle quoted paths with spaces
+        process_document "$clean_input"
     elif [[ -d "$input" ]]; then
-        # Process all documents in a directory
+        # Process all documents in a directory (unquoted)
         echo "Processing all documents in directory: $input"
         
         # Find and process all supported document types
         for ext in pdf txt md py docx html htm xml json csv yaml yml; do
             for file in "$input"/*.$ext "$input"/*.${ext^^}; do
+                # Check if file exists (to handle cases where no matches are found)
+                if [[ -f "$file" ]]; then
+                    process_document "$file"
+                fi
+            done
+        done
+    elif [[ -d "$clean_input" ]]; then
+        # Handle quoted directory paths with spaces
+        echo "Processing all documents in directory: $clean_input"
+        
+        # Find and process all supported document types for quoted paths
+        for ext in pdf txt md py docx html htm xml json csv yaml yml; do
+            for file in "$clean_input"/*.$ext "$clean_input"/*.${ext^^}; do
                 # Check if file exists (to handle cases where no matches are found)
                 if [[ -f "$file" ]]; then
                     process_document "$file"

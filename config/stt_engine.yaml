@@ -77,19 +77,19 @@ vocabulary:
 # Hardware acceleration settings
 hardware:
   # Enable hardware acceleration (set to false for CPU only)
-  enable_acceleration: false
+  enable_acceleration: true
   
   # CUDA device ID (-1 for CPU only)
-  cuda_device: -1
+  cuda_device: 0
   
   # Enable TensorRT optimization
-  use_tensorrt: false
+  use_tensorrt: true
   
   # CUDA stream configuration
-  cuda_streams: 1
+  cuda_streams: 2
   
   # Memory limit in MB
-  memory_limit_mb: 2048
+  memory_limit_mb: 4096
   
   # CPU threads for CPU-bound operations
   cpu_threads: 4

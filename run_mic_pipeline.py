@@ -13,8 +13,10 @@ project_dir = os.path.dirname(os.path.abspath(__file__))
 sys.path.insert(0, os.path.join(project_dir, 'src'))
 
 # Setup environment
-os.environ["USE_MOCK_STT"] = "1"  # Use mock STT for reliability
+os.environ["USE_MOCK_STT"] = "0"  # Use real STT engine
+os.environ["TCCC_USE_MOCK_LLM"] = "0"  # Use real LLM engine
 os.environ["PYTHONPATH"] = f"{os.environ.get('PYTHONPATH', '')}:{project_dir}/src"
+os.environ["CUDA_VISIBLE_DEVICES"] = "0"  # Use GPU 0
 
 # Import key components
 from tccc.audio_pipeline import AudioPipeline
@@ -70,7 +72,7 @@ if not audio_pipeline.initialize(audio_config):
     sys.exit(1)
 
 # Initialize STT Engine
-stt_engine = create_stt_engine("mock", stt_config)
+stt_engine = create_stt_engine("faster-whisper", stt_config)
 if not stt_engine.initialize(stt_config):
     print("Failed to initialize STT Engine")
     sys.exit(1)

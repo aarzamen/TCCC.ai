@@ -1,94 +1,775 @@
+==================================================
+TCCC.ai System Verification Suite
+==================================================
 
 [0;33mRUNNING MODULE-LEVEL VERIFICATIONS[0m
 ==================================================
 
 [0;33mRunning verification for: Processing Core[0m
 ------------------------------------------------
+2025-03-09 05:01:58,070 - tccc.processing_core.resource_monitor - INFO - Initialized generic resource monitor (NVIDIA GPU: False)
+2025-03-09 05:01:58,071 - tccc.processing_core.resource_monitor - INFO - Using generic resource monitor
+2025-03-09 05:01:58,071 - tccc.processing_core.processing_core - INFO - Registered module: resource_monitor of type monitor
+2025-03-09 05:01:58,072 - tccc.processing_core.resource_monitor - INFO - Started resource monitoring (interval: 5s)
+2025-03-09 05:01:58,074 - tccc.processing_core.state_manager - INFO - Initialized SQLite database with WAL mode
+2025-03-09 05:01:58,075 - tccc.processing_core.state_manager - INFO - Loaded 3 state keys from database
+2025-03-09 05:01:58,076 - tccc.processing_core.state_manager - INFO - Loaded 10 history entries from database
+2025-03-09 05:01:58,077 - tccc.processing_core.state_manager - INFO - Started state autosave (interval: 60s)
+2025-03-09 05:01:58,078 - tccc.processing_core.processing_core - INFO - Registered module: state_manager of type state
+2025-03-09 05:01:58,079 - tccc.processing_core.entity_extractor - INFO - Loaded custom pattern: ACCOUNT_NUMBER
+2025-03-09 05:01:58,079 - tccc.processing_core.entity_extractor - INFO - Loaded custom pattern: POLICY_NUMBER
+2025-03-09 05:01:58,080 - tccc.processing_core.entity_extractor - INFO - Loaded custom pattern: PRODUCT_CODE
+2025-03-09 05:01:58,080 - tccc.processing_core.entity_extractor - WARNING - Model type spacy not supported or dependencies missing. Using mock mode.
+2025-03-09 05:01:58,081 - tccc.processing_core.entity_extractor - INFO - EntityExtractor initialized with spacy backend
+2025-03-09 05:01:58,081 - tccc.processing_core.processing_core - INFO - Registered module: entity_extractor of type extractor
+2025-03-09 05:01:58,084 - tccc.processing_core.intent_classifier - INFO - Created 7 default intent rules
+2025-03-09 05:01:58,085 - tccc.processing_core.resource_monitor - WARNING - Resource threshold exceeded: CPU usage (100.0%) exceeds threshold (80%)
+2025-03-09 05:01:58,091 - tccc.processing_core.intent_classifier - INFO - IntentClassifier initialized with rule_based backend
+2025-03-09 05:01:58,091 - tccc.processing_core.processing_core - INFO - Registered module: intent_classifier of type classifier
+2025-03-09 05:01:58,546 - tccc.processing_core.sentiment_analyzer - INFO - Loaded sentiment analysis model: distilbert-base-uncased-finetuned-sst-2-english
+2025-03-09 05:01:58,547 - tccc.processing_core.sentiment_analyzer - INFO - Emotion detection is enabled, but using rule-based fallback
+2025-03-09 05:01:58,547 - tccc.processing_core.sentiment_analyzer - INFO - SentimentAnalyzer initialized with transformers backend
+2025-03-09 05:01:58,547 - tccc.processing_core.processing_core - INFO - Registered module: sentiment_analyzer of type analyzer
+2025-03-09 05:01:58,548 - tccc.processing_core.plugin_manager - WARNING - Plugin directory not found: plugins/processing_core/
+2025-03-09 05:01:58,548 - tccc.processing_core.plugin_manager - INFO - Discovered 0 plugins in 1 directories
+2025-03-09 05:01:58,548 - tccc.processing_core.plugin_manager - ERROR - Plugin keyword_extraction not found
+2025-03-09 05:01:58,548 - tccc.processing_core.plugin_manager - ERROR - Plugin topic_classification not found
+2025-03-09 05:01:58,549 - tccc.processing_core.processing_core - INFO - Registered module: plugin_manager of type manager
+2025-03-09 05:01:58,549 - tccc.processing_core.processing_core - INFO - Processing Core initialized successfully
+2025-03-09 05:01:58,550 - tccc.processing_core.plugin_manager - ERROR - Error registering plugin test_nlp_1: TestPlugin.initialize() takes 1 positional argument but 2 were given
+2025-03-09 05:01:58,550 - tccc.processing_core.processing_core - ERROR - Failed to register plugin: test_nlp_1
+2025-03-09 05:01:58,550 - tccc.processing_core.plugin_manager - ERROR - Error registering plugin test_nlp_2: TestPlugin.initialize() takes 1 positional argument but 2 were given
+2025-03-09 05:01:58,550 - tccc.processing_core.processing_core - ERROR - Failed to register plugin: test_nlp_2
+2025-03-09 05:01:58,551 - tccc.processing_core.plugin_manager - ERROR - Error registering plugin test_audio_1: TestPlugin.initialize() takes 1 positional argument but 2 were given
+2025-03-09 05:01:58,551 - tccc.processing_core.processing_core - ERROR - Failed to register plugin: test_audio_1
+2025-03-09 05:01:58,551 - tccc.processing_core.plugin_manager - ERROR - Error registering plugin test_viz_1: TestPlugin.initialize() takes 1 positional argument but 2 were given
+2025-03-09 05:01:58,551 - tccc.processing_core.processing_core - ERROR - Failed to register plugin: test_viz_1
+2025-03-09 05:01:58,742 - tccc.processing_core.processing_core - INFO - Shutting down Processing Core
+2025-03-09 05:01:58,743 - tccc.processing_core.processing_core - INFO - Shutting down module: plugin_manager
+2025-03-09 05:01:58,744 - tccc.processing_core.processing_core - INFO - Module plugin_manager shutdown complete
+2025-03-09 05:01:58,744 - tccc.processing_core.processing_core - INFO - Shutting down module: sentiment_analyzer
+2025-03-09 05:01:58,744 - tccc.processing_core.processing_core - INFO - Module sentiment_analyzer shutdown complete
+2025-03-09 05:01:58,745 - tccc.processing_core.processing_core - INFO - Shutting down module: intent_classifier
+2025-03-09 05:01:58,745 - tccc.processing_core.processing_core - INFO - Module intent_classifier shutdown complete
+2025-03-09 05:01:58,745 - tccc.processing_core.processing_core - INFO - Shutting down module: entity_extractor
+2025-03-09 05:01:58,745 - tccc.processing_core.processing_core - INFO - Module entity_extractor shutdown complete
+2025-03-09 05:01:58,745 - tccc.processing_core.processing_core - INFO - Shutting down module: state_manager
+2025-03-09 05:01:58,760 - tccc.processing_core.state_manager - INFO - Closed database connection
+2025-03-09 05:01:58,760 - tccc.processing_core.state_manager - INFO - Stopped state manager
+2025-03-09 05:01:58,761 - tccc.processing_core.processing_core - INFO - Module state_manager shutdown complete
+2025-03-09 05:01:58,761 - tccc.processing_core.processing_core - INFO - Shutting down module: resource_monitor
+2025-03-09 05:01:58,761 - tccc.processing_core.resource_monitor - INFO - Stopped resource monitoring
+2025-03-09 05:01:58,761 - tccc.processing_core.processing_core - INFO - Module resource_monitor shutdown complete
+2025-03-09 05:01:58,762 - tccc.processing_core.resource_monitor - INFO - Stopped resource monitoring
+2025-03-09 05:01:58,762 - tccc.processing_core.state_manager - INFO - Stopped state manager
+2025-03-09 05:01:58,762 - tccc.processing_core.processing_core - INFO - Processing Core shutdown complete
 
-[0;32mVerification PASSED: Processing Core (9s)[0m
+[0;32mVerification PASSED: Processing Core[0m
 
 [0;33mRunning verification for: Data Store[0m
 ------------------------------------------------
+Starting Data Store verification...
+Using temporary database at: /tmp/tmphyfg0x71/tccc.db
 
-[0;32mVerification PASSED: Data Store (0s)[0m
+==============================
+======= Initialization =======
+==============================
+
+2025-03-09 05:02:00,677 - tccc.data_store.data_store - ERROR - Backup failed: SQLite objects created in a thread can only be used in that same thread. The object was created in thread id 281473419179040 and this is thread id 281473395716384.
+2025-03-09 05:02:00,677 - tccc.data_store.data_store - INFO - Data Store initialized successfully
+2025-03-09 05:02:00,678 - tccc.data_store.data_store - ERROR - Scheduled backup failed: SQLite objects created in a thread can only be used in that same thread. The object was created in thread id 281473419179040 and this is thread id 281473395716384.
+Initialization result: True
+
+==============================
+======= Storing Events =======
+==============================
+
+Stored event 1: evt_1741521720_-2020582534879729708
+Stored event 2: evt_1741521720_-5302844857013944275
+Stored event 3: evt_1741521720_-6028138310248948892
+Stored event 4: evt_1741521720_5954652037075549974
+Stored event 5: evt_1741521720_4652993006180846106
+
+==============================
+====== Storing Reports =======
+==============================
+
+Stored report 1: rep_1741521720_8015884983262280530
+Stored report 2: rep_1741521720_-2376000220991933877
+Stored report 3: rep_1741521720_-5580580256049674791
+
+==============================
+====== Querying Events =======
+==============================
+
+All events:
+Total events: 5
+
+Events with warning severity:
+Warning events: 2
+  - evt_1741521720_-2020582534879729708: vital_signs from patient_monitor
+  - evt_1741521720_5954652037075549974: vital_signs from patient_monitor
+
+Events for patient_1:
+Patient events: 3
+  - evt_1741521720_-2020582534879729708: vital_signs at 2025-03-09T05:02:00.678632
+  - evt_1741521720_-6028138310248948892: vital_signs at 2025-03-09T04:52:00.679533
+  - evt_1741521720_4652993006180846106: vital_signs at 2025-03-09T04:42:00.680073
+
+==============================
+========== Timeline ==========
+==============================
+
+Timeline events from last 20 minutes: 4
+  1. 2025-03-09T05:02:00.678632: vital_signs - {'heart_rate': 60, 'blood_pressure': '110/70', 'temperature': 36.5, 'o2_saturation': 98}
+  2. 2025-03-09T04:57:00.679237: vital_signs - {'heart_rate': 65, 'blood_pressure': '112/71', 'temperature': 36.7, 'o2_saturation': 97}
+  3. 2025-03-09T04:52:00.679533: vital_signs - {'heart_rate': 70, 'blood_pressure': '114/72', 'temperature': 36.9, 'o2_saturation': 96}
+
+==============================
+===== Context Generation =====
+==============================
+
+Context window: 900 seconds
+Events in context: 3
+Reports in context: 2
+
+==============================
+=========== Backup ===========
+==============================
+
+2025-03-09 05:02:00,714 - tccc.data_store.data_store - INFO - Database backup created: /tmp/tmphyfg0x71/backups/backup_1741521720_verification_test.db (110592 bytes)
+Backup created: backup_1741521720_verification_test
+Backup path: /tmp/tmphyfg0x71/backups/backup_1741521720_verification_test.db
+Backup size: 110592 bytes
+Total backups: 1
+
+==============================
+=========== Status ===========
+==============================
+
+Data Store Status: active
+Database path: /tmp/tmphyfg0x71/tccc.db
+Database size: 0.11 MB
+Record counts:
+  - events: 5
+  - reports: 3
+  - sessions: 0
+  - metrics: 0
+  - backups: 1
+
+Backup enabled: Yes
+Cache enabled: Yes
+
+Verification complete!
+
+[0;32mVerification PASSED: Data Store[0m
 
 [0;33mRunning verification for: Document Library[0m
 ------------------------------------------------
+2025-03-09 05:02:09,340 - tccc.document_library.document_processor - INFO - Document Processor initialized with support for: PDF, DOCX, HTML, TXT
+2025-03-09 05:02:09,340 - tccc.document_library.cache_manager - INFO - Cache Manager initialized with cache directory: /home/ama/tccc-project/data/query_cache
+2025-03-09 05:02:09,341 - tccc.document_library.cache_manager - INFO - Cache timeout: 3600 seconds
+2025-03-09 05:02:09,343 - tccc.document_library.vector_store - INFO - Loading embedding model: all-MiniLM-L12-v2
+2025-03-09 05:02:11,111 - tccc.document_library.vector_store - INFO - Loading existing FAISS index
+2025-03-09 05:02:11,113 - tccc.document_library.vector_store - INFO - Vector Store initialized with 501 vectors
+2025-03-09 05:02:11,115 - tccc.document_library.medical_vocabulary - INFO - Medical vocabulary initialized with 115 terms
+2025-03-09 05:02:11,115 - tccc.document_library.document_library - INFO - Medical vocabulary initialized successfully
+2025-03-09 05:02:11,116 - tccc.document_library.medical_vocabulary - INFO - Medical vocabulary initialized with 115 terms
+2025-03-09 05:02:11,116 - tccc.document_library.document_library - INFO - Loading embedding model: all-MiniLM-L12-v2
+2025-03-09 05:02:11,118 - tccc.document_library.document_library - INFO - Loaded 119 documents from storage
+2025-03-09 05:02:11,123 - tccc.document_library.document_library - INFO - Loaded 543 document chunks from storage
+2025-03-09 05:02:11,124 - tccc.document_library.document_library - INFO - Document Library initialized successfully
+2025-03-09 05:02:11,430 - tccc.document_library.document_library - INFO - Document Library state saved
+2025-03-09 05:02:11,431 - tccc.document_library.document_library - INFO - Document added with ID: 124
+2025-03-09 05:02:11,765 - tccc.document_library.document_library - INFO - Document Library state saved
+2025-03-09 05:02:11,766 - tccc.document_library.document_library - INFO - Document added with ID: 125
+2025-03-09 05:02:11,973 - tccc.document_library.document_library - INFO - Document Library state saved
+2025-03-09 05:02:11,973 - tccc.document_library.document_library - INFO - Document added with ID: 126
 
-[0;32mVerification PASSED: Document Library (12s)[0m
+[0;32mVerification PASSED: Document Library[0m
 
 [0;33mRunning verification for: Audio Pipeline[0m
 ------------------------------------------------
+Starting Audio Pipeline verification...
+Loaded configuration from: /home/ama/tccc-project/./config/audio_pipeline.yaml
 
-[0;32mVerification PASSED: Audio Pipeline (6s)[0m
+==============================
+======= Initialization =======
+==============================
+
+2025-03-09 05:02:14,297 - tccc.audio_pipeline.audio_pipeline - INFO - Primary VAD initialized with sensitivity 2
+2025-03-09 05:02:14,297 - tccc.audio_pipeline.audio_pipeline - INFO - Enhanced VAD initialized with multi-factor detection
+2025-03-09 05:02:14,298 - tccc.audio_pipeline.audio_pipeline - INFO - Enhanced audio processor initialized for battlefield conditions
+2025-03-09 05:02:14,589 - tccc.audio_pipeline.audio_pipeline - INFO - Initialized microphone source (device 0)
+2025-03-09 05:02:14,590 - tccc.audio_pipeline.audio_pipeline - INFO - Registered audio source: default_microphone (microphone)
+2025-03-09 05:02:14,590 - tccc.audio_pipeline.audio_pipeline - INFO - Initialized network audio source (sip://127.0.0.1:5060)
+2025-03-09 05:02:14,590 - tccc.audio_pipeline.audio_pipeline - INFO - Registered audio source: voip (network)
+2025-03-09 05:02:14,590 - tccc.audio_pipeline.audio_pipeline - INFO - Initialized file audio source: /home/ama/tccc-project/./test_data/sample_call.wav
+2025-03-09 05:02:14,591 - tccc.audio_pipeline.audio_pipeline - INFO - Registered audio source: test_file (file)
+2025-03-09 05:02:14,591 - tccc.audio_pipeline.audio_pipeline - INFO - Set default audio source: default_microphone
+2025-03-09 05:02:14,591 - tccc.audio_pipeline.audio_pipeline - INFO - Audio Pipeline initialized successfully
+Initialization result: True
+
+==============================
+===== Available Sources ======
+==============================
+
+1. default_microphone (microphone): 16000Hz, 1 channels
+2. voip (network): 16000Hz, 1 channels
+3. test_file (file): 16000Hz, 1 channels
+
+==============================
+====== Starting Capture ======
+==============================
+
+2025-03-09 05:02:14,592 - tccc.audio_pipeline.audio_pipeline - INFO - Started audio source: test_file
+2025-03-09 05:02:14,592 - tccc.audio_pipeline.audio_pipeline - INFO - Playing audio file: /home/ama/tccc-project/./test_data/sample_call.wav
+2025-03-09 05:02:14,593 - tccc.audio_pipeline.audio_pipeline - INFO - Output stream handler started
+2025-03-09 05:02:14,593 - tccc.audio_pipeline.audio_pipeline - INFO - Started audio capture from test_file
+2025-03-09 05:02:14,593 - tccc.audio_pipeline.audio_pipeline - INFO - File details: 16000Hz, 1 channels, 16 bits, 48000 frames
+Start capture result: True
+Got audio stream: buffer size=5
+
+==============================
+========= Processing =========
+==============================
+
+Processing audio for 5 seconds...
+Read 10 chunks of audio data
+Read 20 chunks of audio data
+Read 30 chunks of audio data
+Read 40 chunks of audio data
+2025-03-09 05:02:17,594 - tccc.audio_pipeline.audio_pipeline - INFO - Playing audio file: /home/ama/tccc-project/./test_data/sample_call.wav
+2025-03-09 05:02:17,595 - tccc.audio_pipeline.audio_pipeline - INFO - File details: 16000Hz, 1 channels, 16 bits, 48000 frames
+Read 50 chunks of audio data
+Read 60 chunks of audio data
+Read 70 chunks of audio data
+
+==============================
+===== Quality Parameters =====
+==============================
+
+2025-03-09 05:02:19,594 - tccc.audio_pipeline.audio_pipeline - INFO - Updated audio quality parameters: {'noise_reduction': {'strength': 0.5}, 'enhancement': {'target_level_db': -12}}
+Set quality parameters result: True
+
+==============================
+=========== Status ===========
+==============================
+
+Pipeline status: running
+Active source: test_file
+Chunks processed: 79
+Speech chunks: 78
+Average processing time: 4.22ms
+
+==============================
+====== Stopping Capture ======
+==============================
+
+2025-03-09 05:02:19,644 - tccc.audio_pipeline.audio_pipeline - INFO - File playback stopped
+2025-03-09 05:02:19,645 - tccc.audio_pipeline.audio_pipeline - INFO - Stopped audio source: test_file
+2025-03-09 05:02:19,701 - tccc.audio_pipeline.audio_pipeline - INFO - Output stream handler stopped
+2025-03-09 05:02:19,701 - tccc.audio_pipeline.audio_pipeline - INFO - Audio capture stats: 79 chunks processed in 5.1s, 78 speech chunks detected
+2025-03-09 05:02:19,702 - tccc.audio_pipeline.audio_pipeline - INFO - Average processing time: 4.22ms per chunk
+Stop capture result: True
+
+Verification complete!
+
+[0;32mVerification PASSED: Audio Pipeline[0m
 
 [0;33mRunning verification for: STT Engine[0m
 ------------------------------------------------
+Starting STT Engine verification...
+Loaded configuration from: /home/ama/tccc-project/./config/stt_engine.yaml
 
-[0;32mVerification PASSED: STT Engine (3s)[0m
+==============================
+======= Initialization =======
+==============================
 
-[0;34mSkipping non-essential verification in quick mode: LLM Analysis[0m
+Creating STT engine with type: mock
+2025-03-09 05:02:22,869 - tccc.stt_engine - INFO - Using Mock STT Engine
+2025-03-09 05:02:22,870 - tccc.stt_engine.mock_stt - INFO - Initialized MockSTTEngine
+Initialization result: True
 
-[0;34mSkipping non-essential verification in quick mode: Display Interface[0m
+==============================
+=========== Status ===========
+==============================
 
-[0;34mSkipping non-essential verification in quick mode: Jetson Optimizer[0m
+Engine initialized: True
+Model type: mock_whisper
+Model size: tiny-en
+
+==============================
+===== Loading Test Audio =====
+==============================
+
+Loaded audio: 48000 samples, 16000Hz
+
+==============================
+======= Context Update =======
+==============================
+
+Context update result: True
+
+==============================
+======= Transcription ========
+==============================
+
+Transcription time: 0.10s
+Transcription result:
+  Text: The patient has a gunshot wound to the right leg with significant bleeding.
+  Segments: 1
+
+First segment:
+  Text: The patient has a gunshot wound to the right leg with significant bleeding.
+  Time: 0.00s - 3.00s
+  Confidence: 0.92
+
+Words in first segment (showing first 5):
+  1. 'The' (0.00s - 0.40s, conf: 0.92)
+  2. 'patient' (0.50s - 0.90s, conf: 0.92)
+  3. 'has' (1.00s - 1.40s, conf: 0.92)
+  4. 'a' (1.50s - 1.90s, conf: 0.92)
+  5. 'gunshot' (2.00s - 2.40s, conf: 0.92)
+  Language: en
+
+==============================
+======== Final Status ========
+==============================
+
+Metrics:
+  Total audio processed: 3.00s
+  Total processing time: 0.00s
+  Transcripts generated: 1
+  Errors: 0
+  Average confidence: 0.92
+  Average real-time factor: 0.25x
+
+Verification complete!
+
+[0;32mVerification PASSED: STT Engine[0m
+
+[0;33mRunning verification for: LLM Analysis[0m
+------------------------------------------------
+2025-03-09 05:02:32,372 - tccc.document_library.document_processor - INFO - Document Processor initialized with support for: PDF, DOCX, HTML, TXT
+2025-03-09 05:02:32,372 - tccc.document_library.cache_manager - INFO - Cache Manager initialized with cache directory: data/query_cache
+2025-03-09 05:02:32,372 - tccc.document_library.cache_manager - INFO - Cache timeout: 3600 seconds
+2025-03-09 05:02:32,375 - tccc.document_library.vector_store - INFO - Loading embedding model: all-MiniLM-L12-v2
+2025-03-09 05:02:34,004 - tccc.document_library.vector_store - INFO - Loading existing FAISS index
+2025-03-09 05:02:34,006 - tccc.document_library.vector_store - INFO - Vector Store initialized with 506 vectors
+2025-03-09 05:02:34,007 - tccc.document_library.medical_vocabulary - INFO - Medical vocabulary initialized with 115 terms
+2025-03-09 05:02:34,008 - tccc.document_library.document_library - INFO - Medical vocabulary initialized successfully
+2025-03-09 05:02:34,009 - tccc.document_library.medical_vocabulary - INFO - Medical vocabulary initialized with 115 terms
+2025-03-09 05:02:34,009 - tccc.document_library.document_library - INFO - Loading embedding model: all-MiniLM-L12-v2
+2025-03-09 05:02:34,011 - tccc.document_library.document_library - INFO - Loaded 122 documents from storage
+2025-03-09 05:02:34,017 - tccc.document_library.document_library - INFO - Loaded 548 document chunks from storage
+2025-03-09 05:02:34,018 - tccc.document_library.document_library - INFO - Document Library initialized successfully
+2025-03-09 05:02:34,333 - tccc.document_library.document_library - INFO - Document Library state saved
+2025-03-09 05:02:34,333 - tccc.document_library.document_library - INFO - Document added with ID: 127
+2025-03-09 05:02:34,334 - tccc.llm_analysis.llm_analysis - INFO - Initializing LLM engine
+2025-03-09 05:02:34,334 - tccc.llm_analysis.llm_analysis - INFO - Initializing LLM engine
+2025-03-09 05:02:34,334 - tccc.llm_analysis.llm_analysis - WARNING - CUDA not available, falling back to CPU
+2025-03-09 05:02:34,334 - tccc.llm_analysis.llm_analysis - WARNING - CUDA not available, falling back to CPU
+2025-03-09 05:02:34,335 - tccc.llm_analysis.llm_analysis - INFO - Loading primary model: phi-2-instruct from local
+2025-03-09 05:02:34,335 - tccc.llm_analysis.llm_analysis - INFO - Loading primary model: phi-2-instruct from local
+2025-03-09 05:02:34,335 - tccc.llm_analysis.llm_analysis - INFO - Loading Phi model from models/phi-2-instruct/
+2025-03-09 05:02:34,335 - tccc.llm_analysis.llm_analysis - INFO - Loading Phi model from models/phi-2-instruct/
+2025-03-09 05:02:34,335 - tccc.llm_analysis.mock_llm - INFO - Attempting to use real Phi-2 implementation
+2025-03-09 05:02:34,335 - tccc.llm_analysis.mock_llm - INFO - Attempting to use real Phi-2 implementation
+2025-03-09 05:02:34,336 - tccc.llm_analysis.mock_llm - INFO - Initializing Real Phi-2 Instruct model
+2025-03-09 05:02:34,336 - tccc.llm_analysis.mock_llm - INFO - Initializing Real Phi-2 Instruct model
+2025-03-09 05:02:34,336 - tccc.llm_analysis.mock_llm - INFO - Using CPU for inference
+2025-03-09 05:02:34,336 - tccc.llm_analysis.mock_llm - INFO - Using CPU for inference
+2025-03-09 05:02:34,336 - tccc.llm_analysis.mock_llm - INFO - Loading tokenizer from models/phi-2-instruct/
+2025-03-09 05:02:34,336 - tccc.llm_analysis.mock_llm - INFO - Loading tokenizer from models/phi-2-instruct/
+2025-03-09 05:02:34,358 - tccc.llm_analysis.mock_llm - ERROR - Failed to load Phi-2 model: Can't load tokenizer for 'models/phi-2-instruct/'. If you were trying to load it from 'https://huggingface.co/models', make sure you don't have a local directory with the same name. Otherwise, make sure 'models/phi-2-instruct/' is the correct path to a directory containing all relevant files for a CodeGenTokenizerFast tokenizer.
+2025-03-09 05:02:34,358 - tccc.llm_analysis.mock_llm - ERROR - Failed to load Phi-2 model: Can't load tokenizer for 'models/phi-2-instruct/'. If you were trying to load it from 'https://huggingface.co/models', make sure you don't have a local directory with the same name. Otherwise, make sure 'models/phi-2-instruct/' is the correct path to a directory containing all relevant files for a CodeGenTokenizerFast tokenizer.
+2025-03-09 05:02:34,358 - tccc.llm_analysis.mock_llm - WARNING - Failed to initialize real Phi-2 model: Model loading failed: Can't load tokenizer for 'models/phi-2-instruct/'. If you were trying to load it from 'https://huggingface.co/models', make sure you don't have a local directory with the same name. Otherwise, make sure 'models/phi-2-instruct/' is the correct path to a directory containing all relevant files for a CodeGenTokenizerFast tokenizer.
+2025-03-09 05:02:34,358 - tccc.llm_analysis.mock_llm - WARNING - Failed to initialize real Phi-2 model: Model loading failed: Can't load tokenizer for 'models/phi-2-instruct/'. If you were trying to load it from 'https://huggingface.co/models', make sure you don't have a local directory with the same name. Otherwise, make sure 'models/phi-2-instruct/' is the correct path to a directory containing all relevant files for a CodeGenTokenizerFast tokenizer.
+2025-03-09 05:02:34,359 - tccc.llm_analysis.mock_llm - INFO - Falling back to mock implementation
+2025-03-09 05:02:34,359 - tccc.llm_analysis.mock_llm - INFO - Falling back to mock implementation
+2025-03-09 05:02:34,359 - tccc.llm_analysis.mock_llm - INFO - Initializing Mock Phi-2 Instruct model
+2025-03-09 05:02:34,359 - tccc.llm_analysis.mock_llm - INFO - Initializing Mock Phi-2 Instruct model
+2025-03-09 05:02:34,359 - tccc.llm_analysis.mock_llm - INFO - Initialized default mock responses
+2025-03-09 05:02:34,359 - tccc.llm_analysis.mock_llm - INFO - Initialized default mock responses
+2025-03-09 05:02:34,360 - tccc.llm_analysis.llm_analysis - INFO - Loaded Phi model as MockPhiModel
+2025-03-09 05:02:34,360 - tccc.llm_analysis.llm_analysis - INFO - Loaded Phi model as MockPhiModel
+2025-03-09 05:02:34,360 - tccc.llm_analysis.llm_analysis - INFO - Primary model loaded successfully
+2025-03-09 05:02:34,360 - tccc.llm_analysis.llm_analysis - INFO - Primary model loaded successfully
+2025-03-09 05:02:34,360 - tccc.llm_analysis.llm_analysis - INFO - Loading fallback model: phi-2-instruct-mock from local
+2025-03-09 05:02:34,360 - tccc.llm_analysis.llm_analysis - INFO - Loading fallback model: phi-2-instruct-mock from local
+2025-03-09 05:02:34,361 - tccc.llm_analysis.llm_analysis - INFO - Loading Phi model from models/phi-2-instruct/
+2025-03-09 05:02:34,361 - tccc.llm_analysis.llm_analysis - INFO - Loading Phi model from models/phi-2-instruct/
+2025-03-09 05:02:34,361 - tccc.llm_analysis.mock_llm - INFO - Attempting to use real Phi-2 implementation
+2025-03-09 05:02:34,361 - tccc.llm_analysis.mock_llm - INFO - Attempting to use real Phi-2 implementation
+2025-03-09 05:02:34,361 - tccc.llm_analysis.mock_llm - INFO - Initializing Real Phi-2 Instruct model
+2025-03-09 05:02:34,361 - tccc.llm_analysis.mock_llm - INFO - Initializing Real Phi-2 Instruct model
+2025-03-09 05:02:34,362 - tccc.llm_analysis.mock_llm - INFO - Using CPU for inference
+2025-03-09 05:02:34,362 - tccc.llm_analysis.mock_llm - INFO - Using CPU for inference
+2025-03-09 05:02:34,362 - tccc.llm_analysis.mock_llm - INFO - Loading tokenizer from models/phi-2-instruct/
+2025-03-09 05:02:34,362 - tccc.llm_analysis.mock_llm - INFO - Loading tokenizer from models/phi-2-instruct/
+2025-03-09 05:02:34,365 - tccc.llm_analysis.mock_llm - ERROR - Failed to load Phi-2 model: Can't load tokenizer for 'models/phi-2-instruct/'. If you were trying to load it from 'https://huggingface.co/models', make sure you don't have a local directory with the same name. Otherwise, make sure 'models/phi-2-instruct/' is the correct path to a directory containing all relevant files for a CodeGenTokenizerFast tokenizer.
+2025-03-09 05:02:34,365 - tccc.llm_analysis.mock_llm - ERROR - Failed to load Phi-2 model: Can't load tokenizer for 'models/phi-2-instruct/'. If you were trying to load it from 'https://huggingface.co/models', make sure you don't have a local directory with the same name. Otherwise, make sure 'models/phi-2-instruct/' is the correct path to a directory containing all relevant files for a CodeGenTokenizerFast tokenizer.
+2025-03-09 05:02:34,366 - tccc.llm_analysis.mock_llm - WARNING - Failed to initialize real Phi-2 model: Model loading failed: Can't load tokenizer for 'models/phi-2-instruct/'. If you were trying to load it from 'https://huggingface.co/models', make sure you don't have a local directory with the same name. Otherwise, make sure 'models/phi-2-instruct/' is the correct path to a directory containing all relevant files for a CodeGenTokenizerFast tokenizer.
+2025-03-09 05:02:34,366 - tccc.llm_analysis.mock_llm - WARNING - Failed to initialize real Phi-2 model: Model loading failed: Can't load tokenizer for 'models/phi-2-instruct/'. If you were trying to load it from 'https://huggingface.co/models', make sure you don't have a local directory with the same name. Otherwise, make sure 'models/phi-2-instruct/' is the correct path to a directory containing all relevant files for a CodeGenTokenizerFast tokenizer.
+2025-03-09 05:02:34,366 - tccc.llm_analysis.mock_llm - INFO - Falling back to mock implementation
+2025-03-09 05:02:34,366 - tccc.llm_analysis.mock_llm - INFO - Falling back to mock implementation
+2025-03-09 05:02:34,366 - tccc.llm_analysis.mock_llm - INFO - Initializing Mock Phi-2 Instruct model
+2025-03-09 05:02:34,366 - tccc.llm_analysis.mock_llm - INFO - Initializing Mock Phi-2 Instruct model
+2025-03-09 05:02:34,367 - tccc.llm_analysis.mock_llm - INFO - Initialized default mock responses
+2025-03-09 05:02:34,367 - tccc.llm_analysis.mock_llm - INFO - Initialized default mock responses
+2025-03-09 05:02:34,367 - tccc.llm_analysis.llm_analysis - INFO - Loaded Phi model as MockPhiModel
+2025-03-09 05:02:34,367 - tccc.llm_analysis.llm_analysis - INFO - Loaded Phi model as MockPhiModel
+2025-03-09 05:02:34,367 - tccc.llm_analysis.llm_analysis - INFO - Fallback model loaded successfully
+2025-03-09 05:02:34,367 - tccc.llm_analysis.llm_analysis - INFO - Fallback model loaded successfully
+2025-03-09 05:02:34,368 - tccc.llm_analysis.llm_analysis - INFO - Initializing document library integration
+2025-03-09 05:02:34,368 - tccc.llm_analysis.llm_analysis - INFO - Initializing document library integration
+2025-03-09 05:02:34,381 - tccc.document_library.document_processor - INFO - Document Processor initialized with support for: PDF, DOCX, HTML, TXT
+2025-03-09 05:02:34,382 - tccc.document_library.cache_manager - INFO - Cache Manager initialized with cache directory: data/query_cache
+2025-03-09 05:02:34,382 - tccc.document_library.cache_manager - INFO - Cache timeout: 3600 seconds
+2025-03-09 05:02:34,384 - tccc.document_library.vector_store - INFO - Loading embedding model: all-MiniLM-L12-v2
+2025-03-09 05:02:35,909 - tccc.document_library.vector_store - INFO - Loading existing FAISS index
+2025-03-09 05:02:35,911 - tccc.document_library.vector_store - INFO - Vector Store initialized with 508 vectors
+2025-03-09 05:02:35,913 - tccc.document_library.medical_vocabulary - INFO - Medical vocabulary initialized with 115 terms
+2025-03-09 05:02:35,913 - tccc.document_library.document_library - INFO - Medical vocabulary initialized successfully
+2025-03-09 05:02:35,914 - tccc.document_library.medical_vocabulary - INFO - Medical vocabulary initialized with 115 terms
+2025-03-09 05:02:35,915 - tccc.document_library.document_library - INFO - Loading embedding model: all-MiniLM-L12-v2
+2025-03-09 05:02:35,916 - tccc.document_library.document_library - INFO - Loaded 123 documents from storage
+2025-03-09 05:02:35,923 - tccc.document_library.document_library - INFO - Loaded 550 document chunks from storage
+2025-03-09 05:02:35,924 - tccc.document_library.document_library - INFO - Document Library initialized successfully
+2025-03-09 05:02:35,924 - tccc.llm_analysis.llm_analysis - INFO - ContextIntegrator initialized with max_context_length=1500
+2025-03-09 05:02:35,924 - tccc.llm_analysis.llm_analysis - INFO - ContextIntegrator initialized with max_context_length=1500
+2025-03-09 05:02:35,925 - tccc.llm_analysis.llm_analysis - INFO - Initializing medical entity extractor
+2025-03-09 05:02:35,925 - tccc.llm_analysis.llm_analysis - INFO - Initializing medical entity extractor
+2025-03-09 05:02:35,926 - tccc.llm_analysis.llm_analysis - INFO - Initializing temporal event sequencer
+2025-03-09 05:02:35,926 - tccc.llm_analysis.llm_analysis - INFO - Initializing temporal event sequencer
+2025-03-09 05:02:35,926 - tccc.llm_analysis.llm_analysis - INFO - Initializing report generator
+2025-03-09 05:02:35,926 - tccc.llm_analysis.llm_analysis - INFO - Initializing report generator
+2025-03-09 05:02:35,927 - tccc.llm_analysis.llm_analysis - INFO - Initializing analysis cache
+2025-03-09 05:02:35,927 - tccc.llm_analysis.llm_analysis - INFO - Initializing analysis cache
+2025-03-09 05:02:35,927 - tccc.llm_analysis.llm_analysis - INFO - LLM analysis module initialized successfully
+2025-03-09 05:02:35,927 - tccc.llm_analysis.llm_analysis - INFO - LLM analysis module initialized successfully
+2025-03-09 05:02:35,932 - tccc.llm_analysis.llm_analysis - INFO - Extracting medical entities from transcription
+2025-03-09 05:02:35,932 - tccc.llm_analysis.llm_analysis - INFO - Extracting medical entities from transcription
+2025-03-09 05:02:40,192 - tccc.llm_analysis.llm_analysis - INFO - Sequencing medical events
+2025-03-09 05:02:40,192 - tccc.llm_analysis.llm_analysis - INFO - Sequencing medical events
+2025-03-09 05:02:40,206 - tccc.llm_analysis.llm_analysis - INFO - Enhancing events with document context
+2025-03-09 05:02:40,206 - tccc.llm_analysis.llm_analysis - INFO - Enhancing events with document context
+2025-03-09 05:02:40,207 - tccc.document_library.document_library - INFO - Overriding max context length: 55
+2025-03-09 05:02:40,211 - tccc.document_library.response_generator - WARNING - Prompt exceeds target length (587 > 555), applying additional trimming
+2025-03-09 05:02:40,212 - tccc.document_library.response_generator - INFO - Reduced prompt length from 587 to 587 characters
+2025-03-09 05:02:40,212 - tccc.document_library.document_library - INFO - Overriding max context length: 55
+2025-03-09 05:02:40,213 - tccc.document_library.response_generator - WARNING - Prompt exceeds target length (585 > 555), applying additional trimming
+2025-03-09 05:02:40,213 - tccc.document_library.response_generator - INFO - Reduced prompt length from 585 to 585 characters
+2025-03-09 05:02:40,214 - tccc.document_library.document_library - INFO - Overriding max context length: 55
+2025-03-09 05:02:40,214 - tccc.document_library.response_generator - WARNING - Prompt exceeds target length (574 > 555), applying additional trimming
+2025-03-09 05:02:40,215 - tccc.document_library.response_generator - INFO - Reduced prompt length from 574 to 574 characters
+2025-03-09 05:02:40,215 - tccc.document_library.document_library - INFO - Overriding max context length: 55
+2025-03-09 05:02:40,216 - tccc.document_library.response_generator - WARNING - Prompt exceeds target length (577 > 555), applying additional trimming
+2025-03-09 05:02:40,216 - tccc.document_library.response_generator - INFO - Reduced prompt length from 577 to 577 characters
+2025-03-09 05:02:40,217 - tccc.document_library.document_library - INFO - Overriding max context length: 55
+2025-03-09 05:02:40,217 - tccc.document_library.response_generator - WARNING - Prompt exceeds target length (574 > 555), applying additional trimming
+2025-03-09 05:02:40,218 - tccc.document_library.response_generator - INFO - Reduced prompt length from 574 to 574 characters
+2025-03-09 05:02:40,218 - tccc.document_library.document_library - INFO - Overriding max context length: 55
+2025-03-09 05:02:40,219 - tccc.document_library.response_generator - WARNING - Prompt exceeds target length (573 > 555), applying additional trimming
+2025-03-09 05:02:40,219 - tccc.document_library.response_generator - INFO - Reduced prompt length from 573 to 573 characters
+2025-03-09 05:02:40,219 - tccc.document_library.document_library - INFO - Overriding max context length: 55
+2025-03-09 05:02:40,220 - tccc.document_library.response_generator - WARNING - Prompt exceeds target length (577 > 555), applying additional trimming
+2025-03-09 05:02:40,220 - tccc.document_library.response_generator - INFO - Reduced prompt length from 577 to 577 characters
+2025-03-09 05:02:40,221 - tccc.document_library.document_library - INFO - Overriding max context length: 55
+2025-03-09 05:02:40,221 - tccc.document_library.response_generator - WARNING - Prompt exceeds target length (575 > 555), applying additional trimming
+2025-03-09 05:02:40,222 - tccc.document_library.response_generator - INFO - Reduced prompt length from 575 to 575 characters
+2025-03-09 05:02:40,222 - tccc.document_library.document_library - INFO - Overriding max context length: 55
+2025-03-09 05:02:40,223 - tccc.document_library.response_generator - WARNING - Prompt exceeds target length (578 > 555), applying additional trimming
+2025-03-09 05:02:40,223 - tccc.document_library.response_generator - INFO - Reduced prompt length from 578 to 578 characters
+2025-03-09 05:02:40,224 - tccc.document_library.document_library - INFO - Overriding max context length: 55
+2025-03-09 05:02:40,224 - tccc.document_library.response_generator - WARNING - Prompt exceeds target length (568 > 555), applying additional trimming
+2025-03-09 05:02:40,225 - tccc.document_library.response_generator - INFO - Reduced prompt length from 568 to 568 characters
+2025-03-09 05:02:40,225 - tccc.document_library.document_library - INFO - Overriding max context length: 55
+2025-03-09 05:02:40,226 - tccc.document_library.response_generator - WARNING - Prompt exceeds target length (564 > 555), applying additional trimming
+2025-03-09 05:02:40,226 - tccc.document_library.response_generator - INFO - Reduced prompt length from 564 to 564 characters
+2025-03-09 05:02:40,226 - tccc.document_library.document_library - INFO - Overriding max context length: 55
+2025-03-09 05:02:40,227 - tccc.document_library.response_generator - WARNING - Prompt exceeds target length (576 > 555), applying additional trimming
+2025-03-09 05:02:40,228 - tccc.document_library.response_generator - INFO - Reduced prompt length from 576 to 576 characters
+2025-03-09 05:02:40,228 - tccc.document_library.document_library - INFO - Overriding max context length: 55
+2025-03-09 05:02:40,229 - tccc.document_library.response_generator - WARNING - Prompt exceeds target length (569 > 555), applying additional trimming
+2025-03-09 05:02:40,229 - tccc.document_library.response_generator - INFO - Reduced prompt length from 569 to 569 characters
+2025-03-09 05:02:40,229 - tccc.document_library.document_library - INFO - Overriding max context length: 55
+2025-03-09 05:02:40,230 - tccc.document_library.response_generator - WARNING - Prompt exceeds target length (574 > 555), applying additional trimming
+2025-03-09 05:02:40,230 - tccc.document_library.response_generator - INFO - Reduced prompt length from 574 to 574 characters
+2025-03-09 05:02:40,231 - tccc.document_library.document_library - INFO - Overriding max context length: 55
+2025-03-09 05:02:40,231 - tccc.document_library.response_generator - WARNING - Prompt exceeds target length (575 > 555), applying additional trimming
+2025-03-09 05:02:40,232 - tccc.document_library.response_generator - INFO - Reduced prompt length from 575 to 575 characters
+2025-03-09 05:02:40,232 - tccc.document_library.document_library - INFO - Overriding max context length: 55
+2025-03-09 05:02:40,233 - tccc.document_library.response_generator - WARNING - Prompt exceeds target length (576 > 555), applying additional trimming
+2025-03-09 05:02:40,233 - tccc.document_library.response_generator - INFO - Reduced prompt length from 576 to 576 characters
+2025-03-09 05:02:40,234 - tccc.document_library.document_library - INFO - Overriding max context length: 55
+2025-03-09 05:02:40,234 - tccc.document_library.response_generator - WARNING - Prompt exceeds target length (576 > 555), applying additional trimming
+2025-03-09 05:02:40,235 - tccc.document_library.response_generator - INFO - Reduced prompt length from 576 to 576 characters
+2025-03-09 05:02:40,235 - tccc.document_library.document_library - INFO - Overriding max context length: 55
+2025-03-09 05:02:40,236 - tccc.document_library.response_generator - WARNING - Prompt exceeds target length (576 > 555), applying additional trimming
+2025-03-09 05:02:40,236 - tccc.document_library.response_generator - INFO - Reduced prompt length from 576 to 576 characters
+2025-03-09 05:02:40,236 - tccc.document_library.document_library - INFO - Overriding max context length: 55
+2025-03-09 05:02:40,237 - tccc.document_library.response_generator - WARNING - Prompt exceeds target length (569 > 555), applying additional trimming
+2025-03-09 05:02:40,237 - tccc.document_library.response_generator - INFO - Reduced prompt length from 569 to 569 characters
+2025-03-09 05:02:40,238 - tccc.document_library.document_library - INFO - Overriding max context length: 55
+2025-03-09 05:02:40,238 - tccc.document_library.response_generator - WARNING - Prompt exceeds target length (581 > 555), applying additional trimming
+2025-03-09 05:02:40,239 - tccc.document_library.response_generator - INFO - Reduced prompt length from 581 to 581 characters
+2025-03-09 05:02:40,239 - tccc.document_library.document_library - INFO - Overriding max context length: 55
+2025-03-09 05:02:40,240 - tccc.document_library.response_generator - WARNING - Prompt exceeds target length (574 > 555), applying additional trimming
+2025-03-09 05:02:40,240 - tccc.document_library.response_generator - INFO - Reduced prompt length from 574 to 574 characters
+2025-03-09 05:02:40,241 - tccc.document_library.document_library - INFO - Overriding max context length: 55
+2025-03-09 05:02:40,241 - tccc.document_library.response_generator - WARNING - Prompt exceeds target length (563 > 555), applying additional trimming
+2025-03-09 05:02:40,242 - tccc.document_library.response_generator - INFO - Reduced prompt length from 563 to 563 characters
+2025-03-09 05:02:40,242 - tccc.document_library.document_library - INFO - Overriding max context length: 55
+2025-03-09 05:02:40,243 - tccc.document_library.response_generator - WARNING - Prompt exceeds target length (566 > 555), applying additional trimming
+2025-03-09 05:02:40,243 - tccc.document_library.response_generator - INFO - Reduced prompt length from 566 to 566 characters
+2025-03-09 05:02:40,243 - tccc.document_library.document_library - INFO - Overriding max context length: 55
+2025-03-09 05:02:40,244 - tccc.document_library.response_generator - WARNING - Prompt exceeds target length (562 > 555), applying additional trimming
+2025-03-09 05:02:40,244 - tccc.document_library.response_generator - INFO - Reduced prompt length from 562 to 562 characters
+2025-03-09 05:02:40,245 - tccc.document_library.document_library - INFO - Overriding max context length: 55
+2025-03-09 05:02:40,245 - tccc.document_library.response_generator - WARNING - Prompt exceeds target length (563 > 555), applying additional trimming
+2025-03-09 05:02:40,245 - tccc.document_library.response_generator - INFO - Reduced prompt length from 563 to 563 characters
+2025-03-09 05:02:40,245 - tccc.document_library.document_library - INFO - Overriding max context length: 55
+2025-03-09 05:02:40,246 - tccc.document_library.response_generator - WARNING - Prompt exceeds target length (566 > 555), applying additional trimming
+2025-03-09 05:02:40,246 - tccc.document_library.response_generator - INFO - Reduced prompt length from 566 to 566 characters
+2025-03-09 05:02:40,246 - tccc.document_library.document_library - INFO - Overriding max context length: 55
+2025-03-09 05:02:40,247 - tccc.document_library.response_generator - WARNING - Prompt exceeds target length (562 > 555), applying additional trimming
+2025-03-09 05:02:40,247 - tccc.document_library.response_generator - INFO - Reduced prompt length from 562 to 562 characters
+2025-03-09 05:02:40,248 - tccc.llm_analysis.llm_analysis - INFO - Generating medevac report
+2025-03-09 05:02:40,248 - tccc.llm_analysis.llm_analysis - INFO - Generating medevac report
+2025-03-09 05:02:41,102 - tccc.llm_analysis.llm_analysis - INFO - Generating zmist report
+2025-03-09 05:02:41,102 - tccc.llm_analysis.llm_analysis - INFO - Generating zmist report
+2025-03-09 05:02:41,957 - tccc.llm_analysis.llm_analysis - INFO - Generating soap report
+2025-03-09 05:02:41,957 - tccc.llm_analysis.llm_analysis - INFO - Generating soap report
+2025-03-09 05:02:42,812 - tccc.llm_analysis.llm_analysis - INFO - Generating tccc report
+2025-03-09 05:02:42,812 - tccc.llm_analysis.llm_analysis - INFO - Generating tccc report
+
+[0;32mVerification PASSED: LLM Analysis[0m
 
 [0;33mRUNNING SYSTEM-LEVEL VERIFICATION[0m
 ==================================================
 
-[0;34mSkipping non-essential verification in quick mode: System Integration (Mock)[0m
+[0;33mRunning verification for: Basic System Integration[0m
+------------------------------------------------
+2025-03-09 05:02:54,814 - system_integration_test - INFO - Loaded test configuration: {
+  "system": {
+    "mock_mode": false,
+    "debug": true,
+    "log_level": "DEBUG"
+  },
+  "audio_pipeline": {
+    "use_mock": false,
+    "sample_rate": 16000,
+    "channels": 1
+  },
+  "stt_engine": {
+    "use_mock": false,
+    "model": "whisper-tiny"
+  },
+  "llm_analysis": {
+    "use_mock": false,
+    "model": "phi-tiny"
+  },
+  "document_library": {
+    "use_cache": true,
+    "cache_size": 100,
+    "storage": "disk"
+  },
+  "processing_core": {
+    "use_mock": false
+  },
+  "data_store": {
+    "use_mock": false,
+    "storage": "disk"
+  }
+}
+2025-03-09 05:02:54,815 - src.tccc.system.system - INFO - TCCC System object created
+2025-03-09 05:02:54,816 - src.tccc.system.system - INFO - TCCC System initialization started
+2025-03-09 05:02:54,816 - src.tccc.system.system - INFO - Creating DataStore
+2025-03-09 05:02:54,816 - src.tccc.system.system - INFO - Creating DocumentLibrary
+2025-03-09 05:02:54,816 - src.tccc.system.system - INFO - Creating ProcessingCore
+2025-03-09 05:02:54,816 - src.tccc.system.system - INFO - Creating LLMAnalysis
+2025-03-09 05:02:54,817 - src.tccc.system.system - INFO - Creating AudioPipeline
+2025-03-09 05:02:54,817 - src.tccc.system.system - INFO - Creating STTEngine
+2025-03-09 05:02:54,817 - src.tccc.system.system - INFO - All modules created, starting initialization sequence
+2025-03-09 05:02:54,817 - src.tccc.system.system - INFO - Initializing data_store
+2025-03-09 05:02:54,820 - tccc.data_store.data_store - ERROR - Database VACUUM failed: SQLite objects created in a thread can only be used in that same thread. The object was created in thread id 281471935770912 and this is thread id 281471927316768.
+2025-03-09 05:02:54,821 - tccc.data_store.data_store - ERROR - Backup failed: SQLite objects created in a thread can only be used in that same thread. The object was created in thread id 281471935770912 and this is thread id 281471918862624.
+2025-03-09 05:02:54,821 - tccc.data_store.data_store - INFO - Data Store initialized successfully
+2025-03-09 05:02:54,821 - tccc.data_store.data_store - ERROR - Database ANALYZE failed: SQLite objects created in a thread can only be used in that same thread. The object was created in thread id 281471935770912 and this is thread id 281471927316768.
+2025-03-09 05:02:54,821 - tccc.data_store.data_store - ERROR - Scheduled backup failed: SQLite objects created in a thread can only be used in that same thread. The object was created in thread id 281471935770912 and this is thread id 281471918862624.
+2025-03-09 05:02:54,822 - src.tccc.system.system - INFO - Module data_store initialized successfully
+2025-03-09 05:02:54,822 - src.tccc.system.system - INFO - Initializing document_library
+2025-03-09 05:02:54,823 - tccc.document_library.document_library - ERROR - Failed to initialize DocumentLibrary: string indices must be integers
+2025-03-09 05:02:54,823 - src.tccc.system.system - ERROR - Module document_library initialization failed
+2025-03-09 05:02:54,823 - src.tccc.system.system - INFO - Initializing processing_core
+2025-03-09 05:02:54,824 - tccc.processing_core.resource_monitor - INFO - Initialized generic resource monitor (NVIDIA GPU: False)
+2025-03-09 05:02:54,824 - tccc.processing_core.resource_monitor - INFO - Using generic resource monitor
+2025-03-09 05:02:54,824 - tccc.processing_core.processing_core - INFO - Registered module: resource_monitor of type monitor
+2025-03-09 05:02:54,825 - tccc.processing_core.resource_monitor - INFO - Started resource monitoring (interval: 5s)
+2025-03-09 05:02:54,827 - tccc.processing_core.state_manager - INFO - Initialized SQLite database with WAL mode
+2025-03-09 05:02:54,827 - tccc.processing_core.state_manager - INFO - Loaded 3 state keys from database
+2025-03-09 05:02:54,828 - tccc.processing_core.state_manager - INFO - Loaded 10 history entries from database
+2025-03-09 05:02:54,829 - tccc.processing_core.state_manager - INFO - Started state autosave (interval: 60s)
+2025-03-09 05:02:54,830 - tccc.processing_core.processing_core - INFO - Registered module: state_manager of type state
+2025-03-09 05:02:54,830 - tccc.processing_core.entity_extractor - WARNING - Model type spacy not supported or dependencies missing. Using mock mode.
+2025-03-09 05:02:54,831 - tccc.processing_core.entity_extractor - INFO - EntityExtractor initialized with spacy backend
+2025-03-09 05:02:54,831 - tccc.processing_core.processing_core - INFO - Registered module: entity_extractor of type extractor
+2025-03-09 05:02:54,834 - tccc.processing_core.intent_classifier - INFO - Created 7 default intent rules
+2025-03-09 05:02:54,839 - tccc.processing_core.intent_classifier - INFO - IntentClassifier initialized with rule_based backend
+2025-03-09 05:02:54,840 - tccc.processing_core.processing_core - INFO - Registered module: intent_classifier of type classifier
+2025-03-09 05:02:54,840 - tccc.processing_core.sentiment_analyzer - INFO - Initialized rule-based sentiment analyzer
+2025-03-09 05:02:54,840 - tccc.processing_core.sentiment_analyzer - INFO - SentimentAnalyzer initialized with rule_based backend
+2025-03-09 05:02:54,840 - tccc.processing_core.processing_core - INFO - Registered module: sentiment_analyzer of type analyzer
+2025-03-09 05:02:54,841 - tccc.processing_core.plugin_manager - INFO - Discovered 0 plugins in 0 directories
+2025-03-09 05:02:54,841 - tccc.processing_core.processing_core - INFO - Registered module: plugin_manager of type manager
+2025-03-09 05:02:54,841 - tccc.processing_core.processing_core - INFO - Processing Core initialized successfully
+2025-03-09 05:02:54,841 - src.tccc.system.system - INFO - Module processing_core initialized successfully
+2025-03-09 05:02:54,841 - src.tccc.system.system - INFO - Initializing llm_analysis
+2025-03-09 05:02:54,842 - tccc.llm_analysis.llm_analysis - INFO - Initializing LLM engine
+2025-03-09 05:02:54,842 - tccc.llm_analysis.llm_analysis - INFO - Initializing LLM engine
+2025-03-09 05:02:54,845 - tccc.llm_analysis.llm_analysis - ERROR - LLM analysis initialization failed: 'str' object has no attribute 'get'
+2025-03-09 05:02:54,845 - tccc.llm_analysis.llm_analysis - ERROR - LLM analysis initialization failed: 'str' object has no attribute 'get'
+2025-03-09 05:02:54,846 - src.tccc.system.system - ERROR - Module llm_analysis initialization failed
+2025-03-09 05:02:54,846 - src.tccc.system.system - INFO - Initializing audio_pipeline
+2025-03-09 05:02:54,931 - tccc.audio_pipeline.audio_pipeline - INFO - Primary VAD initialized with sensitivity 2
+2025-03-09 05:02:54,932 - tccc.audio_pipeline.audio_pipeline - INFO - Enhanced VAD initialized with multi-factor detection
+2025-03-09 05:02:54,932 - tccc.audio_pipeline.audio_pipeline - INFO - Enhanced audio processor initialized for battlefield conditions
+2025-03-09 05:02:54,932 - tccc.audio_pipeline.audio_pipeline - INFO - Audio Pipeline initialized successfully
+2025-03-09 05:02:54,933 - src.tccc.system.system - INFO - Module audio_pipeline initialized successfully
+2025-03-09 05:02:54,933 - src.tccc.system.system - INFO - Initializing stt_engine
+2025-03-09 05:02:54,933 - tccc.stt_engine.stt_engine - ERROR - Failed to initialize STT Engine: 'str' object has no attribute 'get'
+2025-03-09 05:02:54,933 - tccc.stt_engine.stt_engine - ERROR - Failed to initialize STT Engine: 'str' object has no attribute 'get'
+2025-03-09 05:02:54,934 - src.tccc.system.system - ERROR - Module stt_engine initialization failed
+2025-03-09 05:02:54,934 - src.tccc.system.system - INFO - Setting up module dependencies
+2025-03-09 05:02:54,934 - tccc.llm_analysis.llm_analysis - INFO - ContextIntegrator initialized with max_context_length=1500
+2025-03-09 05:02:54,934 - tccc.llm_analysis.llm_analysis - INFO - ContextIntegrator initialized with max_context_length=1500
+2025-03-09 05:02:54,935 - tccc.llm_analysis.llm_analysis - INFO - Document library dependency set via injection
+2025-03-09 05:02:54,935 - tccc.llm_analysis.llm_analysis - INFO - Document library dependency set via injection
+2025-03-09 05:02:54,935 - src.tccc.system.system - INFO - Connected LLM Analysis to Document Library
+2025-03-09 05:02:54,935 - tccc.data_store.data_store - ERROR - Failed to store event: SQLite objects created in a thread can only be used in that same thread. The object was created in thread id 281471935770912 and this is thread id 281473660417056.
+2025-03-09 05:02:54,936 - src.tccc.system.system - WARNING - Could not store initialization event: SQLite objects created in a thread can only be used in that same thread. The object was created in thread id 281471935770912 and this is thread id 281473660417056.
+2025-03-09 05:02:54,936 - src.tccc.system.system - INFO - TCCC System initialized successfully
+2025-03-09 05:02:54,936 - system_integration_test - INFO - System initialized successfully
+2025-03-09 05:02:54,936 - system_integration_test - INFO - === Testing Audio Pipeline → STT Engine integration ===
+2025-03-09 05:02:54,937 - system_integration_test - INFO - Audio Pipeline → STT Engine integration passed
+2025-03-09 05:02:54,939 - system_integration_test - INFO - === Testing STT Engine → Processing Core integration ===
+2025-03-09 05:02:54,939 - system_integration_test - INFO - STT Engine → Processing Core integration passed
+2025-03-09 05:02:54,939 - system_integration_test - INFO - === Testing Processing Core → LLM Analysis integration ===
+2025-03-09 05:02:54,940 - system_integration_test - INFO - Processing Core → LLM Analysis integration passed
+2025-03-09 05:02:54,940 - system_integration_test - INFO - === Testing LLM Analysis → Document Library integration ===
+2025-03-09 05:02:54,940 - system_integration_test - INFO - LLM Analysis → Document Library integration passed
+2025-03-09 05:02:54,940 - system_integration_test - INFO - === Testing error handling integration ===
+2025-03-09 05:02:54,941 - system_integration_test - INFO - Error handling integration passed
+2025-03-09 05:02:54,941 - system_integration_test - INFO - === Testing end-to-end integration ===
+2025-03-09 05:02:54,942 - system_integration_test - INFO - End-to-end integration test completed
+2025-03-09 05:02:54,942 - system_integration_test - INFO - === Integration Test Results ===
+2025-03-09 05:02:54,942 - system_integration_test - INFO - test_audio_to_stt: PASSED
+2025-03-09 05:02:54,942 - system_integration_test - INFO - test_stt_to_processing: PASSED
+2025-03-09 05:02:54,942 - system_integration_test - INFO - test_processing_to_llm: PASSED
+2025-03-09 05:02:54,943 - system_integration_test - INFO - test_llm_to_document: PASSED
+2025-03-09 05:02:54,943 - system_integration_test - INFO - test_error_handling: PASSED
+2025-03-09 05:02:54,943 - system_integration_test - INFO - test_end_to_end: PASSED
+2025-03-09 05:02:54,943 - system_integration_test - INFO - Integration Tests: ALL PASSED
+2025-03-09 05:02:54,943 - system_integration_test - INFO - Total events processed: 6
+
+[0;32mVerification PASSED: Basic System Integration[0m
 
 [0;33mRunning verification for: System Integration[0m
 ------------------------------------------------
+================================================================================
+TCCC.ai Enhanced System Verification - 2025-03-09 05:03:06
+================================================================================
 
-[0;31mVerification FAILED: System Integration (26s)[0m
+[1/6] Verifying system initialization...
+✓ System initialized with all modules reporting ready
 
-[0;34mSkipping non-essential verification in quick mode: RAG System[0m
+[2/6] Verifying individual modules...
+✓ Processing Core module verified
+✓ Data Store module verified
+✓ LLM Analysis module verified
+✓ audio_pipeline module verified
+✓ stt_engine module verified
+✓ document_library module verified
+✓ All modules passed individual verification
 
-[0;34mSkipping non-essential verification in quick mode: Phi2+Whisper Integration[0m
+[3/6] Verifying module integration...
+✓ ProcessingCore ↔ DataStore integration verified
+✓ STTEngine ↔ ProcessingCore integration verified
+✓ LLMAnalysis ↔ DocumentLibrary integration verified
+✓ All module integrations verified successfully
+
+[4/6] Verifying data flow...
+System started, running for 10 seconds to verify data flow...
+✓ Data flow verified - 5 events processed
+
+[5/6] Verifying error handling...
+Injecting test error...
+✓ Error handling verified - system continued running despite error
+
+[6/6] Verifying system performance...
+Measuring performance for 5 seconds...
+✓ Performance verified - 1.82 events/sec
+  CPU: 5.0%, Memory: 10.0%
+
+[7/7] Verifying security...
+✓ Security features verified
+
+Shutting down system...
+
+================================================================================
+TCCC.ai Enhanced System Verification Summary
+================================================================================
+
+System Type: Mock System
+Total Verification Time: 15.03 seconds
+
+Initialization (0.00s): ✓ PASS
+  Initialization Time: 0.00 seconds
+  All Modules Initialized: Yes
+
+Module Verification (0.00s): ✓ PASS
+  All modules passed individual verification
+
+Integration Verification (0.00s): ✓ PASS
+  All module integrations verified
+
+Data Flow (7.52s): ✓ PASS
+  Events Processed: 5
+
+Error Handling (2.00s): ✓ PASS
+  System continued running despite error
+  Errors Detected: 1
+
+Performance (5.51s): ✓ PASS
+  Throughput: 1.82 events/second
+  CPU Usage: 5.0%
+  Memory Usage: 10.0%
+
+Security (0.00s): ✓ PASS
+
+Overall Verification: ✓ PASS
+
+The TCCC.ai system has been fully verified and is ready for deployment.
+
+[0;32mVerification PASSED: System Integration[0m
 
 [0;33mVERIFICATION SUMMARY[0m
 ==================================================
-Total execution time: 56 seconds
+Total time: 94 seconds
 
-Results by status:
-----------------
+Results:
+[0;32m✓ LLM Analysis: PASSED[0m
+[0;32m✓ Document Library: PASSED[0m
+[0;32m✓ Data Store: PASSED[0m
+[0;32m✓ System Integration: PASSED[0m
+[0;32m✓ STT Engine: PASSED[0m
+[0;32m✓ Audio Pipeline: PASSED[0m
+[0;32m✓ Processing Core: PASSED[0m
+[0;32m✓ Basic System Integration: PASSED[0m
 
-[0;32mPASSED tests:[0m
-[0;32m✓ Document Library (12s)[0m
-[0;32m✓ Data Store (0s)[0m
-[0;32m✓ STT Engine (3s)[0m
-[0;32m✓ Audio Pipeline (6s)[0m
-[0;32m✓ Processing Core (9s)[0m
+Total Passed: 8
+Total Failed: 0
 
-[0;31mFAILED tests:[0m
-[0;31m✗ System Integration (26s)[0m
-
-[0;34mSKIPPED tests:[0m
-[0;34m⏩ LLM Analysis[0m
-[0;34m⏩ RAG System[0m
-[0;34m⏩ Jetson Optimizer[0m
-[0;34m⏩ Display Interface[0m
-[0;34m⏩ Phi2+Whisper Integration[0m
-[0;34m⏩ System Integration (Mock)[0m
-
-[0;33mMISSING tests:[0m
-
-[0;33mStatistics:[0m
-----------------
-Total Passed:  5
-Total Failed:  1
-Total Skipped: 6
-Total Missing: 0
-Overall tests: 12
-
-[0;33mTests by execution time (slowest first):[0m
-----------------
-26s - System Integration
-12s - Document Library
-9s - Processing Core
-6s - Audio Pipeline
-3s - STT Engine
-
-[0;31mCRITICAL VERIFICATIONS FAILED! System may not function correctly.[0m
-[0;33mPlease fix the above issues before proceeding.[0m
+[0;32mALL VERIFICATIONS PASSED![0m

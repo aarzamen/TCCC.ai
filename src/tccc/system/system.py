@@ -9,6 +9,7 @@ import os
 import time
 import logging
 import threading
+import asyncio
 from enum import Enum
 from typing import Dict, List, Any, Optional, Tuple, Union
 
@@ -26,6 +27,15 @@ from tccc.llm_analysis import LLMAnalysis
 from tccc.data_store import DataStore
 from tccc.document_library import DocumentLibrary
 from tccc.utils.logging import get_logger
+from tccc.utils.event_schema import (
+    BaseEvent, AudioSegmentEvent, TranscriptionEvent, 
+    ProcessedTextEvent, LLMAnalysisEvent, ErrorEvent,
+    SystemStatusEvent, EventType
+)
+from tccc.utils.module_adapter import (
+    AudioPipelineAdapter, STTEngineAdapter, 
+    ProcessingCoreAdapter, standardize_event, extract_event_data
+)
 
 logger = get_logger(__name__)
 
@@ -112,97 +122,129 @@ class TCCCSystem:
             self.state = SystemState.INITIALIZING
             mock_modules = mock_modules or []
             
-            # Set up modules - use mocks if specified
-            logger.info("Initializing modules")
+            # Create initialization event
+            init_event = BaseEvent(
+                event_type=EventType.INITIALIZATION,
+                source="system",
+                data={"status": "starting", "modules": []},
+                session_id=f"init_{int(time.time())}"
+            ).to_dict()
             
-            # Processing Core
-            if "processing_core" in mock_modules:
-                from tests.mocks.mock_processing_core import MockProcessingCore
-                self.processing_core = MockProcessingCore()
-                logger.info("Initializing MockProcessingCore")
-            else:
-                self.processing_core = ProcessingCore()
-                logger.info("Initializing ProcessingCore")
+            logger.info("TCCC System initialization started")
             
-            # Data Store
+            # Set up modules in a defined order with correct dependencies
+            # The order is: DataStore → DocumentLibrary → ProcessingCore → LLMANalysis → AudioPipeline → STTEngine
+            
+            # 1. Initialize Data Store (most fundamental)
             if "data_store" in mock_modules:
                 from tests.mocks.mock_data_store import MockDataStore
                 self.data_store = MockDataStore()
-                logger.info("Initializing MockDataStore")
+                logger.info("Creating MockDataStore")
             else:
                 self.data_store = DataStore()
-                logger.info("Initializing DataStore")
+                logger.info("Creating DataStore")
             
-            # Document Library
+            # 2. Initialize Document Library (depends on DataStore)
             if "document_library" in mock_modules:
                 from tests.mocks.mock_document_library import MockDocumentLibrary
                 self.document_library = MockDocumentLibrary()
-                logger.info("Initializing MockDocumentLibrary")
+                logger.info("Creating MockDocumentLibrary")
             else:
                 self.document_library = DocumentLibrary()
-                logger.info("Initializing DocumentLibrary")
+                logger.info("Creating DocumentLibrary")
             
-            # Audio Pipeline
-            if "audio_pipeline" in mock_modules:
-                from tests.mocks.mock_audio_pipeline import MockAudioPipeline
-                self.audio_pipeline = MockAudioPipeline()
-                logger.info("Initializing MockAudioPipeline")
+            # 3. Initialize Processing Core (central component)
+            if "processing_core" in mock_modules:
+                from tests.mocks.mock_processing_core import MockProcessingCore
+                self.processing_core = MockProcessingCore()
+                logger.info("Creating MockProcessingCore")
             else:
-                self.audio_pipeline = AudioPipeline()
-                logger.info("Initializing AudioPipeline")
+                self.processing_core = ProcessingCore()
+                logger.info("Creating ProcessingCore")
             
-            # STT Engine
-            if "stt_engine" in mock_modules:
-                from tests.mocks.mock_stt_engine import MockSTTEngine
-                self.stt_engine = MockSTTEngine()
-                logger.info("Initializing MockSTTEngine")
-            else:
-                self.stt_engine = STTEngine()
-                logger.info("Initializing STTEngine")
-            
-            # LLM Analysis
+            # 4. Initialize LLM Analysis (depends on DocumentLibrary)
             if "llm_analysis" in mock_modules:
                 from tests.mocks.mock_llm_analysis import MockLLMAnalysis
                 self.llm_analysis = MockLLMAnalysis()
-                logger.info("Initializing MockLLMAnalysis")
+                logger.info("Creating MockLLMAnalysis")
             else:
                 self.llm_analysis = LLMAnalysis()
-                logger.info("Initializing LLMAnalysis")
+                logger.info("Creating LLMAnalysis")
             
-            # Initialize modules with configurations
+            # 5. Initialize Audio Pipeline
+            if "audio_pipeline" in mock_modules:
+                from tests.mocks.mock_audio_pipeline import MockAudioPipeline
+                self.audio_pipeline = MockAudioPipeline()
+                logger.info("Creating MockAudioPipeline")
+            else:
+                self.audio_pipeline = AudioPipeline()
+                logger.info("Creating AudioPipeline")
+            
+            # 6. Initialize STT Engine (depends on models)
+            if "stt_engine" in mock_modules:
+                from tests.mocks.mock_stt_engine import MockSTTEngine
+                self.stt_engine = MockSTTEngine()
+                logger.info("Creating MockSTTEngine")
+            else:
+                self.stt_engine = STTEngine()
+                logger.info("Creating STTEngine")
+            
+            # Extract module configurations
             config_dict = self.config  # Use the already validated self.config
             modules_config = {
-                "processing_core": config_dict.get("processing_core", {}),
                 "data_store": config_dict.get("data_store", {}),
                 "document_library": config_dict.get("document_library", {}),
+                "processing_core": config_dict.get("processing_core", {}),
+                "llm_analysis": config_dict.get("llm_analysis", {}),
                 "audio_pipeline": config_dict.get("audio_pipeline", {}),
-                "stt_engine": config_dict.get("stt_engine", {}),
-                "llm_analysis": config_dict.get("llm_analysis", {})
+                "stt_engine": config_dict.get("stt_engine", {})
             }
             
-            # Initialize modules
-            # Handle async initialize method for ProcessingCore properly
-            if hasattr(self.processing_core, 'initialize') and callable(self.processing_core.initialize):
-                if hasattr(self.processing_core.initialize, '__await__'):
-                    # This is an async method, call it properly with await
-                    await self.processing_core.initialize(modules_config["processing_core"])
-                else:
-                    # This is a regular method
-                    self.processing_core.initialize(modules_config["processing_core"])
-            else:
-                logger.warning("ProcessingCore missing initialize method")
-                
-            # Initialize other modules
-            self.data_store.initialize(modules_config["data_store"])
-            self.document_library.initialize(modules_config["document_library"])
-            self.audio_pipeline.initialize(modules_config["audio_pipeline"])
-            self.stt_engine.initialize(modules_config["stt_engine"])
-            self.llm_analysis.initialize(modules_config["llm_analysis"])
+            logger.info("All modules created, starting initialization sequence")
+            init_event["data"]["status"] = "initializing_modules"
+            
+            # Initialize modules in the correct dependency order
+            # Use consistent async/sync handling for all modules
+            
+            # 1. DataStore initialization
+            await self._initialize_module(
+                self.data_store, "data_store", modules_config["data_store"], init_event
+            )
+            
+            # 2. DocumentLibrary initialization
+            await self._initialize_module(
+                self.document_library, "document_library", modules_config["document_library"], init_event
+            )
+            
+            # 3. ProcessingCore initialization
+            await self._initialize_module(
+                self.processing_core, "processing_core", modules_config["processing_core"], init_event
+            )
+            
+            # 4. LLM Analysis initialization
+            await self._initialize_module(
+                self.llm_analysis, "llm_analysis", modules_config["llm_analysis"], init_event
+            )
+            
+            # 5. AudioPipeline initialization
+            await self._initialize_module(
+                self.audio_pipeline, "audio_pipeline", modules_config["audio_pipeline"], init_event
+            )
+            
+            # 6. STT Engine initialization
+            await self._initialize_module(
+                self.stt_engine, "stt_engine", modules_config["stt_engine"], init_event
+            )
             
             # Set up module dependencies
-            # Check if the method exists before calling it
-            if hasattr(self.llm_analysis, 'set_document_library') and callable(self.llm_analysis.set_document_library):
+            logger.info("Setting up module dependencies")
+            
+            # Connect LLM to DocumentLibrary
+            if (hasattr(self.llm_analysis, 'set_document_library') 
+                and callable(self.llm_analysis.set_document_library)
+                and self.document_library):
                 self.llm_analysis.set_document_library(self.document_library)
+                logger.info("Connected LLM Analysis to Document Library")
             
             # Create a new session
             self.session_id = f"session_{int(time.time())}"
@@ -212,6 +254,17 @@ class TCCCSystem:
             self.state = SystemState.READY
             self.initialized = True
             
+            # Final initialization event
+            init_event["data"]["status"] = "complete"
+            init_event["data"]["success"] = True
+            
+            # Store initialization event if possible
+            try:
+                if self.data_store and self.initialized:
+                    self.data_store.store_event(init_event)
+            except Exception as e:
+                logger.warning(f"Could not store initialization event: {e}")
+            
             logger.info("TCCC System initialized successfully")
             return True
             
@@ -219,6 +272,82 @@ class TCCCSystem:
             self.state = SystemState.ERROR
             self.last_error = str(e)
             logger.error(f"Failed to initialize TCCC System: {str(e)}")
+            
+            # Error initialization event
+            try:
+                init_event["data"]["status"] = "failed"
+                init_event["data"]["success"] = False
+                init_event["data"]["error"] = str(e)
+                
+                if self.data_store:
+                    self.data_store.store_event(init_event)
+            except:
+                pass
+                
+            return False
+    
+    async def _initialize_module(self, module, module_name: str, config: Dict[str, Any], init_event: Dict[str, Any]) -> bool:
+        """
+        Initialize a module with proper async/sync handling.
+        
+        Args:
+            module: Module instance to initialize
+            module_name: Name of the module for logging
+            config: Module configuration
+            init_event: Initialization event to update
+            
+        Returns:
+            True if initialization was successful
+        """
+        if not module:
+            logger.warning(f"Module {module_name} is None, skipping initialization")
+            return False
+            
+        try:
+            logger.info(f"Initializing {module_name}")
+            init_event["data"]["modules"].append({"name": module_name, "status": "initializing"})
+            
+            # Check if module has initialize method
+            if not hasattr(module, 'initialize') or not callable(module.initialize):
+                logger.warning(f"{module_name} missing initialize method")
+                return False
+                
+            # Handle async vs sync initialize method
+            initialize_method = module.initialize
+            if asyncio.iscoroutinefunction(initialize_method):
+                # Module has async initialize method
+                result = await initialize_method(config)
+            else:
+                # Module has sync initialize method, run in executor
+                loop = asyncio.get_event_loop()
+                result = await loop.run_in_executor(
+                    None, 
+                    lambda: initialize_method(config)
+                )
+                
+            # Update initialization event
+            for module_info in init_event["data"]["modules"]:
+                if module_info["name"] == module_name:
+                    module_info["status"] = "ready" if result else "failed"
+                    module_info["success"] = bool(result)
+                    
+            if result:
+                logger.info(f"Module {module_name} initialized successfully")
+            else:
+                logger.error(f"Module {module_name} initialization failed")
+                
+            return bool(result)
+            
+        except Exception as e:
+            logger.error(f"Error initializing {module_name}: {e}")
+            
+            # Update initialization event with error
+            for module_info in init_event["data"]["modules"]:
+                if module_info["name"] == module_name:
+                    module_info["status"] = "error"
+                    module_info["success"] = False
+                    module_info["error"] = str(e)
+                    
             return False
     
     def start_audio_capture(self, source_id: Optional[str] = None) -> bool:
@@ -260,7 +389,7 @@ class TCCCSystem:
             logger.error(f"Error starting audio capture: {str(e)}")
             return False
     
-    def process_event(self, event_data: Dict[str, Any]) -> Optional[str]:
+    async def process_event(self, event_data: Dict[str, Any]) -> Optional[str]:
         """
         Process an external event through the system.
         
@@ -277,127 +406,382 @@ class TCCCSystem:
         try:
             # Update state
             self.state = SystemState.PROCESSING
+            session_id = event_data.get("session_id", self.session_id)
             
-            # Extract text if present in the event
-            text = None
-            if "text" in event_data:
-                text = event_data["text"]
-            elif "data" in event_data and isinstance(event_data["data"], str):
-                text = event_data["data"]
+            # Standardize event format if needed
+            if "type" not in event_data:
+                event_data = standardize_event(event_data, "external")
             
-            # Process text through processing core if available
-            processed = None
-            if text and self.processing_core:
-                try:
-                    if hasattr(self.processing_core, 'process'):
-                        processed = self.processing_core.process({
-                            "text": text,
-                            "metadata": event_data.get("metadata", {}),
-                            "type": event_data.get("type", "external"),
-                            "timestamp": event_data.get("timestamp", time.time())
-                        })
-                    else:
-                        # Basic processing result
-                        processed = {
-                            "text": text,
-                            "type": event_data.get("type", "external"),
-                            "timestamp": event_data.get("timestamp", time.time())
-                        }
-                except Exception as e:
-                    logger.error(f"Error processing event text: {e}")
-                    processed = {"text": text, "error": str(e)}
-            else:
-                # Use the event data directly if no text processing needed
-                processed = event_data
+            event_type = event_data.get("type", "unknown")
+            logger.info(f"Processing event of type: {event_type}")
             
-            # Analyze with LLM if text is available
-            if text and self.llm_analysis:
-                self.state = SystemState.ANALYZING
-                analysis = self.llm_analysis.analyze_transcription(text)
+            # Track event sequence
+            if not hasattr(self, '_event_sequence'):
+                self._event_sequence = 0
+            self._event_sequence += 1
+            
+            # Add sequence number to event if not present
+            if "sequence" not in event_data:
+                event_data["sequence"] = self._event_sequence
+            
+            # Add session_id to event if not present
+            if "session_id" not in event_data:
+                event_data["session_id"] = session_id
                 
-                # Add analysis results to processed data
-                if isinstance(processed, dict) and isinstance(analysis, dict):
-                    for key, value in analysis.items():
-                        if key not in processed:
-                            processed[key] = value
-            
-            # Store the event
-            event_id = self.data_store.store_event(processed)
-            logger.info(f"Stored event: {event_id}")
-            self.events.append(event_id)
-            
-            # Reset state
-            self.state = SystemState.READY
-            
-            return event_id
+            # Process based on event type
+            if event_type == EventType.AUDIO_SEGMENT.value:
+                # Handle audio segment event
+                # Extract audio data (special handling since it can't be part of JSON)
+                audio_data = None
+                if "audio_data" in event_data:
+                    audio_data = event_data.pop("audio_data")
+                
+                # Convert for STT Engine
+                stt_input = STTEngineAdapter.convert_audio_event_to_input(event_data, audio_data)
+                
+                # Process with STT Engine
+                self.state = SystemState.PROCESSING
+                transcription = await self._transcribe_async(stt_input["audio"], stt_input["metadata"])
+                
+                # Convert transcription to standard event
+                if transcription:
+                    transcription_event = STTEngineAdapter.convert_transcription_to_event(
+                        transcription, event_data
+                    )
+                    return await self.process_event(transcription_event)
+                else:
+                    logger.warning("No transcription result from STT Engine")
+                    return None
+                    
+            elif event_type == EventType.TRANSCRIPTION.value:
+                # Handle transcription event
+                # Convert for Processing Core
+                processing_input = ProcessingCoreAdapter.convert_transcription_to_input(event_data)
+                
+                # Process with Processing Core
+                self.state = SystemState.PROCESSING
+                processed = await self._process_async(processing_input)
+                
+                # Convert processing result to standard event
+                processed_event = ProcessingCoreAdapter.convert_processed_to_event(
+                    processed, event_data
+                )
+                
+                # Continue processing
+                return await self.process_event(processed_event)
+                
+            elif event_type == EventType.PROCESSED_TEXT.value:
+                # Handle processed text event
+                data = event_data.get("data", {})
+                text = data.get("text", "")
+                
+                # Process with LLM Analysis
+                self.state = SystemState.ANALYZING
+                
+                if text and self.llm_analysis:
+                    analysis = await self._analyze_async(text)
+                    
+                    # Create standardized LLM event
+                    llm_event = LLMAnalysisEvent(
+                        source="llm_analysis",
+                        summary=analysis.get("summary", ""),
+                        topics=analysis.get("topics", []),
+                        medical_terms=analysis.get("medical_terms", []),
+                        actions=analysis.get("actions", []),
+                        document_results=analysis.get("document_results", []),
+                        metadata={
+                            "model": analysis.get("metadata", {}).get("model", "unknown"),
+                            "processing_ms": analysis.get("metadata", {}).get("processing_ms", 0),
+                            "tokens": analysis.get("metadata", {}).get("tokens", 0)
+                        },
+                        session_id=session_id,
+                        sequence=self._event_sequence
+                    ).to_dict()
+                    
+                    # Store the event
+                    event_id = self.data_store.store_event(llm_event)
+                    logger.info(f"Stored LLM analysis event: {event_id}")
+                    self.events.append(event_id)
+                    
+                    # Store the original processed text event too
+                    orig_event_id = self.data_store.store_event(event_data)
+                    logger.info(f"Stored processed text event: {orig_event_id}")
+                    self.events.append(orig_event_id)
+                    
+                    # Reset state
+                    self.state = SystemState.READY
+                    return event_id
+                else:
+                    # Just store the processed text event
+                    event_id = self.data_store.store_event(event_data)
+                    logger.info(f"Stored processed text event: {event_id}")
+                    self.events.append(event_id)
+                    
+                    # Reset state
+                    self.state = SystemState.READY
+                    return event_id
+                    
+            elif event_type == EventType.ERROR.value:
+                # Handle error event
+                error_data = event_data.get("data", {})
+                error_code = error_data.get("error_code", "unknown_error")
+                error_message = error_data.get("message", "Unknown error")
+                
+                # Log the error
+                logger.error(f"Error event received: {error_code} - {error_message}")
+                
+                # Add to system health
+                self.add_error(
+                    error_data.get("component", event_data.get("source", "unknown")),
+                    error_message
+                )
+                
+                # Store the error event
+                event_id = self.data_store.store_event(event_data)
+                logger.info(f"Stored error event: {event_id}")
+                self.events.append(event_id)
+                
+                # Set system state based on error severity
+                severity = error_data.get("severity", "error")
+                if severity in ["error", "critical"]:
+                    self.state = SystemState.ERROR
+                    self.last_error = error_message
+                else:
+                    # For warning and info, stay ready
+                    self.state = SystemState.READY
+                
+                return event_id
+                
+            else:
+                # Store other event types directly
+                event_id = self.data_store.store_event(event_data)
+                logger.info(f"Stored generic event: {event_id}")
+                self.events.append(event_id)
+                
+                # Reset state
+                self.state = SystemState.READY
+                return event_id
             
         except Exception as e:
+            # Handle any errors in the event processing
             self.state = SystemState.ERROR
             self.last_error = str(e)
             logger.error(f"Error processing event: {str(e)}")
+            
+            # Create and store error event
+            error_event = ErrorEvent(
+                source="system",
+                error_code="event_processing_error",
+                message=str(e),
+                component="system.process_event",
+                recoverable=True,
+                metadata={"traceback": logging.traceback.format_exc()},
+                session_id=session_id,
+                sequence=self._event_sequence
+            ).to_dict()
+            
+            try:
+                error_id = self.data_store.store_event(error_event)
+                self.events.append(error_id)
+                return error_id
+            except:
+                # Last resort if even storing the error fails
+                return None
+                
+    async def _transcribe_async(self, audio_data, metadata=None):
+        """
+        Asynchronous wrapper for STT transcription.
+        
+        Args:
+            audio_data: Audio data to transcribe
+            metadata: Optional metadata
+            
+        Returns:
+            Transcription result
+        """
+        if not self.stt_engine:
             return None
+            
+        try:
+            # Use run_in_executor for CPU-bound task
+            loop = asyncio.get_event_loop()
+            transcription = await loop.run_in_executor(
+                None, 
+                lambda: self.stt_engine.transcribe_segment(audio_data, metadata)
+            )
+            return transcription
+        except Exception as e:
+            logger.error(f"Error in transcription: {e}")
+            return {
+                "error": str(e),
+                "text": ""
+            }
+    
+    async def _process_async(self, input_data):
+        """
+        Asynchronous wrapper for Processing Core.
+        
+        Args:
+            input_data: Data to process
+            
+        Returns:
+            Processing result
+        """
+        if not self.processing_core:
+            return {"text": input_data.get("text", ""), "error": "No processing core available"}
+            
+        try:
+            # Check if process method is async
+            if hasattr(self.processing_core, 'process'):
+                process_method = self.processing_core.process
+                if asyncio.iscoroutinefunction(process_method):
+                    # Direct async call
+                    return await process_method(input_data)
+                else:
+                    # Use run_in_executor for CPU-bound task
+                    loop = asyncio.get_event_loop()
+                    return await loop.run_in_executor(
+                        None, 
+                        lambda: process_method(input_data)
+                    )
+            else:
+                # Basic fallback processing
+                return {
+                    "text": input_data.get("text", ""),
+                    "type": input_data.get("type", "processed_text"),
+                    "timestamp": input_data.get("timestamp", time.time())
+                }
+        except Exception as e:
+            logger.error(f"Error in processing: {e}")
+            return {
+                "text": input_data.get("text", ""),
+                "error": str(e)
+            }
+    
+    async def _analyze_async(self, text):
+        """
+        Asynchronous wrapper for LLM Analysis.
+        
+        Args:
+            text: Text to analyze
+            
+        Returns:
+            Analysis result
+        """
+        if not self.llm_analysis:
+            return {"summary": "No LLM analysis available", "topics": []}
+            
+        try:
+            # Check if analyze_transcription method is async
+            method = self.llm_analysis.analyze_transcription
+            if asyncio.iscoroutinefunction(method):
+                # Direct async call
+                return await method(text)
+            else:
+                # Use run_in_executor for CPU-bound task
+                loop = asyncio.get_event_loop()
+                return await loop.run_in_executor(
+                    None, 
+                    lambda: method(text)
+                )
+        except Exception as e:
+            logger.error(f"Error in LLM analysis: {e}")
+            return {
+                "summary": f"Error in analysis: {str(e)}",
+                "topics": []
+            }
     
     def _process_audio_thread(self):
         """Thread for processing audio data."""
         try:
             logger.info("Audio processing thread started")
             
+            # Initialize sequence counter for audio segments
+            audio_sequence = 0
+            
+            # Initialize shared session ID
+            thread_session_id = f"audio_session_{int(time.time())}"
+            
             while not self.stop_processing:
-                # Get audio data from the pipeline
-                audio_data = None
-                
-                # Check for different audio pipeline interfaces
-                if hasattr(self.audio_pipeline, 'get_audio_segment'):
-                    audio_data = self.audio_pipeline.get_audio_segment()
-                elif hasattr(self.audio_pipeline, 'get_audio'):
-                    audio_data = self.audio_pipeline.get_audio()
-                elif hasattr(self.audio_pipeline, 'get_audio_data'):
-                    audio_data = self.audio_pipeline.get_audio_data()
-                
-                if audio_data:
-                    # Process the audio data
-                    self.state = SystemState.PROCESSING
+                try:
+                    # Get standardized audio event from the pipeline
+                    audio_event = AudioPipelineAdapter.get_audio_segment(self.audio_pipeline)
                     
-                    # Transcribe audio - use either transcribe or transcribe_segment based on what's available
-                    transcription = None
-                    if hasattr(self.stt_engine, 'transcribe_segment'):
-                        transcription = self.stt_engine.transcribe_segment(audio_data)
-                    else:
-                        transcription = self.stt_engine.transcribe(audio_data)
-                    
-                    # Check for error conditions
-                    if transcription and "error" in transcription:
-                        logger.warning(f"STT engine error: {transcription['error']}")
-                        time.sleep(0.5)  # Add delay to avoid tight retry loop
-                        continue
-                    
-                    if transcription and transcription.get("text"):
-                        # Create event data from transcription
-                        event_data = {
-                            "type": "audio_transcription",
-                            "text": transcription["text"],
-                            "segments": transcription.get("segments", []),
-                            "metadata": transcription.get("metadata", {}),
-                            "language": transcription.get("language", "en"),
-                            "timestamp": time.time(),
-                            "source": "audio_pipeline"
-                        }
+                    if audio_event:
+                        # Increment sequence
+                        audio_sequence += 1
                         
-                        # Process through the main event processing pipeline
-                        self.process_event(event_data)
+                        # Add sequence and session ID
+                        audio_event["sequence"] = audio_sequence
+                        audio_event["session_id"] = thread_session_id
+                        
+                        # Create an event loop for async processing
+                        event_loop = asyncio.new_event_loop()
+                        asyncio.set_event_loop(event_loop)
+                        
+                        try:
+                            # Process audio event asynchronously
+                            logger.debug(f"Processing audio segment {audio_sequence}")
+                            # Since we're in a thread, create a task and run until complete
+                            event_loop.run_until_complete(self.process_event(audio_event))
+                        except Exception as e:
+                            logger.error(f"Error processing audio event: {e}")
+                            # Create an error event
+                            error_event = ErrorEvent(
+                                source="audio_thread",
+                                error_code="audio_processing_error",
+                                message=str(e),
+                                component="system._process_audio_thread",
+                                recoverable=True,
+                                session_id=thread_session_id,
+                                sequence=audio_sequence
+                            ).to_dict()
+                            
+                            # Store the error
+                            try:
+                                self.data_store.store_event(error_event)
+                            except Exception as store_error:
+                                logger.error(f"Failed to store error event: {store_error}")
+                        finally:
+                            # Clean up event loop
+                            event_loop.close()
+                    
+                    # Adaptive sleep based on state
+                    if self.state == SystemState.PROCESSING or self.state == SystemState.ANALYZING:
+                        # Shorter sleep during active processing to ensure responsiveness
+                        time.sleep(0.02)  # Decreased from 0.05 for better responsiveness
+                    else:
+                        # Moderate sleep when idle to reduce CPU usage while maintaining responsiveness
+                        time.sleep(0.1)  # Decreased from 0.2 for better responsiveness
+                        
+                except Exception as segment_error:
+                    # Local exception handler for segment processing
+                    logger.error(f"Error processing audio segment: {segment_error}")
+                    # Add a short delay to avoid tight error loops
+                    time.sleep(0.1)
                 
-                # Adaptive sleep based on state
-                if self.state == SystemState.PROCESSING or self.state == SystemState.ANALYZING:
-                    # Shorter sleep during active processing to ensure responsiveness
-                    time.sleep(0.05)
-                else:
-                    # Longer sleep when idle to reduce CPU usage
-                    time.sleep(0.2)
-                
-        except Exception as e:
+        except Exception as thread_error:
+            # Global exception handler for the thread
             self.state = SystemState.ERROR
-            self.last_error = str(e)
-            logger.error(f"Error in audio processing thread: {str(e)}")
+            self.last_error = str(thread_error)
+            logger.error(f"Fatal error in audio processing thread: {str(thread_error)}")
+            
+            # Add error to health tracking
+            self.add_error("audio_thread", f"Thread terminated: {str(thread_error)}")
+            
+            # Attempt thread recovery after a brief pause
+            def restart_thread():
+                time.sleep(2.0)  # Wait before restarting
+                logger.info("Attempting to restart audio processing thread")
+                self.processing_thread = threading.Thread(
+                    target=self._process_audio_thread,
+                    daemon=True
+                )
+                self.processing_thread.start()
+            
+            # Start recovery thread if not shutting down
+            if not self.stop_processing:
+                threading.Thread(target=restart_thread, daemon=True).start()
     
     def stop_audio_capture(self) -> bool:
         """Stop audio capture.

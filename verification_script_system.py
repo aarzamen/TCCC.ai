@@ -8,6 +8,7 @@ This script tests the integrated system with all components working together.
 import os
 import sys
 import time
+import asyncio
 import numpy as np
 from pathlib import Path
 import logging
@@ -76,11 +77,15 @@ def main():
     # Use mocks for faster verification
     mock_modules = ["audio_pipeline", "llm_analysis", "document_library", "stt_engine"]
     
-    # Initialize with mocks
-    result = system.initialize(config, mock_modules)
-    
-    if not result:
-        print("System initialization failed")
+    # Initialize with mocks - handle async method
+    try:
+        result = asyncio.run(system.initialize(config, mock_modules))
+        
+        if not result:
+            print("System initialization failed")
+            return 1
+    except Exception as e:
+        print(f"System initialization failed with error: {e}")
         return 1
     
     print("System initialized successfully")

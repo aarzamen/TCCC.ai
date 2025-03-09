@@ -42,6 +42,11 @@
 - Test data flow: `python test_system_data_flow.py`
 - Debug event processing: `python -c "from tccc.system.system import TCCCSystem; s = TCCCSystem(); s.initialize({}); s.process_event({'type': 'test', 'data': 'test'}); print(s.get_status())"`
 
+## Confirmed Working Implementations
+- Real Whisper model implementation (faster-whisper): `python demo_stt_microphone.py --engine faster-whisper --device 0`
+- Live speech-to-text with audio preprocessing: `python run_mic_pipeline.py` 
+- Speech enhancement with battlefield noise reduction active and verified
+
 ## Multi-Agent Collaboration
 - Split tasks between multiple Claude instances for parallel work
 - Each agent focuses on specific components:

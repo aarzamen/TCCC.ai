@@ -63,6 +63,45 @@ vad:
   # Padding duration in ms (before and after detected speech)
   padding_duration_ms: 300
 
+# Battlefield-specific noise filtering (new)
+battlefield_filtering:
+  # Enable battlefield-specific filtering
+  enabled: true
+  
+  # Use outdoor mode (more aggressive filtering for outdoor environments)
+  outdoor_mode: true
+  
+  # Filter gunshot-like sounds
+  transient_protection: true
+  
+  # Compensate for varying distances
+  distance_compensation: true
+  
+  # Adapt to environment over time
+  environmental_adaptation: true
+  
+  # Acoustic model for battlefield conditions
+  acoustic_models:
+    # Threshold for transient detection (dB)
+    transient_threshold_db: 15
+    
+    # Wind reduction strength (0.0-1.0)
+    wind_reduction_strength: 0.85
+
+# Voice isolation (new)
+voice_isolation:
+  # Enable voice isolation
+  enabled: true
+  
+  # Voice isolation strength (0.0-1.0)
+  strength: 0.8
+  
+  # Focus width (Hz) - controls how focused the voice enhancement is
+  focus_width: 200
+  
+  # Voice boost (dB) - additional gain for voice frequencies
+  voice_boost_db: 6
+
 # Hardware acceleration settings for Jetson Orin Nano
 hardware:
   # Enable hardware acceleration
