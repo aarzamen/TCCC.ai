@@ -368,9 +368,19 @@ class DisplayInterface:
             if self.fullscreen:
                 display_flags |= pygame.FULLSCREEN
                 
-            # Add hardware acceleration if available
-            if pygame.display.get_driver() in ("kmsdrm", "wayland", "x11"):
-                display_flags |= pygame.HWSURFACE | pygame.DOUBLEBUF
+            # Set display flags based on environment
+            display_driver = pygame.display.get_driver()
+            logger.info(f"Using display driver: {display_driver}")
+            
+            # Only add hardware surface if not in software mode
+            if os.environ.get('SDL_RENDERER_DRIVER') != 'software':
+                if display_driver in ("kmsdrm", "wayland", "x11"):
+                    display_flags |= pygame.HWSURFACE | pygame.DOUBLEBUF
+                    logger.info("Using hardware acceleration")
+                else:
+                    logger.info(f"Using software rendering with {display_driver}")
+            else:
+                logger.info("Forced software rendering mode")
             
             # Add any additional flags based on hardware
             if self.is_jetson:

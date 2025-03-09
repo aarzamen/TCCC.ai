@@ -54,6 +54,7 @@ def parse_arguments():
     parser.add_argument('--debug', action='store_true', help='Enable debug mode')
     parser.add_argument('--show-fps', action='store_true', help='Show FPS counter')
     parser.add_argument('--show-touch', action='store_true', help='Show touch points')
+    parser.add_argument('--software', action='store_true', help='Use software rendering (no OpenGL)')
     
     # Test options
     parser.add_argument('--duration', type=int, default=60, 
@@ -189,6 +190,13 @@ def main():
         if 'performance' not in config:
             config['performance'] = {}
         config['performance']['show_fps'] = args.show_fps
+        
+    # Set environment variable for software rendering if requested
+    if args.software:
+        os.environ['PYGAME_HIDE_SUPPORT_PROMPT'] = '1'  # Suppress pygame welcome message
+        os.environ['SDL_RENDERER_DRIVER'] = 'software'
+        os.environ['SDL_VIDEO_GL_DRIVER'] = ''  # Disable OpenGL
+        print("Using software rendering mode (no OpenGL)")
     
     # Create display interface with configuration
     width = args.width or (config.get('display', {}).get('width', 1280))
