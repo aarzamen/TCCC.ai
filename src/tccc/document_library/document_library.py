@@ -279,7 +279,9 @@ class DocumentLibrary:
         """Add a document to the library.
         
         Args:
-            document_data: Document metadata and content
+            document_data: Document metadata and content. Can contain either:
+                - file_path: Path to the document file
+                - text: Direct text content of the document
             
         Returns:
             Document ID if successful, None otherwise
@@ -289,36 +291,49 @@ class DocumentLibrary:
                 logger.error("Document Library not initialized")
                 return None
             
-            file_path = document_data.get("file_path")
-            if not file_path or not os.path.exists(file_path):
-                logger.error(f"Invalid file path: {file_path}")
-                return None
+            # Check for direct text content first (highest priority)
+            if "text" in document_data and document_data["text"]:
+                text = document_data["text"]
+                metadata = document_data.get("metadata", {})
+                source = document_data.get("source", "Direct text input")
+                
+                # If source is specified and it's a file, use it as file_path for reference
+                file_path = source if os.path.isfile(source) else None
+                
+                logger.info(f"Adding document from direct text input (length: {len(text)})")
             
-            # Process the document to extract text and metadata
-            if hasattr(self, "document_processor") and self.document_processor:
-                # Use document processor if available
-                processed = self.document_processor.process_document(file_path)
-                
-                if not processed["success"]:
-                    logger.error(f"Failed to process document: {processed.get('error', 'Unknown error')}")
-                    return None
-                
-                text = processed["text"]
-                
-                # Merge metadata
-                metadata = document_data.get("metadata", {})
-                if "metadata" in processed:
-                    metadata.update(processed["metadata"])
+            # Otherwise check for file path
             else:
-                # Fall back to simple text reading
-                try:
-                    with open(file_path, 'r', encoding='utf-8', errors='replace') as f:
-                        text = f.read()
-                except Exception as e:
-                    logger.error(f"Failed to read document: {str(e)}")
+                file_path = document_data.get("file_path")
+                if not file_path or not os.path.exists(file_path):
+                    logger.error(f"Invalid file path: {file_path}")
                     return None
                 
-                metadata = document_data.get("metadata", {})
+                # Process the document to extract text and metadata
+                if hasattr(self, "document_processor") and self.document_processor:
+                    # Use document processor if available
+                    processed = self.document_processor.process_document(file_path)
+                    
+                    if not processed["success"]:
+                        logger.error(f"Failed to process document: {processed.get('error', 'Unknown error')}")
+                        return None
+                    
+                    text = processed["text"]
+                    
+                    # Merge metadata
+                    metadata = document_data.get("metadata", {})
+                    if "metadata" in processed:
+                        metadata.update(processed["metadata"])
+                else:
+                    # Fall back to simple text reading
+                    try:
+                        with open(file_path, 'r', encoding='utf-8', errors='replace') as f:
+                            text = f.read()
+                    except Exception as e:
+                        logger.error(f"Failed to read document: {str(e)}")
+                        return None
+                    
+                    metadata = document_data.get("metadata", {})
             
             # Create document entry
             doc_id = str(self.next_doc_id)
