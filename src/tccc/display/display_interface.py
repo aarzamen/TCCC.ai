@@ -769,6 +769,14 @@ class DisplayInterface:
                 
                 # Cap framerate
                 self.clock.tick(self.target_fps)
+        except Exception as e:
+            logger.error(f"Error in display loop: {e}")
+        finally:
+            # Ensure pygame is properly shut down on exit
+            try:
+                pygame.quit()
+            except Exception:
+                pass
     
     def _draw_performance_metrics(self):
         """Draw performance metrics for debugging"""
