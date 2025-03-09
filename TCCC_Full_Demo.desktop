@@ -1,0 +1,9 @@
+[Desktop Entry]
+Type=Application
+Name=TCCC Full System Demo
+Comment=Tactical Combat Casualty Care Complete System
+Exec=/home/ama/tccc-project/run_full_tccc_demo.sh
+Icon=/home/ama/tccc-project/images/blue_logo.png
+Terminal=true
+Categories=Science;Medicine;
+StartupNotify=true

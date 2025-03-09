@@ -7,6 +7,16 @@
 - Don't nag for confirmation or approvals; prioritize making progress
 - Only ask for input on vision, goals, or specific information that cannot be inferred
 - Minimize safety checks in favor of efficient completion
+- ALWAYS create executable scripts that can run in terminal windows
+- ALWAYS make functionality self-contained and automatically initializing
+- NEVER require users to manually run Python scripts
+
+## Hardware Configuration
+- ALWAYS use the Razer Seiren V3 Mini microphone (device ID 0)
+- ALWAYS use the WaveShare display with 1280x800 resolution
+- ALWAYS use the actual functional LLM model (Phi-2), not mock implementations
+- ALWAYS create desktop shortcuts for any functionality
+- ALWAYS make scripts executable with `chmod +x script_name.sh`
 
 ## Environment Setup
 - `source venv/bin/activate` - Activate the virtual environment
@@ -42,10 +52,20 @@
 - Test data flow: `python test_system_data_flow.py`
 - Debug event processing: `python -c "from tccc.system.system import TCCCSystem; s = TCCCSystem(); s.initialize({}); s.process_event({'type': 'test', 'data': 'test'}); print(s.get_status())"`
 
+## Jetson Nano Setup
+- ALWAYS initialize scripts at Jetson boot time when possible
+- ALWAYS create shell scripts to launch any Python functionality
+- Create desktop shortcuts with proper icons for all user-facing applications
+- Make demos runnable from terminal window without user editing code
+- Add executables to system PATH when appropriate
+
 ## Confirmed Working Implementations
 - Real Whisper model implementation (faster-whisper): `python demo_stt_microphone.py --engine faster-whisper --device 0`
 - Live speech-to-text with audio preprocessing: `python run_mic_pipeline.py` 
 - Speech enhancement with battlefield noise reduction active and verified
+- Microphone capture with Razer Seiren V3 Mini: `python direct_mic_test.py --device 0`
+- Display output on WaveShare screen (1280x800): `python test_display_enhanced.py`
+- Complete STT pipeline with display: `python microphone_to_text.py --use-display`
 
 ## Multi-Agent Collaboration
 - Split tasks between multiple Claude instances for parallel work

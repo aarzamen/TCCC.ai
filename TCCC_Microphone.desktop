@@ -1,0 +1,9 @@
+[Desktop Entry]
+Type=Application
+Name=TCCC Microphone
+Comment=Tactical Combat Casualty Care Speech Recognition
+Exec=/home/ama/tccc-project/tccc_mic_launcher.sh
+Icon=/home/ama/tccc-project/images/green_logo.png
+Terminal=true
+Categories=Utility;
+StartupNotify=true
