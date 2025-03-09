@@ -17,6 +17,9 @@ import yaml
 import argparse
 from datetime import datetime
 
+# Configure environment variables before importing pygame
+os.environ["PYGAME_HIDE_SUPPORT_PROMPT"] = "1"
+
 import pygame
 from pygame.locals import *
 
@@ -193,10 +196,11 @@ def main():
         
     # Set environment variable for software rendering if requested
     if args.software:
+        # Use dummy driver for headless testing - works with all environments
         os.environ['PYGAME_HIDE_SUPPORT_PROMPT'] = '1'  # Suppress pygame welcome message
-        os.environ['SDL_RENDERER_DRIVER'] = 'software'
-        os.environ['SDL_VIDEO_GL_DRIVER'] = ''  # Disable OpenGL
-        print("Using software rendering mode (no OpenGL)")
+        os.environ['SDL_VIDEODRIVER'] = 'dummy'  # Use dummy driver
+        os.environ['SDL_AUDIODRIVER'] = 'dummy'  # Use dummy audio
+        print("Using dummy video driver (headless mode)")
     
     # Create display interface with configuration
     width = args.width or (config.get('display', {}).get('width', 1280))
