@@ -284,12 +284,11 @@ class LLMEngine:
             self.fallback_model = LlamaModelPlaceholder(model_path, model_config)
     
     def _load_phi_model(self, model_path: str, model_config: Dict[str, Any], is_primary: bool = True):
-        """Load a Phi model using transformers with ONNX Runtime.
+        """Load a Phi model using transformers with ONNX Runtime or GGUF.
         
         Uses the factory function that can handle both real and mock implementations.
+        Supports GGUF model format if specified in config.
         """
-        from tccc.llm_analysis import get_phi_model
-        
         logger.info(f"Loading Phi model from {model_path}")
         
         # Create configuration for the model
@@ -302,9 +301,37 @@ class LLMEngine:
             "top_p": model_config.get("top_p", 0.9)
         }
         
-        # Use factory function that handles either real or mock implementation
-        # Automatically falls back to mock if real implementation fails
-        phi_model = get_phi_model(phi_config)
+        # Check if GGUF model path is specified
+        if model_config.get("use_gguf", False) and "gguf_model_path" in model_config:
+            # Add GGUF model path to config
+            phi_config["gguf_model_path"] = model_config["gguf_model_path"]
+            logger.info(f"Using GGUF model from {phi_config['gguf_model_path']}")
+            
+            try:
+                # Import GGUF model factory function
+                from tccc.llm_analysis import get_phi_gguf_model
+                
+                # Use GGUF factory function
+                phi_model = get_phi_gguf_model(phi_config)
+                logger.info("Successfully loaded Phi model using GGUF implementation")
+            except ImportError:
+                logger.warning("GGUF model implementation not available, falling back to standard Phi model")
+                # Fall back to standard Phi model
+                from tccc.llm_analysis import get_phi_model
+                phi_model = get_phi_model(phi_config)
+            except Exception as e:
+                logger.error(f"Failed to load GGUF model: {str(e)}")
+                logger.warning("Falling back to standard Phi model")
+                # Fall back to standard Phi model
+                from tccc.llm_analysis import get_phi_model
+                phi_model = get_phi_model(phi_config)
+        else:
+            # Use standard Phi model
+            from tccc.llm_analysis import get_phi_model
+            
+            # Use factory function that handles either real or mock implementation
+            # Automatically falls back to mock if real implementation fails
+            phi_model = get_phi_model(phi_config)
         
         # Store model in appropriate attribute
         if is_primary:

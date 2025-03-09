@@ -8,10 +8,16 @@ model:
     provider: "local"
     
     # Model name/identifier
-    name: "phi-2-instruct"
+    name: "phi-2-gguf"
     
     # Model path for local models
-    path: "models/phi-2-instruct/"
+    path: "models/llm/phi-2/"
+    
+    # GGUF model path (for GGUF models)
+    gguf_model_path: "models/phi-2-gguf/phi-2.Q4_K_M.gguf"
+    
+    # Use GGUF implementation
+    use_gguf: true
     
     # Maximum context length
     max_context_length: 2048
@@ -24,12 +30,15 @@ model:
     
     # Max tokens to generate
     max_tokens: 1024
+    
+    # Force real model implementation 
+    force_real: true
   
   # Fallback model (used if primary fails or for specific tasks)
   fallback:
     provider: "local"
-    name: "phi-2-instruct-mock"
-    path: "models/phi-2-instruct/"
+    name: "phi-2-mock"
+    path: "models/llm/phi-2/"
     temperature: 0.7
     top_p: 0.95
     max_tokens: 1024
@@ -45,14 +54,15 @@ hardware:
   # Enable TensorRT optimization
   use_tensorrt: true
   
-  # Quantization level (4-bit, 8-bit)
-  quantization: "4-bit"
+  # Quantization level (4-bit, 8-bit, none)
+  # Using 8-bit for better balance of performance and memory usage
+  quantization: "8-bit"
   
   # CUDA stream configuration
-  cuda_streams: 1
+  cuda_streams: 2
   
-  # Memory limit in MB
-  memory_limit_mb: 6144
+  # Memory limit in MB - increased for full GPU utilization
+  memory_limit_mb: 8192
 
 # Recommendations settings
 recommendations:
