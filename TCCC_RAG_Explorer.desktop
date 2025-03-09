@@ -1,9 +1,10 @@
 [Desktop Entry]
 Name=TCCC RAG Explorer
-Comment=Explore and query the TCCC RAG Database
-Exec=python3 /home/ama/tccc-project/rag_explorer.py
+Comment=Explore TCCC medical documents and add new PDFs
+Exec=bash -c "cd /home/ama/tccc-project && source venv/bin/activate && python jetson_interactive_rag.py %f"
 Icon=/home/ama/tccc-project/images/blue_logo.png
 Terminal=false
 Type=Application
 Categories=Utility;
+MimeType=application/pdf;
 StartupNotify=true

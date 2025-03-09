@@ -215,6 +215,62 @@ def test_llm_prompt_generation(doc_library):
     
     return True
 
+def test_interactive_rag_explorer():
+    """Test the interactive RAG explorer."""
+    print("\n=== Testing Interactive RAG Explorer ===")
+    
+    # Check if the required files exist
+    explorer_script = os.path.join(project_root, "jetson_interactive_rag.py")
+    launch_script = os.path.join(project_root, "launch_rag_explorer.sh")
+    desktop_file = os.path.join(project_root, "TCCC_RAG_Explorer.desktop")
+    
+    print(f"Checking explorer script: {os.path.basename(explorer_script)}")
+    explorer_exists = os.path.exists(explorer_script)
+    print(f"  - File exists: {'✅' if explorer_exists else '❌'}")
+    
+    print(f"Checking launch script: {os.path.basename(launch_script)}")
+    launch_exists = os.path.exists(launch_script)
+    print(f"  - File exists: {'✅' if launch_exists else '❌'}")
+    
+    print(f"Checking desktop integration: {os.path.basename(desktop_file)}")
+    desktop_exists = os.path.exists(desktop_file)
+    print(f"  - File exists: {'✅' if desktop_exists else '❌'}")
+    
+    # Check if files are executable
+    if explorer_exists:
+        explorer_executable = os.access(explorer_script, os.X_OK)
+        print(f"  - Explorer executable: {'✅' if explorer_executable else '❌'}")
+    else:
+        explorer_executable = False
+    
+    if launch_exists:
+        launch_executable = os.access(launch_script, os.X_OK)
+        print(f"  - Launch script executable: {'✅' if launch_executable else '❌'}")
+    else:
+        launch_executable = False
+    
+    # Check desktop file content
+    if desktop_exists:
+        with open(desktop_file, 'r') as f:
+            desktop_content = f.read()
+        has_correct_exec = "jetson_interactive_rag.py" in desktop_content
+        has_pdf_mimetype = "MimeType=application/pdf" in desktop_content
+        print(f"  - Desktop points to correct script: {'✅' if has_correct_exec else '❌'}")
+        print(f"  - Desktop has PDF MIME type: {'✅' if has_pdf_mimetype else '❌'}")
+    else:
+        has_correct_exec = has_pdf_mimetype = False
+    
+    # Overall test result
+    basic_files = explorer_exists and launch_exists and desktop_exists
+    permissions = explorer_executable and launch_executable
+    desktop_config = has_correct_exec and has_pdf_mimetype
+    
+    success = basic_files and permissions and desktop_config
+    print(f"Overall RAG Explorer test: {'✅ PASS' if success else '❌ FAIL'}")
+    
+    return success
+
+
 def main():
     """Main function."""
     parser = argparse.ArgumentParser(description="Verify TCCC.ai RAG Database functionality")
@@ -222,6 +278,8 @@ def main():
                       help="Configuration file path")
     parser.add_argument("--add-sample", "-a", action="store_true",
                       help="Add sample document before testing")
+    parser.add_argument("--full", "-f", action="store_true",
+                      help="Run full tests including interactive components")
     args = parser.parse_args()
     
     # Load configuration
@@ -264,6 +322,10 @@ def main():
     test_results["advanced_query"] = test_advanced_query(doc_library)
     test_results["medical_vocabulary"] = test_medical_vocabulary(doc_library)
     test_results["llm_prompt_generation"] = test_llm_prompt_generation(doc_library)
+    
+    # Test interactive components if requested
+    if args.full:
+        test_results["interactive_explorer"] = test_interactive_rag_explorer()
     
     # Print summary
     print("\n=== Test Summary ===")
