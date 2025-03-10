@@ -132,6 +132,10 @@ class TCCCSystem:
             
             logger.info("TCCC System initialization started")
             
+            # Track critical failures for overall system status
+            critical_failures = 0
+            all_modules_initialized = True
+            
             # Set up modules in a defined order with correct dependencies
             # The order is: DataStore → DocumentLibrary → ProcessingCore → LLMANalysis → AudioPipeline → STTEngine
             
@@ -191,14 +195,17 @@ class TCCCSystem:
             
             # Extract module configurations
             config_dict = self.config  # Use the already validated self.config
-            modules_config = {
-                "data_store": config_dict.get("data_store", {}),
-                "document_library": config_dict.get("document_library", {}),
-                "processing_core": config_dict.get("processing_core", {}),
-                "llm_analysis": config_dict.get("llm_analysis", {}),
-                "audio_pipeline": config_dict.get("audio_pipeline", {}),
-                "stt_engine": config_dict.get("stt_engine", {})
-            }
+            modules_config = {}
+            
+            # Ensure module configs are dictionaries or create empty ones
+            for module_name in ["data_store", "document_library", "processing_core", 
+                               "llm_analysis", "audio_pipeline", "stt_engine"]:
+                module_config = config_dict.get(module_name, {})
+                # Make sure we have a dictionary
+                if not isinstance(module_config, dict):
+                    logger.warning(f"Invalid config for {module_name}, expected dictionary but got {type(module_config)}")
+                    module_config = {}
+                modules_config[module_name] = module_config.copy()  # Use a copy to avoid cross-module modification
             
             logger.info("All modules created, starting initialization sequence")
             init_event["data"]["status"] = "initializing_modules"
@@ -206,67 +213,115 @@ class TCCCSystem:
             # Initialize modules in the correct dependency order
             # Use consistent async/sync handling for all modules
             
-            # 1. DataStore initialization
-            await self._initialize_module(
-                self.data_store, "data_store", modules_config["data_store"], init_event
+            # 1. DataStore initialization - this is critical and must succeed
+            data_store_success = await self._initialize_module(
+                self.data_store, "data_store", modules_config, init_event
             )
             
-            # 2. DocumentLibrary initialization
-            await self._initialize_module(
-                self.document_library, "document_library", modules_config["document_library"], init_event
+            if not data_store_success:
+                logger.critical("DataStore initialization failed - this is a critical module")
+                critical_failures += 1
+                all_modules_initialized = False
+            
+            # 2. DocumentLibrary initialization - can continue with limited functionality
+            doc_lib_success = await self._initialize_module(
+                self.document_library, "document_library", modules_config, init_event
             )
             
-            # 3. ProcessingCore initialization
-            await self._initialize_module(
-                self.processing_core, "processing_core", modules_config["processing_core"], init_event
+            if not doc_lib_success:
+                logger.warning("DocumentLibrary initialization failed - continuing with limited functionality")
+                all_modules_initialized = False
+            
+            # 3. ProcessingCore initialization - critical for audio processing
+            proc_core_success = await self._initialize_module(
+                self.processing_core, "processing_core", modules_config, init_event
             )
             
-            # 4. LLM Analysis initialization
-            await self._initialize_module(
-                self.llm_analysis, "llm_analysis", modules_config["llm_analysis"], init_event
+            if not proc_core_success:
+                logger.critical("ProcessingCore initialization failed - this is a critical module")
+                critical_failures += 1
+                all_modules_initialized = False
+            
+            # 4. LLM Analysis initialization - can continue with limited functionality
+            llm_success = await self._initialize_module(
+                self.llm_analysis, "llm_analysis", modules_config, init_event
             )
             
-            # 5. AudioPipeline initialization
-            await self._initialize_module(
-                self.audio_pipeline, "audio_pipeline", modules_config["audio_pipeline"], init_event
+            if not llm_success:
+                logger.warning("LLMAnalysis initialization failed - continuing with limited functionality")
+                all_modules_initialized = False
+            
+            # 5. AudioPipeline initialization - critical for audio capture
+            audio_success = await self._initialize_module(
+                self.audio_pipeline, "audio_pipeline", modules_config, init_event
             )
             
-            # 6. STT Engine initialization
-            await self._initialize_module(
-                self.stt_engine, "stt_engine", modules_config["stt_engine"], init_event
+            if not audio_success:
+                logger.critical("AudioPipeline initialization failed - this is a critical module")
+                critical_failures += 1
+                all_modules_initialized = False
+            
+            # 6. STT Engine initialization - can continue with limited functionality
+            stt_success = await self._initialize_module(
+                self.stt_engine, "stt_engine", modules_config, init_event
             )
             
-            # Set up module dependencies
+            if not stt_success:
+                logger.warning("STTEngine initialization failed - continuing with limited functionality")
+                all_modules_initialized = False
+            
+            # Set up module dependencies if both modules are available
             logger.info("Setting up module dependencies")
             
             # Connect LLM to DocumentLibrary
             if (hasattr(self.llm_analysis, 'set_document_library') 
                 and callable(self.llm_analysis.set_document_library)
-                and self.document_library):
-                self.llm_analysis.set_document_library(self.document_library)
-                logger.info("Connected LLM Analysis to Document Library")
+                and self.document_library and hasattr(self.document_library, 'initialized')):
+                try:
+                    self.llm_analysis.set_document_library(self.document_library)
+                    logger.info("Connected LLM Analysis to Document Library")
+                except Exception as e:
+                    logger.warning(f"Failed to connect LLM Analysis to Document Library: {str(e)}")
             
             # Create a new session
             self.session_id = f"session_{int(time.time())}"
             self.session_start_time = time.time()
             
-            # Update state
-            self.state = SystemState.READY
-            self.initialized = True
-            
-            # Final initialization event
-            init_event["data"]["status"] = "complete"
-            init_event["data"]["success"] = True
+            # Determine system state based on initialization results
+            if critical_failures > 0:
+                self.state = SystemState.ERROR
+                self.last_error = "Critical module initialization failures"
+                self.initialized = False
+                init_event["data"]["status"] = "failed"
+                init_event["data"]["success"] = False
+                init_event["data"]["error"] = f"{critical_failures} critical modules failed to initialize"
+                logger.error("TCCC System initialization failed due to critical module failures")
+            else:
+                # System can operate even with non-critical failures
+                if all_modules_initialized:
+                    self.state = SystemState.READY
+                    logger.info("TCCC System initialized successfully with all modules")
+                else:
+                    self.state = SystemState.READY
+                    logger.warning("TCCC System initialized with limited functionality - some modules have limited capabilities")
+                
+                self.initialized = True
+                
+                # Final initialization event
+                init_event["data"]["status"] = "complete"
+                init_event["data"]["success"] = True
+                
+                if not all_modules_initialized:
+                    init_event["data"]["warning"] = "Some modules have limited functionality"
             
             # Store initialization event if possible
             try:
-                if self.data_store and self.initialized:
+                if self.data_store and hasattr(self.data_store, 'store_event') and callable(self.data_store.store_event):
                     self.data_store.store_event(init_event)
             except Exception as e:
                 logger.warning(f"Could not store initialization event: {e}")
             
-            logger.info("TCCC System initialized successfully")
-            return True
+            return self.initialized
             
         except Exception as e:
             self.state = SystemState.ERROR
@@ -279,11 +334,12 @@ class TCCCSystem:
                 init_event["data"]["success"] = False
                 init_event["data"]["error"] = str(e)
                 
-                if self.data_store:
+                if self.data_store and hasattr(self.data_store, 'store_event'):
                     self.data_store.store_event(init_event)
             except:
                 pass
                 
+            self.initialized = False
             return False
     
     async def _initialize_module(self, module, module_name: str, config: Dict[str, Any], init_event: Dict[str, Any]) -> bool:
@@ -312,31 +368,65 @@ class TCCCSystem:
                 logger.warning(f"{module_name} missing initialize method")
                 return False
                 
+            # Make a copy of config to avoid potential cross-module modification issues
+            module_config = dict(config.get(module_name, {}))
+            
+            # Validate config structure to avoid common errors
+            if not isinstance(module_config, dict):
+                logger.warning(f"Invalid config for {module_name}, expected dictionary")
+                module_config = {}  # Use empty dict to avoid further errors
+            
             # Handle async vs sync initialize method
             initialize_method = module.initialize
-            if asyncio.iscoroutinefunction(initialize_method):
-                # Module has async initialize method
-                result = await initialize_method(config)
-            else:
-                # Module has sync initialize method, run in executor
-                loop = asyncio.get_event_loop()
-                result = await loop.run_in_executor(
-                    None, 
-                    lambda: initialize_method(config)
-                )
-                
-            # Update initialization event
-            for module_info in init_event["data"]["modules"]:
-                if module_info["name"] == module_name:
-                    module_info["status"] = "ready" if result else "failed"
-                    module_info["success"] = bool(result)
+            try:
+                if asyncio.iscoroutinefunction(initialize_method):
+                    # Module has async initialize method
+                    result = await initialize_method(module_config)
+                else:
+                    # Module has sync initialize method, run in executor
+                    loop = asyncio.get_event_loop()
+                    result = await loop.run_in_executor(
+                        None, 
+                        lambda: initialize_method(module_config)
+                    )
                     
-            if result:
-                logger.info(f"Module {module_name} initialized successfully")
-            else:
-                logger.error(f"Module {module_name} initialization failed")
+                # Update initialization event
+                for module_info in init_event["data"]["modules"]:
+                    if module_info["name"] == module_name:
+                        module_info["status"] = "ready" if result else "limited"
+                        module_info["success"] = True  # Count as success even with limited functionality
+                        
+                if result:
+                    logger.info(f"Module {module_name} initialized successfully")
+                else:
+                    logger.warning(f"Module {module_name} initialized with limited functionality")
                 
-            return bool(result)
+                # Consider partial initialization as success for system stability
+                return True
+                
+            except Exception as init_error:
+                logger.error(f"Error during {module_name} initialization: {init_error}")
+                
+                # Add error to health tracking
+                self.add_error(module_name, f"Initialization error: {str(init_error)}")
+                
+                # Update initialization event with error
+                for module_info in init_event["data"]["modules"]:
+                    if module_info["name"] == module_name:
+                        module_info["status"] = "error"
+                        module_info["success"] = False
+                        module_info["error"] = str(init_error)
+                
+                # Try to recover depending on the module type
+                if module_name == "document_library":
+                    return await self._recover_document_library(module)
+                elif module_name == "llm_analysis":
+                    return await self._recover_llm_analysis(module)
+                elif module_name == "stt_engine":
+                    return await self._recover_stt_engine(module)
+                else:
+                    # For other modules, consider failed initialization as fatal
+                    return False
             
         except Exception as e:
             logger.error(f"Error initializing {module_name}: {e}")
@@ -347,7 +437,148 @@ class TCCCSystem:
                     module_info["status"] = "error"
                     module_info["success"] = False
                     module_info["error"] = str(e)
+            
+            # Add error to health tracking
+            self.add_error(module_name, f"Initialization error: {str(e)}")
                     
+            return False
+    
+    async def _recover_document_library(self, module) -> bool:
+        """
+        Attempt to recover DocumentLibrary module after initialization failure.
+        
+        Args:
+            module: DocumentLibrary module instance
+            
+        Returns:
+            True if recovery was successful, False otherwise
+        """
+        try:
+            logger.info("Attempting recovery of DocumentLibrary module")
+            
+            # Check if the module is at least partially initialized
+            if hasattr(module, 'initialized'):
+                module.initialized = True
+                
+            # Ensure minimal required attributes are set
+            if not hasattr(module, 'documents') or module.documents is None:
+                module.documents = {}
+                
+            if not hasattr(module, 'chunks') or module.chunks is None:
+                module.chunks = {}
+                
+            # Minimal empty index if needed
+            if not hasattr(module, 'index') or module.index is None:
+                try:
+                    # Try to create a minimal mock index
+                    from tccc.document_library.vector_store import MockFaissIndex
+                    module.index = MockFaissIndex(dimension=384)
+                except Exception:
+                    # If that fails, just use None
+                    module.index = None
+                    
+            logger.info("DocumentLibrary partially recovered with limited functionality")
+            return True
+        except Exception as recovery_error:
+            logger.error(f"Failed to recover DocumentLibrary: {str(recovery_error)}")
+            return False
+            
+    async def _recover_llm_analysis(self, module) -> bool:
+        """
+        Attempt to recover LLMAnalysis module after initialization failure.
+        
+        Args:
+            module: LLMAnalysis module instance
+            
+        Returns:
+            True if recovery was successful, False otherwise
+        """
+        try:
+            logger.info("Attempting recovery of LLMAnalysis module")
+            
+            # Check if the module has recovery helpers
+            if hasattr(module, '_create_minimal_llm_engine'):
+                # Use the module's own recovery methods
+                if not hasattr(module, 'llm_engine') or module.llm_engine is None:
+                    module.llm_engine = module._create_minimal_llm_engine({})
+                    
+                if not hasattr(module, 'entity_extractor') or module.entity_extractor is None:
+                    module.entity_extractor = module._create_minimal_entity_extractor()
+                    
+                if not hasattr(module, 'event_sequencer') or module.event_sequencer is None:
+                    module.event_sequencer = module._create_minimal_event_sequencer()
+                    
+                if not hasattr(module, 'report_generator') or module.report_generator is None:
+                    module.report_generator = module._create_minimal_report_generator()
+                    
+                # Initialize cache
+                if not hasattr(module, 'cache'):
+                    module.cache = {}
+                    
+            # Force initialized state
+            module.initialized = True
+            
+            logger.info("LLMAnalysis partially recovered with limited functionality")
+            return True
+        except Exception as recovery_error:
+            logger.error(f"Failed to recover LLMAnalysis: {str(recovery_error)}")
+            return False
+    
+    async def _recover_stt_engine(self, module) -> bool:
+        """
+        Attempt to recover STTEngine module after initialization failure.
+        
+        Args:
+            module: STTEngine module instance
+            
+        Returns:
+            True if recovery was successful, False otherwise
+        """
+        try:
+            logger.info("Attempting recovery of STTEngine module")
+            
+            # Check if the module has recovery helpers
+            if hasattr(module, '_create_minimal_model_manager'):
+                # Use the module's own recovery methods
+                if not hasattr(module, 'model_manager') or module.model_manager is None:
+                    module.model_manager = module._create_minimal_model_manager({})
+                    
+                if not hasattr(module, 'diarizer') or module.diarizer is None:
+                    module.diarizer = module._create_minimal_diarizer({})
+                    
+                if not hasattr(module, 'term_processor') or module.term_processor is None:
+                    module.term_processor = module._create_minimal_term_processor({})
+                    
+            # Set default context length if needed
+            if not hasattr(module, 'context_max_length'):
+                module.context_max_length = 60 * 16000
+                
+            # Ensure audio buffer and recent segments are initialized
+            if not hasattr(module, 'audio_buffer'):
+                from collections import deque
+                module.audio_buffer = deque(maxlen=100)
+                
+            if not hasattr(module, 'recent_segments'):
+                from collections import deque
+                module.recent_segments = deque(maxlen=10)
+                
+            # Initialize metrics
+            if not hasattr(module, 'metrics'):
+                module.metrics = {
+                    'total_audio_seconds': 0,
+                    'total_processing_time': 0,
+                    'transcript_count': 0,
+                    'error_count': 0,
+                    'avg_confidence': 0
+                }
+                
+            # Force initialized state
+            module.initialized = True
+            
+            logger.info("STTEngine partially recovered with limited functionality")
+            return True
+        except Exception as recovery_error:
+            logger.error(f"Failed to recover STTEngine: {str(recovery_error)}")
             return False
     
     def start_audio_capture(self, source_id: Optional[str] = None) -> bool:

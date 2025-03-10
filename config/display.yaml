@@ -1,132 +1,142 @@
-# Display Configuration for TCCC Project
-
-# Display hardware settings
+advanced:
+  debug_mode: false
+  sdl_audiodriver: ''
+  sdl_videodriver: ''
+  show_touch_points: false
 display:
-  # Display dimensions (default is WaveShare 6.25" in landscape orientation)
-  width: 1560
-  height: 720
-  
-  # Display orientation
-  orientation: landscape  # 'landscape' or 'portrait'
-  
-  # Fullscreen mode
   fullscreen: true
-  
-  # Touch input settings
+  height: 720
+  orientation: landscape
   touch:
-    enabled: true
-    device: "WaveShare Touchscreen"
     calibration_enabled: true
-    # Touch transformation matrix for correct mapping
-    transformation_matrix: [0, 1, 0, -1, 0, 1, 0, 0, 1]
-    # Touch sensitivity
-    sensitivity: 1.0
-    # Touch regions - defines interactive areas on screen
+    device: WaveShare Touchscreen
+    enabled: true
     regions:
-      # Toggle between live and card view
-      toggle_view:
-        enabled: true
-        rect: [0, -50, -1, 50]  # [x, y, width, height] (-1 means full width)
-      # Quick buttons
       card_button:
         enabled: true
-        rect: [-100, 60, 100, 40]  # Right side button for card view
-      # Scrolling regions for transcription and events
+        rect:
+        - -100
+        - 60
+        - 100
+        - 40
+      toggle_view:
+        enabled: true
+        rect:
+        - 0
+        - -50
+        - -1
+        - 50
       transcription_scroll:
         enabled: true
-        rect: [0, 110, 585, 560]  # Left panel for transcription
-
-# UI settings
+        rect:
+        - 0
+        - 110
+        - 585
+        - 560
+    sensitivity: 1.0
+    transformation_matrix:
+    - 0
+    - 1
+    - 0
+    - -1
+    - 0
+    - 1
+    - 0
+    - 0
+    - 1
+  width: 1560
+hardware:
+  auto_detect: true
+  jetson:
+    framebuffer_device: /dev/fb0
+    performance:
+      fps_limit_ac: 30
+      fps_limit_battery: 15
+    power_save_mode: true
+    use_framebuffer: true
+    use_hardware_acceleration: true
+  waveshare:
+    backlight:
+      default_value: 200
+      enabled: true
+      max_value: 255
+      path: /sys/class/backlight/waveshare/brightness
+    hdmi_cvt: 720 1560 60 6 0 0 0
+    hdmi_group: 2
+    hdmi_mode: 87
+    model: 6.25_inch
+    rotation: 1
+performance:
+  log_performance: true
+  monitor_enabled: true
+  show_fps: false
+  target_fps: 30
 ui:
-  # Font settings
-  font_scale: 1.0
-  small_font_size: 22
-  medium_font_size: 28
-  large_font_size: 36
-  
-  # Color scheme
-  theme: "dark"  # 'dark' or 'light'
-  color_schemes:
-    dark:
-      background: [0, 0, 0]
-      text: [255, 255, 255]
-      header: [0, 0, 255]
-      highlight: [255, 215, 0]
-      alert: [255, 0, 0]
-      success: [0, 200, 0]
-    light:
-      background: [240, 240, 240]
-      text: [10, 10, 10]
-      header: [50, 50, 200]
-      highlight: [200, 160, 0]
-      alert: [200, 0, 0]
-      success: [0, 150, 0]
-  
-  # Logo paths
-  logo: "images/blue_logo.png"
-  alt_logo: "images/green_logo.png"
-  
-  # Maximum display items
-  max_transcription_items: 10
-  max_event_items: 8
-  
-  # Animation settings
+  alt_logo: images/green_logo.png
   animations:
     enabled: true
-    transition_speed_ms: 300
     fade_in: true
     scroll_smooth: true
-  
-  # Layout adjustments
+    transition_speed_ms: 300
+  color_schemes:
+    dark:
+      alert:
+      - 255
+      - 0
+      - 0
+      background:
+      - 0
+      - 0
+      - 0
+      header:
+      - 0
+      - 0
+      - 255
+      highlight:
+      - 255
+      - 215
+      - 0
+      success:
+      - 0
+      - 200
+      - 0
+      text:
+      - 255
+      - 255
+      - 255
+    light:
+      alert:
+      - 200
+      - 0
+      - 0
+      background:
+      - 240
+      - 240
+      - 240
+      header:
+      - 50
+      - 50
+      - 200
+      highlight:
+      - 200
+      - 160
+      - 0
+      success:
+      - 0
+      - 150
+      - 0
+      text:
+      - 10
+      - 10
+      - 10
+  font_scale: 1.0
+  large_font_size: 36
   layout:
-    # Column width percentages for landscape mode
-    column_1_width: 0.38  # Transcription column
-    column_2_width: 0.34  # Events column
-    # Column 3 takes the remaining space
-
-# Hardware-specific settings
-hardware:
-  # Auto-detect display hardware
-  auto_detect: true
-  
-  # WaveShare 6.25" specific settings
-  waveshare:
-    model: "6.25_inch"
-    rotation: 1  # 1=90° (landscape), 0=0° (portrait)
-    hdmi_group: 2
-    hdmi_mode: 87  # Custom mode
-    hdmi_cvt: "720 1560 60 6 0 0 0"  # Custom timing (height width refresh)
-    # Backlight control (if supported)
-    backlight: 
-      enabled: true
-      path: "/sys/class/backlight/waveshare/brightness"
-      max_value: 255
-      default_value: 200
-  
-  # Jetson hardware settings
-  jetson:
-    use_framebuffer: true
-    framebuffer_device: "/dev/fb0"
-    use_hardware_acceleration: true
-    # Power optimization (reduced framerate on battery)
-    power_save_mode: true
-    # Performance settings
-    performance:
-      fps_limit_ac: 30  # FPS when on AC power
-      fps_limit_battery: 15  # FPS when on battery
-
-# Performance monitoring
-performance:
-  monitor_enabled: true
-  show_fps: false  # Set to true to show FPS counter
-  log_performance: true
-  target_fps: 30  # Target frames per second
-
-# Advanced settings
-advanced:
-  # Debug features
-  debug_mode: false
-  show_touch_points: false
-  # Low-level settings
-  sdl_videodriver: ""  # Empty to use system default
-  sdl_audiodriver: ""  # Empty to use system default
+    column_1_width: 0.38
+    column_2_width: 0.34
+  logo: images/blue_logo.png
+  max_event_items: 8
+  max_transcription_items: 10
+  medium_font_size: 28
+  small_font_size: 22
+  theme: dark
