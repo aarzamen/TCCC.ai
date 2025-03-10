@@ -216,6 +216,11 @@ def test_singleton_pattern():
     """Test the singleton pattern of the VAD Manager."""
     logger.info("Testing singleton pattern of VAD Manager")
     
+    # Reset the singleton for testing
+    # This is a bit of a hack but necessary for testing the singleton
+    import src.tccc.utils.vad_manager
+    src.tccc.utils.vad_manager._vad_manager_instance = None
+    
     # Create first instance with specific config
     config1 = {
         'vad': {
@@ -251,6 +256,9 @@ def test_singleton_pattern():
     # Verify config was updated
     status = vad1.get_status()
     assert status['sensitivity'] == 3, "Failed to update singleton configuration"
+    
+    # Reset singleton after test
+    src.tccc.utils.vad_manager._vad_manager_instance = None
     
     logger.info("Singleton pattern tests passed")
     return True
