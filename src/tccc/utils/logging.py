@@ -10,8 +10,66 @@ import sys
 import os
 import time
 from datetime import datetime
-from typing import Dict, Any, Optional
+from typing import Dict, Any, Optional, Union
 from logging.handlers import RotatingFileHandler, TimedRotatingFileHandler
+
+
+def configure_logging(log_level: Union[str, int] = logging.INFO, 
+                     log_to_file: bool = True, 
+                     log_dir: str = None):
+    """
+    Configure logging for the entire application.
+    
+    Args:
+        log_level: Logging level (DEBUG, INFO, WARNING, ERROR, CRITICAL or integer)
+        log_to_file: Whether to log to a file
+        log_dir: Directory to store log files, if logging to files
+    """
+    # Convert string log level to int if needed
+    if isinstance(log_level, str):
+        log_level = getattr(logging, log_level.upper(), logging.INFO)
+    
+    # Configure root logger
+    root_logger = logging.getLogger()
+    root_logger.setLevel(log_level)
+    
+    # Remove existing handlers to avoid duplicates
+    if root_logger.hasHandlers():
+        root_logger.handlers.clear()
+    
+    # Create console handler
+    console_handler = logging.StreamHandler(sys.stdout)
+    console_handler.setLevel(log_level)
+    console_formatter = logging.Formatter(
+        '%(asctime)s - %(name)s - %(levelname)s - %(message)s'
+    )
+    console_handler.setFormatter(console_formatter)
+    root_logger.addHandler(console_handler)
+    
+    # Create file handlers with rotation if requested
+    if log_to_file:
+        if log_dir is None:
+            log_dir = os.path.join(os.getcwd(), 'logs')
+        
+        os.makedirs(log_dir, exist_ok=True)
+        
+        # Base log file name
+        base_log_file = os.path.join(log_dir, "application.log")
+        
+        # Create formatter for file handlers
+        file_formatter = logging.Formatter(
+            '%(asctime)s - %(name)s - %(levelname)s - %(message)s'
+        )
+        
+        # Size-based rotation handler
+        size_handler = RotatingFileHandler(
+            filename=base_log_file,
+            maxBytes=10 * 1024 * 1024,  # 10 MB
+            backupCount=10
+        )
+        size_handler.setLevel(log_level)
+        size_handler.setFormatter(file_formatter)
+        root_logger.addHandler(size_handler)
 
 
 class ContextLogger:
