@@ -58,6 +58,8 @@ echo -e "\n${YELLOW}RUNNING INTERFACE VERIFICATIONS${NC}"
 echo "=================================================="
 
 run_verification "./verification_script_async_modules.py" "Async/Sync Interface"
+run_verification "./verification_script_audio_pipeline_integration.py" "Audio Pipeline/STT Integration"
+run_verification "./verification_script_audio_chunk_management.py" "Audio Chunk Management"
 
 # Calculate elapsed time
 END_TIME=$(date +%s)

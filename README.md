@@ -76,6 +76,7 @@ The system follows a modular architecture with clean interfaces between componen
    - Battlefield-specific noise filtering for gunshots, explosions, vehicle noise, and wind noise
    - FullSubNet neural speech enhancement for challenging acoustic conditions
    - Adaptive distance compensation and voice isolation techniques
+   - Advanced audio chunk management system for variable-sized processing
    - Real-time processing optimized for Jetson hardware
 2. **Speech-to-Text:** Implements a fine-tuned Whisper model (faster-whisper-tiny.en) with battlefield-optimized VAD parameters and enhanced accuracy through audio pre-processing
 3. **LLM Analysis:** Utilizes Microsoft's Phi-2 model (quantized for edge deployment) to extract medical events and procedures

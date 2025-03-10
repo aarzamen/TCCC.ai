@@ -11,11 +11,25 @@ audio:
   # Sample format (int16, int32, float32)
   format: "int16"
   
-  # Chunk size in frames
+  # Chunk size in frames for input
   chunk_size: 1024
+  
+  # Chunk size for processing (FFT, etc.)
+  # Should match requirements of processing algorithms
+  process_chunk_size: 2048
+  
+  # Chunk size for output to downstream components
+  # Should match the expected input size of the STT engine
+  output_chunk_size: 16000
   
   # Buffer size in chunks
   buffer_size: 10
+  
+  # Format for internal processing (int16, float32)
+  process_format: "float32"
+  
+  # Format for output to downstream components
+  output_format: "float32"
 
 # Noise reduction settings
 noise_reduction:
@@ -144,3 +158,31 @@ io:
   stream_output:
     buffer_size: 5
     timeout_ms: 100
+
+# Chunk size management
+chunk_management:
+  # Enable automatic chunk size management
+  enabled: true
+  
+  # Allow overlapping windows (useful for FFT-based processing)
+  overlapping_windows: true
+  
+  # Overlap percentage (0.0-1.0)
+  overlap_percent: 0.25
+  
+  # Buffer prefill level before starting output
+  buffer_prefill_ms: 500
+  
+  # Maximum buffer size in ms 
+  max_buffer_ms: 5000
+  
+  # Optimize chunk sizes for specific processing tasks
+  optimized_sizes:
+    # FFT processing (should be power of 2)
+    fft: 2048
+    
+    # VAD processing (should match frame duration)
+    vad: 480  # 30ms at 16kHz
+    
+    # STT processing (should be large enough for meaningful recognition)
+    stt: 16000  # 1 second at 16kHz

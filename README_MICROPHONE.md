@@ -25,6 +25,7 @@ The TCCC Microphone System provides:
    - Noise reduction and normalization
    - Battlefield audio enhancement for outdoor use
    - Support for FullSubNet speech enhancement on supported hardware
+   - Advanced audio chunk management for optimal processing
 
 2. **Real-time Speech Transcription**
    - Uses actual Faster-Whisper STT model (not mock)

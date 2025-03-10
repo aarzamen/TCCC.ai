@@ -197,6 +197,18 @@ The current implementation has the following issues that need to be addressed:
 
 5. **Silero VAD Model**: We had to manually download the Silero VAD model files as they were not included with the faster-whisper package.
 
+## Audio Chunk Management Integration
+
+The STT Engine now integrates with the Audio Chunk Manager to handle variable-sized audio inputs efficiently:
+
+- **Flexible Input Sizes**: Processes audio chunks of any size through `ChunkSizeAdapter`
+- **Format Conversion**: Automatically converts between INT16 and FLOAT32 formats
+- **Streaming Support**: Buffers partial chunks for complete processing
+- **Memory Efficiency**: Preallocated buffers reduce memory fragmentation
+- **Overlapping Analysis**: Optional overlapping chunks for improved boundary handling
+
+This integration allows the STT Engine to process audio from various sources regardless of their native chunk sizes, improving compatibility with different audio capture devices and preprocessing modules.
+
 ## Future Enhancements
 
 1. **Medical Domain Fine-tuning**: Further adapt the model for medical terminology
@@ -205,6 +217,7 @@ The current implementation has the following issues that need to be addressed:
 4. **Noise Robustness**: Improved performance in challenging environments
 5. **Streaming Optimization**: Reduced latency for real-time applications
 6. **Improved VAD**: Better speech/non-speech detection for battlefield audio
+7. **Enhanced Chunk Processing**: Further optimization of chunk size handling for different audio sources
 
 ## Resources
 

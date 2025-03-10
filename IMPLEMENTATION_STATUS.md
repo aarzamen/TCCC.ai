@@ -46,6 +46,8 @@ This document provides the current implementation status of key TCCC.ai componen
 - **Voice Activity Detection**: Detecting speech segments in noisy environments
 - **Medical Vocabulary**: Custom medical terminology for improved recognition accuracy
 - **Microphone Input**: Working with Razer Seiren V3 Mini microphone
+- **Audio Chunk Management**: Efficient handling of variable-sized audio chunks with format conversion
+- **Real-time Audio Processing**: Buffer management for continuous streaming audio
 
 ### Verification Status
 - Audio Pipeline: **PASSED** - Handles real-time audio input and processing
