@@ -27,7 +27,8 @@ logger = get_logger(__name__)
 class DatabaseManager:
     """
     Manages SQLite database connections and operations.
-    Implements connection pooling, WAL mode, and optimizations for Jetson hardware.
+    Uses a single global connection with proper locking to ensure thread safety.
+    Implements WAL mode and optimizations for Jetson hardware.
     """
     
     def __init__(self, config: Dict[str, Any]):
@@ -50,7 +51,6 @@ class DatabaseManager:
         self.page_size = self.sqlite_config.get('page_size', 4096)
         self.auto_vacuum = self.sqlite_config.get('auto_vacuum', 1)
         self.temp_store = self.sqlite_config.get('temp_store', 2)
-        self.max_connections = self.sqlite_config.get('max_connections', 10)
         
         # Performance configuration
         self.perf_config = config.get('performance', {})
@@ -63,9 +63,9 @@ class DatabaseManager:
         if not os.path.exists(self.db_dir):
             os.makedirs(self.db_dir, exist_ok=True)
             
-        # Connection pool
-        self._connection_pool = []
-        self._pool_lock = threading.RLock()
+        # Single global connection with lock for thread safety
+        self._conn_lock = threading.RLock()
+        self._connection = None
         
         # Initialize database
         self._initialize_database()
@@ -79,44 +79,55 @@ class DatabaseManager:
     
     def _initialize_database(self):
         """Initialize the database with optimal settings."""
-        conn = self._create_connection()
-        try:
-            # Set pragmas for optimization
-            pragmas = [
-                f"PRAGMA journal_mode={self.journal_mode}",
-                f"PRAGMA synchronous={self.synchronous}",
-                f"PRAGMA cache_size={self.cache_size}",
-                f"PRAGMA page_size={self.page_size}",
-                f"PRAGMA auto_vacuum={self.auto_vacuum}",
-                f"PRAGMA temp_store={self.temp_store}",
-            ]
+        with self._conn_lock:
+            # Create the global connection
+            self._connection = sqlite3.connect(
+                self.db_path,
+                timeout=60.0,  # Longer timeout
+                isolation_level=None,  # We'll manage transactions manually 
+                check_same_thread=False  # We'll handle thread safety with locks
+            )
+            self._connection.row_factory = sqlite3.Row
             
-            # NVMe specific optimizations
-            if self.nvme_optimized:
-                pragmas.extend([
-                    "PRAGMA locking_mode=EXCLUSIVE",
-                    "PRAGMA mmap_size=268435456",  # 256MB memory mapping
-                ])
+            try:
+                # Set pragmas for optimization
+                pragmas = [
+                    f"PRAGMA journal_mode={self.journal_mode}",
+                    f"PRAGMA synchronous={self.synchronous}",
+                    f"PRAGMA cache_size={self.cache_size}",
+                    f"PRAGMA page_size={self.page_size}",
+                    f"PRAGMA auto_vacuum={self.auto_vacuum}",
+                    f"PRAGMA temp_store={self.temp_store}",
+                    "PRAGMA busy_timeout=30000",  # 30 second timeout for operations
+                ]
                 
-            # Memory mapping if enabled
-            if self.use_memory_mapping:
-                memory_limit = self.jetson_config.get('memory_limit_mb', 512)
-                pragmas.append(f"PRAGMA mmap_size={memory_limit * 1024 * 1024}")
+                # NVMe specific optimizations
+                if self.nvme_optimized:
+                    pragmas.extend([
+                        "PRAGMA locking_mode=EXCLUSIVE",
+                        "PRAGMA mmap_size=268435456",  # 256MB memory mapping
+                    ])
+                    
+                # Memory mapping if enabled
+                if self.use_memory_mapping:
+                    memory_limit = self.jetson_config.get('memory_limit_mb', 512)
+                    pragmas.append(f"PRAGMA mmap_size={memory_limit * 1024 * 1024}")
+                    
+                # Execute pragmas
+                cursor = self._connection.cursor()
+                for pragma in pragmas:
+                    cursor.execute(pragma)
+                    
+                # Create tables if they don't exist
+                self._create_tables(self._connection)
                 
-            # Execute pragmas
-            cursor = conn.cursor()
-            for pragma in pragmas:
-                cursor.execute(pragma)
-                
-            # Create tables if they don't exist
-            self._create_tables(conn)
-            
-            conn.commit()
-        except Exception as e:
-            logger.error(f"Error initializing database: {e}")
-            raise
-        finally:
-            self._return_connection(conn)
+                self._connection.commit()
+            except Exception as e:
+                logger.error(f"Error initializing database: {e}")
+                if self._connection:
+                    self._connection.close()
+                    self._connection = None
+                raise
     
     def _create_tables(self, conn):
         """
@@ -232,39 +243,6 @@ class DatabaseManager:
         
         conn.commit()
     
-    def _create_connection(self):
-        """
-        Create a new SQLite connection.
-        
-        Returns:
-            SQLite connection object
-        """
-        # Create a thread-local connection to avoid thread safety issues
-        conn = sqlite3.connect(self.db_path, timeout=30.0, isolation_level=None, check_same_thread=True)
-        conn.row_factory = sqlite3.Row
-        return conn
-    
-    def _get_connection(self):
-        """
-        Get a connection from the pool or create a new one.
-        
-        Returns:
-            SQLite connection object
-        """
-        # Always create a new connection for the current thread to avoid
-        # SQLite thread safety issues
-        return self._create_connection()
-    
-    def _return_connection(self, conn):
-        """
-        Close the connection instead of returning it to the pool to ensure thread safety.
-        
-        Args:
-            conn: SQLite connection object
-        """
-        # Always close the connection to avoid thread safety issues
-        conn.close()
-    
     @contextmanager
     def get_connection(self):
         """
@@ -273,11 +251,16 @@ class DatabaseManager:
         Yields:
             SQLite connection object
         """
-        conn = self._get_connection()
-        try:
-            yield conn
-        finally:
-            self._return_connection(conn)
+        with self._conn_lock:
+            if not self._connection:
+                # Reinitialize connection if it was closed
+                self._initialize_database()
+                
+            try:
+                yield self._connection
+            except Exception as e:
+                logger.error(f"Error while using database connection: {e}")
+                raise
     
     @contextmanager
     def transaction(self):
@@ -287,24 +270,29 @@ class DatabaseManager:
         Yields:
             SQLite connection object with active transaction
         """
-        conn = self._get_connection()
-        try:
-            conn.execute("BEGIN")
-            yield conn
-            conn.execute("COMMIT")
-        except Exception as e:
-            conn.execute("ROLLBACK")
-            logger.error(f"Transaction failed: {e}")
-            raise
-        finally:
-            self._return_connection(conn)
+        with self._conn_lock:
+            if not self._connection:
+                # Reinitialize connection if it was closed
+                self._initialize_database()
+                
+            try:
+                self._connection.execute("BEGIN IMMEDIATE")  # Acquire write lock immediately
+                yield self._connection
+                self._connection.execute("COMMIT")
+            except Exception as e:
+                try:
+                    self._connection.execute("ROLLBACK")
+                except Exception as rollback_error:
+                    logger.error(f"Error during transaction rollback: {rollback_error}")
+                logger.error(f"Transaction failed: {e}")
+                raise
     
     def close_all_connections(self):
-        """Close all connections in the pool."""
-        with self._pool_lock:
-            for conn in self._connection_pool:
-                conn.close()
-            self._connection_pool.clear()
+        """Close the database connection."""
+        with self._conn_lock:
+            if self._connection:
+                self._connection.close()
+                self._connection = None
     
     def _start_maintenance_scheduler(self):
         """Start the database maintenance scheduler."""
@@ -340,21 +328,27 @@ class DatabaseManager:
     
     def _vacuum_database(self):
         """Run VACUUM on the database to optimize storage."""
-        try:
-            with self.get_connection() as conn:
-                conn.execute("VACUUM")
-            logger.info("Database VACUUM completed successfully")
-        except Exception as e:
-            logger.error(f"Database VACUUM failed: {e}")
+        with self._conn_lock:
+            try:
+                if not self._connection:
+                    self._initialize_database()
+                
+                self._connection.execute("VACUUM")
+                logger.info("Database VACUUM completed successfully")
+            except Exception as e:
+                logger.error(f"Database VACUUM failed: {e}")
     
     def _analyze_database(self):
         """Run ANALYZE on the database to optimize query planning."""
-        try:
-            with self.get_connection() as conn:
-                conn.execute("ANALYZE")
-            logger.info("Database ANALYZE completed successfully")
-        except Exception as e:
-            logger.error(f"Database ANALYZE failed: {e}")
+        with self._conn_lock:
+            try:
+                if not self._connection:
+                    self._initialize_database()
+                
+                self._connection.execute("ANALYZE")
+                logger.info("Database ANALYZE completed successfully")
+            except Exception as e:
+                logger.error(f"Database ANALYZE failed: {e}")
     
     def get_database_stats(self):
         """
@@ -413,6 +407,9 @@ class BackupManager:
         self.db_manager = db_manager
         self.config = config
         
+        # Use the same lock as the database manager
+        self._conn_lock = self.db_manager._conn_lock
+        
         # Extract configuration
         self.backup_config = config.get('backup', {})
         self.enabled = self.backup_config.get('enabled', True)
@@ -464,68 +461,82 @@ class BackupManager:
             Dictionary with backup details
         """
         try:
-            # Generate backup filename
-            timestamp = datetime.datetime.now().isoformat(timespec='seconds')
-            backup_id = f"backup_{int(time.time())}"
-            if label:
-                backup_id = f"{backup_id}_{label}"
-            
-            backup_filename = f"{backup_id}.db"
-            backup_path = os.path.join(self.directory, backup_filename)
-            
-            # Ensure the database is in a consistent state
-            with self.db_manager.get_connection() as conn:
-                conn.execute("PRAGMA wal_checkpoint(FULL)")
-            
-            # Create backup
-            source_path = self.db_manager.db_path
-            shutil.copy2(source_path, backup_path)
-            
-            # Calculate size and checksum
-            size = os.path.getsize(backup_path)
-            
-            # Calculate SHA-256 checksum
-            sha256_hash = hashlib.sha256()
-            with open(backup_path, "rb") as f:
-                # Read in chunks for large files
-                for byte_block in iter(lambda: f.read(4096), b""):
-                    sha256_hash.update(byte_block)
-            checksum = sha256_hash.hexdigest()
-            
-            # Create backup record
-            backup_record = {
-                "backup_id": backup_id,
-                "timestamp": timestamp,
-                "path": backup_path,
-                "size": size,
-                "checksum": checksum,
-                "status": "completed",
-                "metadata": json.dumps({"label": label} if label else {}),
-                "created_at": timestamp
-            }
-            
-            # Store backup record in database
-            with self.db_manager.transaction() as conn:
-                conn.execute(
-                    """
-                    INSERT INTO backups 
-                    (backup_id, timestamp, path, size, checksum, status, metadata, created_at)
-                    VALUES (?, ?, ?, ?, ?, ?, ?, ?)
-                    """,
-                    (
-                        backup_record["backup_id"],
-                        backup_record["timestamp"],
-                        backup_record["path"],
-                        backup_record["size"],
-                        backup_record["checksum"],
-                        backup_record["status"],
-                        backup_record["metadata"],
-                        backup_record["created_at"]
+            # Acquire a global lock on the database manager
+            with self._conn_lock:
+                # Ensure database connection exists
+                if not self.db_manager._connection:
+                    self.db_manager._initialize_database()
+                
+                # Generate backup filename
+                timestamp = datetime.datetime.now().isoformat(timespec='seconds')
+                backup_id = f"backup_{int(time.time())}"
+                if label:
+                    backup_id = f"{backup_id}_{label}"
+                
+                backup_filename = f"{backup_id}.db"
+                backup_path = os.path.join(self.directory, backup_filename)
+                
+                # Ensure the database is in a consistent state using the global connection
+                self.db_manager._connection.execute("PRAGMA wal_checkpoint(FULL)")
+                
+                # Create backup
+                source_path = self.db_manager.db_path
+                shutil.copy2(source_path, backup_path)
+                
+                # Calculate size and checksum
+                size = os.path.getsize(backup_path)
+                
+                # Calculate SHA-256 checksum
+                sha256_hash = hashlib.sha256()
+                with open(backup_path, "rb") as f:
+                    # Read in chunks for large files
+                    for byte_block in iter(lambda: f.read(4096), b""):
+                        sha256_hash.update(byte_block)
+                checksum = sha256_hash.hexdigest()
+                
+                # Create backup record
+                backup_record = {
+                    "backup_id": backup_id,
+                    "timestamp": timestamp,
+                    "path": backup_path,
+                    "size": size,
+                    "checksum": checksum,
+                    "status": "completed",
+                    "metadata": json.dumps({"label": label} if label else {}),
+                    "created_at": timestamp
+                }
+                
+                # Direct transaction on the global connection
+                try:
+                    self.db_manager._connection.execute("BEGIN IMMEDIATE")
+                    self.db_manager._connection.execute(
+                        """
+                        INSERT INTO backups 
+                        (backup_id, timestamp, path, size, checksum, status, metadata, created_at)
+                        VALUES (?, ?, ?, ?, ?, ?, ?, ?)
+                        """,
+                        (
+                            backup_record["backup_id"],
+                            backup_record["timestamp"],
+                            backup_record["path"],
+                            backup_record["size"],
+                            backup_record["checksum"],
+                            backup_record["status"],
+                            backup_record["metadata"],
+                            backup_record["created_at"]
+                        )
                     )
-                )
-            
-            logger.info(f"Database backup created: {backup_path} ({size} bytes)")
-            return backup_record
+                    self.db_manager._connection.execute("COMMIT")
+                except Exception as tx_error:
+                    try:
+                        self.db_manager._connection.execute("ROLLBACK")
+                    except Exception as rollback_error:
+                        logger.error(f"Error during transaction rollback: {rollback_error}")
+                    logger.error(f"Backup record transaction failed: {tx_error}")
+                    raise
+                
+                logger.info(f"Database backup created: {backup_path} ({size} bytes)")
+                return backup_record
             
         except Exception as e:
             logger.error(f"Backup failed: {e}")
@@ -1181,7 +1192,8 @@ class DataStore:
         try:
             # Close all database connections
             if self.db_manager:
-                self.db_manager.close_all_connections()
+                with self.lock:
+                    self.db_manager.close_all_connections()
                 
             # Clear caches
             self.query_cache.clear()

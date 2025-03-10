@@ -143,9 +143,9 @@ class StateManager:
         """
         try:
             # Create a connection to the database with thread management
-            # By using check_same_thread=True we ensure each thread creates its own connection
-            # This prevents "SQLite objects created in a thread can only be used in that same thread" errors
-            self.connection = sqlite3.connect(self.db_path, check_same_thread=True)
+            # Using check_same_thread=False allows connection to be used across threads
+            # We will manage thread safety with locks instead
+            self.connection = sqlite3.connect(self.db_path, check_same_thread=False)
             
             # Enable WAL mode for better concurrency and resilience
             self.connection.execute("PRAGMA journal_mode=WAL;")
@@ -198,44 +198,43 @@ class StateManager:
         
         with self.lock:
             try:
-                # Create a new thread-local connection for loading
-                with sqlite3.connect(self.db_path, check_same_thread=True) as conn:
-                    conn.row_factory = sqlite3.Row
-                    
-                    # Load current state
-                    cursor = conn.cursor()
-                    cursor.execute("SELECT key, value FROM current_state")
-                    rows = cursor.fetchall()
-                    
-                    for key, value in rows:
-                        try:
-                            self.current_state[key] = json.loads(value)
-                        except json.JSONDecodeError:
-                            # Store as-is if not valid JSON
-                            self.current_state[key] = value
-                    
-                    logger.info(f"Loaded {len(rows)} state keys from database")
-                    
-                    # Load state history if enabled
-                    if self.keep_history:
-                        cursor.execute(
-                            "SELECT state, timestamp, metadata FROM state_history ORDER BY timestamp DESC LIMIT ?",
-                            (self.max_history_entries,)
-                        )
-                        history_rows = cursor.fetchall()
-                        
-                        for state_json, timestamp, metadata_json in history_rows:
-                            try:
-                                state = json.loads(state_json)
-                                metadata = json.loads(metadata_json) if metadata_json else None
-                                self.history.append(StateEntry(state, timestamp, metadata))
-                            except json.JSONDecodeError as e:
-                                logger.warning(f"Error parsing history entry: {e}")
-                        
-                        # Reverse to get chronological order
-                        self.history.reverse()
-                        logger.info(f"Loaded {len(self.history)} history entries from database")
+                # Use the main connection protected by lock for loading
+                self.connection.row_factory = sqlite3.Row
                 
+                # Load current state
+                cursor = self.connection.cursor()
+                cursor.execute("SELECT key, value FROM current_state")
+                rows = cursor.fetchall()
+                
+                for key, value in rows:
+                    try:
+                        self.current_state[key] = json.loads(value)
+                    except json.JSONDecodeError:
+                        # Store as-is if not valid JSON
+                        self.current_state[key] = value
+                
+                logger.info(f"Loaded {len(rows)} state keys from database")
+                
+                # Load state history if enabled
+                if self.keep_history:
+                    cursor.execute(
+                        "SELECT state, timestamp, metadata FROM state_history ORDER BY timestamp DESC LIMIT ?",
+                        (self.max_history_entries,)
+                    )
+                    history_rows = cursor.fetchall()
+                    
+                    for state_json, timestamp, metadata_json in history_rows:
+                        try:
+                            state = json.loads(state_json)
+                            metadata = json.loads(metadata_json) if metadata_json else None
+                            self.history.append(StateEntry(state, timestamp, metadata))
+                        except json.JSONDecodeError as e:
+                            logger.warning(f"Error parsing history entry: {e}")
+                    
+                    # Reverse to get chronological order
+                    self.history.reverse()
+                    logger.info(f"Loaded {len(self.history)} history entries from database")
+            
             except Exception as e:
                 logger.error(f"Failed to load state from database: {str(e)}")
     
@@ -248,43 +247,42 @@ class StateManager:
         
         with self.lock:
             try:
-                # Create a new thread-local connection for saving
-                with sqlite3.connect(self.db_path, check_same_thread=True) as conn:
-                    cursor = conn.cursor()
-                    current_time = time.time()
-                    
-                    # Begin transaction
-                    conn.execute("BEGIN TRANSACTION")
-                    
-                    # Save current state
-                    for key, value in self.current_state.items():
-                        value_json = json.dumps(value)
-                        cursor.execute(
-                            "INSERT OR REPLACE INTO current_state (key, value, modified_at) VALUES (?, ?, ?)",
-                            (key, value_json, current_time)
-                        )
-                    
-                    # Save latest history entry if available and history is enabled
-                    if self.keep_history and self.history:
-                        latest = self.history[-1]
-                        state_json = json.dumps(latest.state)
-                        metadata_json = json.dumps(latest.metadata) if latest.metadata else None
-                        
-                        cursor.execute(
-                            "INSERT INTO state_history (state, timestamp, metadata) VALUES (?, ?, ?)",
-                            (state_json, latest.timestamp, metadata_json)
-                        )
-                        
-                        # Cleanup old history entries if we have too many
-                        cursor.execute(
-                            "DELETE FROM state_history WHERE id NOT IN (SELECT id FROM state_history ORDER BY timestamp DESC LIMIT ?)",
-                            (self.max_history_entries,)
-                        )
-                    
-                    # Commit transaction
-                    conn.commit()
-                    logger.debug(f"Saved state to database ({len(self.current_state)} keys)")
+                # Use the main connection protected by lock for saving
+                cursor = self.connection.cursor()
+                current_time = time.time()
                 
+                # Begin transaction
+                self.connection.execute("BEGIN TRANSACTION")
+                
+                # Save current state
+                for key, value in self.current_state.items():
+                    value_json = json.dumps(value)
+                    cursor.execute(
+                        "INSERT OR REPLACE INTO current_state (key, value, modified_at) VALUES (?, ?, ?)",
+                        (key, value_json, current_time)
+                    )
+                
+                # Save latest history entry if available and history is enabled
+                if self.keep_history and self.history:
+                    latest = self.history[-1]
+                    state_json = json.dumps(latest.state)
+                    metadata_json = json.dumps(latest.metadata) if latest.metadata else None
+                    
+                    cursor.execute(
+                        "INSERT INTO state_history (state, timestamp, metadata) VALUES (?, ?, ?)",
+                        (state_json, latest.timestamp, metadata_json)
+                    )
+                    
+                    # Cleanup old history entries if we have too many
+                    cursor.execute(
+                        "DELETE FROM state_history WHERE id NOT IN (SELECT id FROM state_history ORDER BY timestamp DESC LIMIT ?)",
+                        (self.max_history_entries,)
+                    )
+                
+                # Commit transaction
+                self.connection.commit()
+                logger.debug(f"Saved state to database ({len(self.current_state)} keys)")
+            
             except Exception as e:
                 logger.error(f"Failed to save state to database: {str(e)}")
     
@@ -328,8 +326,12 @@ class StateManager:
         # Save state one last time
         self._save_state()
         
-        # The main connection is no longer needed since we create thread-local
-        # connections as needed for each operation
+        # Close the database connection
+        with self.lock:
+            if self.connection:
+                self.connection.close()
+                logger.info("Closed database connection")
+        
         logger.info("Stopped state manager")
     
     def get_state(self) -> Dict[str, Any]:
@@ -552,29 +554,28 @@ class StateManager:
         
         with self.lock:
             try:
-                # Create a new thread-local connection for this operation
-                with sqlite3.connect(self.db_path, check_same_thread=True) as conn:
-                    cursor = conn.cursor()
-                    checkpoint_data = {
-                        "state": self.current_state,
-                        "timestamp": time.time(),
-                        "metadata": {
-                            "name": name,
-                            "date": datetime.now().isoformat()
-                        }
+                # Use the main connection protected by the lock
+                cursor = self.connection.cursor()
+                checkpoint_data = {
+                    "state": self.current_state,
+                    "timestamp": time.time(),
+                    "metadata": {
+                        "name": name,
+                        "date": datetime.now().isoformat()
                     }
-                    
-                    state_json = json.dumps(checkpoint_data["state"])
-                    timestamp = checkpoint_data["timestamp"]
-                    metadata_json = json.dumps(checkpoint_data["metadata"])
-                    
-                    cursor.execute(
-                        "INSERT OR REPLACE INTO checkpoints (name, state, timestamp, metadata) VALUES (?, ?, ?, ?)",
-                        (name, state_json, timestamp, metadata_json)
-                    )
-                    
-                    conn.commit()
-                    logger.info(f"Saved state checkpoint: {name}")
+                }
+                
+                state_json = json.dumps(checkpoint_data["state"])
+                timestamp = checkpoint_data["timestamp"]
+                metadata_json = json.dumps(checkpoint_data["metadata"])
+                
+                cursor.execute(
+                    "INSERT OR REPLACE INTO checkpoints (name, state, timestamp, metadata) VALUES (?, ?, ?, ?)",
+                    (name, state_json, timestamp, metadata_json)
+                )
+                
+                self.connection.commit()
+                logger.info(f"Saved state checkpoint: {name}")
             except Exception as e:
                 logger.error(f"Failed to save state checkpoint: {str(e)}")
     
@@ -594,57 +595,56 @@ class StateManager:
         
         with self.lock:
             try:
-                # Create a new thread-local connection for this operation
-                with sqlite3.connect(self.db_path, check_same_thread=True) as conn:
-                    cursor = conn.cursor()
-                    cursor.execute(
-                        "SELECT state, timestamp, metadata FROM checkpoints WHERE name = ?",
-                        (name,)
-                    )
-                    row = cursor.fetchone()
-                    
-                    if not row:
-                        logger.error(f"Checkpoint not found: {name}")
-                        return False
-                    
-                    state_json, timestamp, metadata_json = row
-                    old_state = self.current_state.copy()
-                    
-                    # Update current state
-                    self.current_state = json.loads(state_json)
-                    
-                    # Add to history if enabled
-                    if self.keep_history:
-                        metadata = {"action": "load_checkpoint", "name": name}
-                        if metadata_json:
-                            try:
-                                metadata.update(json.loads(metadata_json))
-                            except:
-                                pass
-                        
-                        self.history.append(StateEntry(
-                            self.current_state.copy(),
-                            timestamp=time.time(),
-                            metadata=metadata
-                        ))
-                        
-                        # Trim history if needed
-                        if len(self.history) > self.max_history_entries:
-                            self.history = self.history[-self.max_history_entries:]
-                    
-                    # Notify callbacks
-                    for callback in self.callbacks:
+                # Use the main connection protected by the lock
+                cursor = self.connection.cursor()
+                cursor.execute(
+                    "SELECT state, timestamp, metadata FROM checkpoints WHERE name = ?",
+                    (name,)
+                )
+                row = cursor.fetchone()
+                
+                if not row:
+                    logger.error(f"Checkpoint not found: {name}")
+                    return False
+                
+                state_json, timestamp, metadata_json = row
+                old_state = self.current_state.copy()
+                
+                # Update current state
+                self.current_state = json.loads(state_json)
+                
+                # Add to history if enabled
+                if self.keep_history:
+                    metadata = {"action": "load_checkpoint", "name": name}
+                    if metadata_json:
                         try:
-                            callback(old_state, self.current_state)
-                        except Exception as e:
-                            logger.error(f"Error in state change callback: {str(e)}")
+                            metadata.update(json.loads(metadata_json))
+                        except:
+                            pass
                     
-                    # Save current state to database
-                    self._save_state()
+                    self.history.append(StateEntry(
+                        self.current_state.copy(),
+                        timestamp=time.time(),
+                        metadata=metadata
+                    ))
                     
-                    logger.info(f"Loaded state checkpoint: {name}")
-                    return True
-                    
+                    # Trim history if needed
+                    if len(self.history) > self.max_history_entries:
+                        self.history = self.history[-self.max_history_entries:]
+                
+                # Notify callbacks
+                for callback in self.callbacks:
+                    try:
+                        callback(old_state, self.current_state)
+                    except Exception as e:
+                        logger.error(f"Error in state change callback: {str(e)}")
+                
+                # Save current state to database
+                self._save_state()
+                
+                logger.info(f"Loaded state checkpoint: {name}")
+                return True
+                
             except Exception as e:
                 logger.error(f"Failed to load state checkpoint: {str(e)}")
                 return False
@@ -659,18 +659,18 @@ class StateManager:
         if not self.enable_persistence:
             return []
         
-        try:
-            # Create a new thread-local connection for this operation
-            with sqlite3.connect(self.db_path, check_same_thread=True) as conn:
-                cursor = conn.cursor()
+        with self.lock:
+            try:
+                # Use the main connection protected by the lock
+                cursor = self.connection.cursor()
                 cursor.execute("SELECT name FROM checkpoints ORDER BY timestamp DESC")
                 rows = cursor.fetchall()
                 
                 return [row[0] for row in rows]
             
-        except Exception as e:
-            logger.error(f"Failed to list checkpoints: {str(e)}")
-            return []
+            except Exception as e:
+                logger.error(f"Failed to list checkpoints: {str(e)}")
+                return []
             
     def delete_checkpoint(self, name: str) -> bool:
         """
@@ -684,13 +684,13 @@ class StateManager:
         """
         if not self.enable_persistence:
             return False
-            
-        try:
-            # Create a new thread-local connection for this operation
-            with sqlite3.connect(self.db_path, check_same_thread=True) as conn:
-                cursor = conn.cursor()
+        
+        with self.lock:
+            try:
+                # Use the main connection protected by the lock
+                cursor = self.connection.cursor()
                 cursor.execute("DELETE FROM checkpoints WHERE name = ?", (name,))
-                conn.commit()
+                self.connection.commit()
                 
                 if cursor.rowcount > 0:
                     logger.info(f"Deleted checkpoint: {name}")
@@ -699,6 +699,6 @@ class StateManager:
                     logger.warning(f"Checkpoint not found: {name}")
                     return False
                 
-        except Exception as e:
-            logger.error(f"Failed to delete checkpoint: {str(e)}")
-            return False
+            except Exception as e:
+                logger.error(f"Failed to delete checkpoint: {str(e)}")
+                return False
