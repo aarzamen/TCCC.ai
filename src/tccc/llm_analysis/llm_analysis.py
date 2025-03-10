@@ -222,30 +222,117 @@ class LLMEngine:
             model_config: Model configuration
             is_primary: Whether this is the primary model
         """
+        # Check for required configuration keys
+        if "path" not in model_config:
+            logger.error("Missing required configuration key: 'path'")
+            raise ValueError("Model configuration must include 'path'")
+            
+        if "name" not in model_config:
+            logger.error("Missing required configuration key: 'name'")
+            raise ValueError("Model configuration must include 'name'")
+            
         model_path = model_config["path"]
         model_name = model_config["name"]
         
         try:
             # Check if path exists
             if not os.path.exists(model_path):
+                logger.error(f"Model path not found: {model_path}")
                 raise FileNotFoundError(f"Model path not found: {model_path}")
             
-            # Determine model type based on files
-            # In a real implementation, you would use different loaders based on model format
+            # Check hardware compatibility before loading
+            if self.hardware_config["enable_acceleration"] and torch.cuda.is_available():
+                device_props = torch.cuda.get_device_properties(self.hardware_config["cuda_device"])
+                logger.info(f"Loading model on {device_props.name} with {device_props.total_memory / 1024**2:.0f}MB memory")
+                
+                # Check if model might exceed available memory (simple heuristic)
+                model_size_estimate = 0
+                
+                # Estimate model size based on name or config if available
+                if "model_size_mb" in model_config:
+                    model_size_estimate = model_config["model_size_mb"]
+                elif "phi-2" in model_name.lower():
+                    model_size_estimate = 2500  # ~2.5GB for Phi-2
+                elif "llama-2-7b" in model_name.lower():
+                    model_size_estimate = 7000  # ~7GB for LLaMA 7B
+                
+                # Check if estimated model size exceeds 80% of available memory
+                if model_size_estimate > 0 and model_size_estimate > (device_props.total_memory / 1024**2) * 0.8:
+                    logger.warning(f"Model {model_name} may exceed available GPU memory")
+                    logger.warning(f"Estimated model size: {model_size_estimate}MB, "
+                                   f"Available memory: {device_props.total_memory / 1024**2:.0f}MB")
+                    logger.warning("Will attempt to load with memory optimizations")
             
-            # This is a simplified implementation using CTransformers for llama models
-            # or Transformers for other models
-            if "llama" in model_name.lower():
+            # Determine model type based on name and files in directory
+            model_files = os.listdir(model_path)
+            
+            # Check if GGUF models are present (prioritize these for Jetson)
+            has_gguf = any(f.endswith('.gguf') for f in model_files)
+            has_onnx = any(f.endswith('.onnx') for f in model_files)
+            has_safetensors = any(f.endswith('.safetensors') for f in model_files)
+            
+            # Detect model type by both name and available files
+            if has_gguf and "phi" in model_name.lower():
+                logger.info(f"Found GGUF model for {model_name}, using optimized loader")
+                self._load_phi_model(model_path, model_config, is_primary)
+            elif "llama" in model_name.lower() or any('llama' in f.lower() for f in model_files):
                 self._load_llama_model(model_path, model_config, is_primary)
-            elif "phi" in model_name.lower():
+            elif "phi" in model_name.lower() or any('phi' in f.lower() for f in model_files):
                 self._load_phi_model(model_path, model_config, is_primary)
             else:
                 # Default to transformers
                 self._load_transformers_model(model_path, model_config, is_primary)
                 
+        except FileNotFoundError as e:
+            # Specific handling for missing files
+            logger.error(f"Model file not found: {str(e)}")
+            logger.debug(traceback.format_exc())
+            
+            # Create fallback model and raise error to trigger fallback handling
+            if is_primary:
+                self.primary_model = self._create_placeholder_model("primary")
+                self.model_info["primary"]["loaded"] = True
+                self.model_info["primary"]["fallback_used"] = True
+            else:
+                self.fallback_model = self._create_placeholder_model("fallback")
+                self.model_info["fallback"]["loaded"] = True
+                self.model_info["fallback"]["fallback_used"] = True
+                
+            raise RuntimeError(f"Failed to load model from {model_path}: {str(e)}")
+            
+        except (ImportError, ModuleNotFoundError) as e:
+            # Handle missing dependencies
+            logger.error(f"Missing dependency for model {model_name}: {str(e)}")
+            logger.debug(traceback.format_exc())
+            logger.warning(f"Please install required dependencies for {model_name}")
+            
+            # Create fallback model
+            if is_primary:
+                self.primary_model = self._create_placeholder_model("primary")
+                self.model_info["primary"]["loaded"] = True
+                self.model_info["primary"]["fallback_used"] = True
+            else:
+                self.fallback_model = self._create_placeholder_model("fallback")
+                self.model_info["fallback"]["loaded"] = True
+                self.model_info["fallback"]["fallback_used"] = True
+                
+            raise RuntimeError(f"Missing dependency for model {model_name}: {str(e)}")
+            
         except Exception as e:
+            # Generic error handling
             logger.error(f"Error loading local model: {str(e)}")
             logger.debug(traceback.format_exc())
+            
+            # Create fallback model
+            if is_primary:
+                self.primary_model = self._create_placeholder_model("primary")
+                self.model_info["primary"]["loaded"] = True
+                self.model_info["primary"]["fallback_used"] = True
+            else:
+                self.fallback_model = self._create_placeholder_model("fallback")
+                self.model_info["fallback"]["loaded"] = True
+                self.model_info["fallback"]["fallback_used"] = True
+                
             raise RuntimeError(f"Failed to load model from {model_path}: {str(e)}")
     
     def _load_llama_model(self, model_path: str, model_config: Dict[str, Any], is_primary: bool = True):
@@ -301,49 +388,109 @@ class LLMEngine:
             "top_p": model_config.get("top_p", 0.9)
         }
         
-        # Check if GGUF model path is specified
+        phi_model = None
+        model_type = "standard"
+        model_loaded = False
+        
+        # First, check if we have a GGUF model path specified in config
         if model_config.get("use_gguf", False) and "gguf_model_path" in model_config:
             # Add GGUF model path to config
             phi_config["gguf_model_path"] = model_config["gguf_model_path"]
             logger.info(f"Using GGUF model from {phi_config['gguf_model_path']}")
-            
-            try:
-                # Import GGUF model factory function
-                from tccc.llm_analysis import get_phi_gguf_model
-                
-                # Use GGUF factory function
-                phi_model = get_phi_gguf_model(phi_config)
-                logger.info("Successfully loaded Phi model using GGUF implementation")
-            except ImportError:
-                logger.warning("GGUF model implementation not available, falling back to standard Phi model")
-                # Fall back to standard Phi model
-                from tccc.llm_analysis import get_phi_model
-                phi_model = get_phi_model(phi_config)
-            except Exception as e:
-                logger.error(f"Failed to load GGUF model: {str(e)}")
-                logger.warning("Falling back to standard Phi model")
-                # Fall back to standard Phi model
-                from tccc.llm_analysis import get_phi_model
-                phi_model = get_phi_model(phi_config)
+            model_type = "gguf"
         else:
-            # Use standard Phi model
-            from tccc.llm_analysis import get_phi_model
-            
-            # Use factory function that handles either real or mock implementation
-            # Automatically falls back to mock if real implementation fails
-            phi_model = get_phi_model(phi_config)
+            # Check if there are GGUF files in the model directory
+            gguf_files = [f for f in os.listdir(model_path) if f.endswith('.gguf')]
+            if gguf_files:
+                # Use the first GGUF file found
+                phi_config["gguf_model_path"] = os.path.join(model_path, gguf_files[0])
+                logger.info(f"Found GGUF model file: {gguf_files[0]}")
+                model_type = "gguf"
+            else:
+                logger.info("No GGUF model found, using standard model")
         
-        # Store model in appropriate attribute
-        if is_primary:
-            self.primary_model = phi_model
-            # Note: tokenizer is handled internally in the model implementation
-            self.tokenizer = getattr(phi_model, "tokenizer", None)
-        else:
-            self.fallback_model = phi_model
+        # Try to load the model based on detected type
+        try:
+            if model_type == "gguf":
+                # Import directly from module file rather than using circular import
+                try:
+                    # Try to import from phi_gguf_model module
+                    import importlib
+                    phi_gguf = importlib.import_module("tccc.llm_analysis.phi_gguf_model")
+                    get_phi_gguf_model = getattr(phi_gguf, "get_phi_gguf_model")
+                    
+                    # Use GGUF factory function
+                    phi_model = get_phi_gguf_model(phi_config)
+                    logger.info("Successfully loaded Phi model using GGUF implementation")
+                    model_loaded = True
+                except (ImportError, AttributeError) as e:
+                    logger.warning(f"GGUF model implementation not available: {str(e)}")
+                    logger.info("Will try standard Phi model as fallback")
             
-        # Log which implementation is being used
-        if hasattr(phi_model, "__class__") and hasattr(phi_model.__class__, "__name__"):
-            logger.info(f"Loaded Phi model as {phi_model.__class__.__name__}")
+            # If GGUF model failed or wasn't attempted, try standard model
+            if not model_loaded:
+                try:
+                    # Import directly from module file
+                    import importlib
+                    phi_module = importlib.import_module("tccc.llm_analysis.phi_model")
+                    get_phi_model = getattr(phi_module, "get_phi_model")
+                    
+                    # Use standard factory function
+                    phi_model = get_phi_model(phi_config)
+                    logger.info("Successfully loaded standard Phi model")
+                    model_loaded = True
+                except (ImportError, AttributeError) as e:
+                    logger.warning(f"Standard Phi model implementation not available: {str(e)}")
+            
+            # If we still don't have a model, create a placeholder
+            if not phi_model:
+                logger.warning("No Phi model implementation available, using placeholder")
+                phi_model = self._create_placeholder_model("phi")
+            
+            # Store model in appropriate attribute
+            if is_primary:
+                self.primary_model = phi_model
+                # Store model loaded status
+                self.model_info["primary"]["implementation"] = model_type
+                self.model_info["primary"]["placeholder"] = not model_loaded
+                
+                # Get tokenizer if available
+                self.tokenizer = None
+                if hasattr(phi_model, "tokenizer"):
+                    self.tokenizer = phi_model.tokenizer
+                elif hasattr(phi_model, "get_tokenizer"):
+                    self.tokenizer = phi_model.get_tokenizer()
+            else:
+                self.fallback_model = phi_model
+                # Store model loaded status
+                self.model_info["fallback"]["implementation"] = model_type
+                self.model_info["fallback"]["placeholder"] = not model_loaded
+                
+            # Log which implementation is being used
+            if hasattr(phi_model, "__class__") and hasattr(phi_model.__class__, "__name__"):
+                logger.info(f"Loaded Phi model as {phi_model.__class__.__name__}")
+                
+            return True
+            
+        except Exception as e:
+            logger.error(f"Error loading Phi model: {str(e)}")
+            logger.debug(traceback.format_exc())
+            
+            # Create placeholder model for fallback
+            logger.warning("Using placeholder Phi model due to loading error")
+            phi_model = self._create_placeholder_model("phi")
+            
+            # Store model in appropriate attribute
+            if is_primary:
+                self.primary_model = phi_model
+                self.model_info["primary"]["implementation"] = "placeholder"
+                self.model_info["primary"]["placeholder"] = True
+            else:
+                self.fallback_model = phi_model
+                self.model_info["fallback"]["implementation"] = "placeholder"
+                self.model_info["fallback"]["placeholder"] = True
+                
+            return False
     
     def _load_transformers_model(self, model_path: str, model_config: Dict[str, Any], is_primary: bool = True):
         """Load a model using HuggingFace Transformers."""
