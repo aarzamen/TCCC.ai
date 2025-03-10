@@ -258,8 +258,8 @@ def test_vad_battlefield_mode():
         # Import VADMode
         from src.tccc.utils.vad_manager import VADMode
         
-        # Set battlefield mode
-        audio_processor.vad_manager.set_mode(VADMode.BATTLEFIELD)
+        # Set battlefield mode using integer value (3)
+        audio_processor.vad_manager.set_mode(3)  # BATTLEFIELD mode value
         logger.info("Set battlefield mode on Audio Pipeline's VAD Manager")
         
         # Check if STT Engine's VAD Manager is also in battlefield mode
