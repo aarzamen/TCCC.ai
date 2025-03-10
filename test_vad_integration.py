@@ -299,11 +299,16 @@ def main():
     
     # Run tests
     all_passed = True
+    test1_passed = False
+    test2_passed = False
+    test3_passed = False
     
     # Test 1: Check shared VAD Manager instance
     logger.info("\n=== Test 1: Shared VAD Manager Instance ===")
     try:
-        if not test_vad_manager_shared_instance():
+        test1_passed = test_vad_manager_shared_instance()
+        if not test1_passed:
+            logger.error("Test 1 (shared instance) failed")
             all_passed = False
     except Exception as e:
         logger.error(f"Error in shared instance test: {e}")
@@ -312,7 +317,9 @@ def main():
     # Test 2: Check VAD detection consistency
     logger.info("\n=== Test 2: VAD Detection Consistency ===")
     try:
-        if not test_vad_detection_consistency():
+        test2_passed = test_vad_detection_consistency()
+        if not test2_passed:
+            logger.error("Test 2 (detection consistency) failed")
             all_passed = False
     except Exception as e:
         logger.error(f"Error in detection consistency test: {e}")
@@ -321,11 +328,19 @@ def main():
     # Test 3: Check battlefield mode propagation
     logger.info("\n=== Test 3: Battlefield Mode Propagation ===")
     try:
-        if not test_vad_battlefield_mode():
+        test3_passed = test_vad_battlefield_mode()
+        if not test3_passed:
+            logger.error("Test 3 (battlefield mode) failed")
             all_passed = False
     except Exception as e:
         logger.error(f"Error in battlefield mode test: {e}")
         all_passed = False
+        
+    # Print summary
+    logger.info("\n=== Test Results Summary ===")
+    logger.info(f"Test 1 (Shared Instance): {'✅ PASSED' if test1_passed else '❌ FAILED'}")
+    logger.info(f"Test 2 (Detection Consistency): {'✅ PASSED' if test2_passed else '❌ FAILED'}")
+    logger.info(f"Test 3 (Battlefield Mode): {'✅ PASSED' if test3_passed else '❌ FAILED'}")
     
     # Final result
     if all_passed:
