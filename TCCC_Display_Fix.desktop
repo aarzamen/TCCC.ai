@@ -1,0 +1,9 @@
+[Desktop Entry]
+Name=TCCC Display Fix
+Comment=Fix WaveShare Display for TCCC System
+Exec=bash -c "cd /home/ama/tccc-project && ./fix_waveshare_display.sh"
+Terminal=true
+Type=Application
+Icon=display
+Categories=Utility;
+Path=/home/ama/tccc-project

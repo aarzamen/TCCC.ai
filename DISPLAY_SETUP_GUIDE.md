@@ -2,6 +2,26 @@
 
 This guide provides comprehensive instructions for setting up and configuring the WaveShare 6.25" display (1560x720) with the TCCC.ai system. The setup supports multiple platforms including NVIDIA Jetson, Raspberry Pi, and standard Linux systems.
 
+## Quick Fix (NEW)
+
+We've added a quick fix utility to resolve common display issues. If you're having problems with the WaveShare display, try our new automatic fix script:
+
+```bash
+# Make the script executable
+chmod +x fix_waveshare_display.sh
+
+# Run the fix script
+./fix_waveshare_display.sh
+```
+
+The fix script will:
+- Check your environment and install required dependencies
+- Set up correct environment variables for the WaveShare display
+- Create/update the display configuration with proper settings
+- Test the display to verify it's working correctly
+
+If you prefer a graphical approach, you can also use the desktop shortcut "TCCC Display Fix" that has been added to your system.
+
 ## Hardware Setup
 
 ### Display Specifications
@@ -333,6 +353,24 @@ The system will:
 
 ## Troubleshooting
 
+### Automatic Fix
+
+For many display issues, the quickest solution is to use our automatic fix tool:
+
+```bash
+# Run the complete fix
+./fix_waveshare_display.sh
+
+# Test only mode (if display is working but needs testing)
+./fix_waveshare_display.sh --test-only
+
+# Full test mode with TCCC display interface
+./fix_waveshare_display.sh --full-test
+
+# Environment setup only (if display works but environment needs configuration)
+./fix_waveshare_display.sh --env-only
+```
+
 ### Display Not Detected
 
 1. **Check connections**:
@@ -513,3 +551,19 @@ If using a different display:
 3. **Using Internal Display** (for laptops or dev kits):
    - Set `fullscreen: false` in the config to use in windowed mode
    - The display will auto-detect and use the available screen real estate
+
+## Desktop Integration
+
+For easier access to display tools and functionality, the TCCC system includes desktop shortcuts:
+
+1. **TCCC Display Fix**:
+   - Launches the automatic display fix utility
+   - Fixes common display issues with minimal user intervention
+   - Accessible from your desktop or application menu
+
+2. **TCCC Display Test**:
+   - Tests the display functionality with a simple interactive UI
+   - Displays diagnostic information
+   - Verifies touch input and calibration
+
+These shortcuts make it easy to set up and maintain the display without using the command line.

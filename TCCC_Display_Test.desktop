@@ -1,0 +1,9 @@
+[Desktop Entry]
+Name=TCCC Display Test
+Comment=Test WaveShare Display Functionality
+Exec=bash -c "cd /home/ama/tccc-project && python test_waveshare_display.py"
+Terminal=false
+Type=Application
+Icon=display
+Categories=Utility;
+Path=/home/ama/tccc-project

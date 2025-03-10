@@ -86,10 +86,51 @@ class SystemRunner:
         if self.with_display:
             try:
                 logger.info("Initializing display interface...")
-                self.display = DisplayInterface()
-                self.display.initialize()
-                self.system.register_display(self.display)
-                logger.info("Display interface initialized successfully")
+                
+                # Check for WaveShare display environment variables
+                waveshare_enabled = os.environ.get('TCCC_ENABLE_DISPLAY', '0') == '1'
+                display_resolution = os.environ.get('TCCC_DISPLAY_RESOLUTION', '')
+                display_type = os.environ.get('TCCC_DISPLAY_TYPE', '')
+                
+                # Load display configuration
+                display_config = self.config_manager.get_config('display') or {}
+                
+                # Set up display width and height
+                width, height = 1280, 720  # Default values
+                fullscreen = True
+                
+                if display_resolution:
+                    try:
+                        width, height = map(int, display_resolution.split('x'))
+                        logger.info(f"Using display resolution from environment: {width}x{height}")
+                    except ValueError:
+                        logger.warning(f"Invalid display resolution format: {display_resolution}, using default")
+                elif 'display' in display_config and 'width' in display_config['display'] and 'height' in display_config['display']:
+                    width = display_config['display']['width']
+                    height = display_config['display']['height']
+                    fullscreen = display_config.get('display', {}).get('fullscreen', True)
+                    logger.info(f"Using display resolution from config: {width}x{height}")
+                
+                # Log display type if specified
+                if display_type == 'waveshare_6_25':
+                    logger.info(f"Using WaveShare 6.25\" display")
+                
+                # Create display interface with appropriate settings
+                self.display = DisplayInterface(width=width, height=height, fullscreen=fullscreen, config=display_config)
+                
+                # Initialize the display
+                if not self.display.initialize():
+                    logger.error("Failed to initialize display interface")
+                    self.with_display = False
+                else:
+                    # Start the display
+                    self.display.start()
+                    
+                    # Register with system if the method exists
+                    if hasattr(self.system, 'register_display') and callable(self.system.register_display):
+                        self.system.register_display(self.display)
+                    
+                    logger.info(f"Display interface initialized successfully: {width}x{height}")
             except Exception as e:
                 logger.error(f"Failed to initialize display: {e}")
                 self.with_display = False
@@ -128,7 +169,33 @@ class SystemRunner:
                 
                 # Update display if available
                 if self.with_display and self.display:
-                    self.display.update()
+                    # Get status information
+                    status_info = status or {}
+                    
+                    # Add transcription if new events
+                    if 'events_count' in status_info and getattr(self, 'last_event_count', 0) != status_info['events_count']:
+                        self.last_event_count = status_info['events_count']
+                        self.display.update_transcription(f"Processing events: {status_info['events_count']}")
+                    
+                    # Add system state as event
+                    if 'state' in status_info and getattr(self, 'last_state', '') != status_info['state']:
+                        self.last_state = status_info['state']
+                        self.display.add_significant_event({
+                            'time': time.strftime('%H:%M:%S'),
+                            'description': f"System state: {status_info['state']}"
+                        })
+                    
+                    # Update card data with system information
+                    self.display.update_card_data({
+                        'name': 'TCCC System',
+                        'rank': 'v1.0',
+                        'mechanism_of_injury': 'N/A',
+                        'injuries': 'N/A', 
+                        'treatment_given': 'N/A',
+                        'vital_signs': f"State: {status_info.get('state', 'unknown')}",
+                        'medications': 'N/A',
+                        'evacuation_priority': 'N/A'
+                    })
                 
                 # Sleep to prevent high CPU usage
                 time.sleep(0.1)
