@@ -239,7 +239,8 @@ class DatabaseManager:
         Returns:
             SQLite connection object
         """
-        conn = sqlite3.connect(self.db_path, timeout=30.0, isolation_level=None)
+        # Create a thread-local connection to avoid thread safety issues
+        conn = sqlite3.connect(self.db_path, timeout=30.0, isolation_level=None, check_same_thread=True)
         conn.row_factory = sqlite3.Row
         return conn
     
@@ -250,24 +251,19 @@ class DatabaseManager:
         Returns:
             SQLite connection object
         """
-        with self._pool_lock:
-            if self._connection_pool:
-                return self._connection_pool.pop()
-            else:
-                return self._create_connection()
+        # Always create a new connection for the current thread to avoid
+        # SQLite thread safety issues
+        return self._create_connection()
     
     def _return_connection(self, conn):
         """
-        Return a connection to the pool or close it if pool is full.
+        Close the connection instead of returning it to the pool to ensure thread safety.
         
         Args:
             conn: SQLite connection object
         """
-        with self._pool_lock:
-            if len(self._connection_pool) < self.max_connections:
-                self._connection_pool.append(conn)
-            else:
-                conn.close()
+        # Always close the connection to avoid thread safety issues
+        conn.close()
     
     @contextmanager
     def get_connection(self):
