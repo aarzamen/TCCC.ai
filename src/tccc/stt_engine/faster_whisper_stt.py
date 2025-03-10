@@ -488,11 +488,50 @@ class FasterWhisperSTT:
                 "temperature": 0.0  # Use greedy decoding for deterministic results
             }
             
-            # Add VAD parameters if enabled
-            # Only add vad_filter parameter - the newer versions of faster-whisper handle
-            # the parameters differently than we expected
-            if self.vad_filter:
-                transcription_params["vad_filter"] = True
+            # Use VAD Manager if available and enabled
+            try:
+                from tccc.utils.vad_manager import get_vad_manager
+                
+                # Use VAD manager instead of built-in VAD
+                if self.vad_filter:
+                    # Note: We'll handle speech detection in the VAD manager directly
+                    # Initialize VAD manager with our config if not already done
+                    if not hasattr(self, 'vad_manager'):
+                        vad_config = {
+                            'vad': self.vad_parameters,
+                            'audio': {
+                                'sample_rate': 16000  # Whisper uses 16kHz
+                            }
+                        }
+                        self.vad_manager = get_vad_manager(vad_config)
+                        logger.info("Initialized VAD Manager for faster_whisper_stt")
+                    
+                    # Custom VAD filter that uses VAD manager
+                    transcription_params["vad_filter"] = True
+                    
+                    # Apply customized VAD parameters from our manager
+                    if hasattr(self, 'vad_manager'):
+                        # Get VAD sensitivity from our manager
+                        status = self.vad_manager.get_status()
+                        
+                        # If battlefield mode enabled, adjust parameters
+                        if status.get('battlefield_mode', False):
+                            logger.info("Using battlefield-optimized VAD parameters")
+                            # Customize parameters
+                            if 'vad_parameters' in transcription_params:
+                                transcription_params['vad_parameters'].update({
+                                    'threshold': max(0.5, status.get('energy_threshold', 0.5) * 1.2),
+                                    'min_speech_duration_ms': 300,
+                                    'max_speech_duration_s': 30.0,
+                                    'min_silence_duration_ms': 700
+                                })
+                
+            except ImportError:
+                # Fallback to standard VAD if VAD manager not available
+                logger.warning("VAD Manager not available, using built-in VAD filter")
+                # Use built-in VAD filter
+                if self.vad_filter:
+                    transcription_params["vad_filter"] = True
                 
             # Add vocabulary if available
             if self.use_medical_vocabulary and self.vocabulary:
@@ -1002,14 +1041,44 @@ class FasterWhisperSTT:
                 # Check if this is battlefield audio to adjust VAD parameters
                 is_battlefield = metadata.get('battlefield_audio', False)
                 if is_battlefield:
-                    # Adjust VAD parameters for battlefield conditions
-                    # More aggressive settings to better filter out battlefield noise
-                    self.vad_parameters = {
-                        'threshold': 0.6,  # Higher threshold to avoid false detections
-                        'min_speech_duration_ms': 300,  # Longer minimum speech duration
-                        'max_speech_duration_s': 30.0,
-                        'min_silence_duration_ms': 700  # Longer silence before ending segment
-                    }
+                    # If VAD Manager is available, set battlefield mode
+                    if hasattr(self, 'vad_manager'):
+                        try:
+                            from tccc.utils.vad_manager import VADMode
+                            self.vad_manager.set_mode(VADMode.BATTLEFIELD)
+                            logger.info("Set VAD Manager to battlefield mode for STT")
+                        except ImportError:
+                            logger.warning("Could not import VADMode for battlefield settings")
+                    else:
+                        # Fallback to direct parameter adjustment
+                        # Adjust VAD parameters for battlefield conditions
+                        # More aggressive settings to better filter out battlefield noise
+                        self.vad_parameters = {
+                            'threshold': 0.6,  # Higher threshold to avoid false detections
+                            'min_speech_duration_ms': 300,  # Longer minimum speech duration
+                            'max_speech_duration_s': 30.0,
+                            'min_silence_duration_ms': 700  # Longer silence before ending segment
+                        }
+            
+            # For VAD Manager - pre-process audio to get speech segments
+            if hasattr(self, 'vad_manager') and self.vad_filter and len(audio) > 0:
+                # Use VAD Manager to get speech segments
+                speech_segments = self.vad_manager.get_speech_segments(audio, "whisper_stt")
+                
+                # Log detected segments
+                logger.debug(f"VAD Manager detected {len(speech_segments)} speech segments")
+                
+                # If no speech segments, add empty result
+                if not speech_segments or len(speech_segments) == 0:
+                    logger.info("No speech detected by VAD manager")
+                    return {'text': '', 'segments': [], 'is_partial': False, 'language': self.language}
+                
+                # If we have speech segments, optionally use them for better processing
+                # (The Whisper model still has its internal VAD, this just gives it a hint)
+                if len(speech_segments) > 0:
+                    # Log the first segment size
+                    start, end = speech_segments[0]
+                    logger.debug(f"First speech segment: {start/16000:.2f}s - {end/16000:.2f}s")
             
             # Transcribe audio
             result = self.transcribe(audio, config)
@@ -1027,6 +1096,15 @@ class FasterWhisperSTT:
                 'processing_time': processing_time,
                 'real_time_factor': real_time_factor
             }
+            
+            # Add VAD info if available
+            if hasattr(self, 'vad_manager'):
+                vad_status = self.vad_manager.get_status()
+                result_dict['vad_info'] = {
+                    'used_vad_manager': True,
+                    'battlefield_mode': vad_status.get('battlefield_mode', False),
+                    'vad_mode': vad_status.get('mode_name', 'STANDARD')
+                }
             
             return result_dict
             

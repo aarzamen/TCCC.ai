@@ -654,35 +654,70 @@ class AudioProcessor:
         }
     
     def initialize_vad(self):
-        """Initialize enhanced Voice Activity Detection."""
+        """Initialize enhanced Voice Activity Detection using VAD Manager."""
         try:
-            # WebRTCVAD for primary detection
-            import webrtcvad
-            self.vad_processor = webrtcvad.Vad(self.vad_sensitivity)
-            logger.info(f"Primary VAD initialized with sensitivity {self.vad_sensitivity}")
+            # Import VAD Manager
+            from tccc.utils.vad_manager import get_vad_manager
             
-            # Enhanced secondary detection using energy and frequency analysis
-            self.vad_energy_threshold = 0.005  # RMS energy threshold, will adapt
-            self.vad_speech_frames = 0
-            self.vad_nonspeech_frames = 0
-            self.vad_speech_detected = False
-            self.vad_holdover_counter = 0
+            # Get VAD manager with our config
+            vad_config = {
+                'vad': self.vad,
+                'audio': {
+                    'sample_rate': self.sample_rate
+                }
+            }
             
-            # For tracking consecutive speech/non-speech
-            self.speech_history = [False] * 10
+            # Get VAD manager instance with "audio_processor" component name
+            self.vad_manager = get_vad_manager(vad_config)
+            logger.info("Using VAD Manager for speech detection")
             
-            logger.info("Enhanced VAD initialized with multi-factor detection")
-        except ImportError:
-            logger.warning("webrtcvad not installed. Falling back to energy-based VAD only.")
-            self.vad_enabled = True  # Still enable VAD, just use energy-based
-            self.vad_processor = None
-            # Make sure energy threshold is initialized even when webrtcvad is not available
-            self.vad_energy_threshold = 0.005  # RMS energy threshold, will adapt
+            # Store original VAD parameters for compatibility
+            self.vad_energy_threshold = self.vad.get('energy_threshold', 0.005)
             self.vad_speech_frames = 0
             self.vad_nonspeech_frames = 0
             self.vad_speech_detected = False
             self.vad_holdover_counter = 0
             self.speech_history = [False] * 10
+            
+            # Set battlefield mode if configured
+            if self.bf_enabled:
+                from tccc.utils.vad_manager import VADMode
+                self.vad_manager.set_mode(VADMode.BATTLEFIELD)
+                logger.info("Enabled battlefield mode for VAD")
+            
+            logger.info("Enhanced VAD initialized with VAD Manager")
+            
+        except ImportError as e:
+            # Fall back to direct WebRTC VAD if VAD Manager not available
+            logger.warning(f"VAD Manager not available ({e}). Falling back to direct WebRTC VAD.")
+            try:
+                # WebRTCVAD for primary detection
+                import webrtcvad
+                self.vad_processor = webrtcvad.Vad(self.vad_sensitivity)
+                logger.info(f"Primary VAD initialized with sensitivity {self.vad_sensitivity}")
+                
+                # Enhanced secondary detection using energy and frequency analysis
+                self.vad_energy_threshold = 0.005  # RMS energy threshold, will adapt
+                self.vad_speech_frames = 0
+                self.vad_nonspeech_frames = 0
+                self.vad_speech_detected = False
+                self.vad_holdover_counter = 0
+                
+                # For tracking consecutive speech/non-speech
+                self.speech_history = [False] * 10
+                
+                logger.info("Enhanced VAD initialized with multi-factor detection")
+            except ImportError:
+                logger.warning("webrtcvad not installed. Falling back to energy-based VAD only.")
+                self.vad_enabled = True  # Still enable VAD, just use energy-based
+                self.vad_processor = None
+                # Make sure energy threshold is initialized even when webrtcvad is not available
+                self.vad_energy_threshold = 0.005  # RMS energy threshold, will adapt
+                self.vad_speech_frames = 0
+                self.vad_nonspeech_frames = 0
+                self.vad_speech_detected = False
+                self.vad_holdover_counter = 0
+                self.speech_history = [False] * 10
     
     def process(self, audio_data: np.ndarray) -> Tuple[np.ndarray, bool]:
         """
@@ -1241,7 +1276,7 @@ class AudioProcessor:
     
     def enhanced_speech_detection(self, audio_data: np.ndarray) -> bool:
         """
-        Enhanced speech detection combining multiple methods for robust battlefield performance.
+        Enhanced speech detection using VAD Manager (or fallback methods if not available).
         
         Args:
             audio_data: Audio data in float format [-1, 1]
@@ -1249,6 +1284,34 @@ class AudioProcessor:
         Returns:
             True if speech detected, False otherwise
         """
+        # Use VAD Manager if available
+        if hasattr(self, 'vad_manager'):
+            # Get detection from VAD Manager
+            vad_result = self.vad_manager.detect_speech(
+                audio_data, 
+                component_name="audio_processor"
+            )
+            
+            # Use the result
+            speech_detected = vad_result.is_speech
+            
+            # For compatibility with existing code, update the internal state
+            if speech_detected:
+                self.speech_frame_counter += 1
+                self.silence_frame_counter = 0
+                if self.speech_frame_counter >= 2:  # Need 2 consecutive frames for ON
+                    self.vad_speech_detected = True
+            else:
+                self.silence_frame_counter += 1
+                self.speech_frame_counter = 0
+                
+                # For OFF, use holdover to avoid choppy detection
+                if self.silence_frame_counter >= self.vad_holdover_frames:
+                    self.vad_speech_detected = False
+            
+            return self.vad_speech_detected
+            
+        # Fallback to original implementation if VAD Manager not available
         # Combine multiple detection methods for robustness
         webrtc_speech = False
         energy_speech = False
