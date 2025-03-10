@@ -67,34 +67,190 @@ class DocumentLibrary:
             True if initialization successful, False otherwise
         """
         try:
+            # Use a copy of config to avoid modifying the original
+            if config is None:
+                logger.warning("No configuration provided, using default configuration")
+                config = {
+                    "storage": {
+                        "base_dir": "data/documents",
+                        "index_path": "data/document_index",
+                        "cache_dir": "data/query_cache"
+                    },
+                    "embedding": {
+                        "model_name": "all-MiniLM-L12-v2",
+                        "cache_dir": "data/models/embeddings",
+                        "dimension": 384,
+                        "normalize": True,
+                        "batch_size": 32
+                    },
+                    "indexing": {
+                        "chunk_size": 1000,
+                        "chunk_overlap": 200
+                    }
+                }
+            
             self.config = config
             
-            # Create required directories
-            os.makedirs(config["storage"]["base_dir"], exist_ok=True)
-            os.makedirs(config["storage"]["index_path"], exist_ok=True)
-            os.makedirs(config["storage"]["cache_dir"], exist_ok=True)
-            os.makedirs(config["embedding"]["cache_dir"], exist_ok=True)
+            # Validate essential config keys
+            for section in ["storage", "embedding"]:
+                if section not in config:
+                    logger.warning(f"Missing '{section}' configuration section, using defaults")
+                    if section == "storage":
+                        config[section] = {
+                            "base_dir": "data/documents",
+                            "index_path": "data/document_index",
+                            "cache_dir": "data/query_cache"
+                        }
+                    elif section == "embedding":
+                        config[section] = {
+                            "model_name": "all-MiniLM-L12-v2",
+                            "cache_dir": "data/models/embeddings",
+                            "dimension": 384,
+                            "normalize": True,
+                            "batch_size": 32,
+                            "use_gpu": False
+                        }
+                    else:
+                        config[section] = {}
+            
+            # Ensure required storage paths with defaults
+            storage_paths = {
+                "base_dir": "data/documents",
+                "index_path": "data/document_index",
+                "cache_dir": "data/query_cache"
+            }
+            
+            for path_key, default_path in storage_paths.items():
+                if path_key not in config["storage"]:
+                    logger.warning(f"Missing storage path '{path_key}', using default: {default_path}")
+                    config["storage"][path_key] = default_path
+            
+            # Create required directories with proper error handling
+            for path_key, path_name in [
+                ("base_dir", "Document Storage"),
+                ("index_path", "Index"),
+                ("cache_dir", "Cache")
+            ]:
+                try:
+                    dir_path = config["storage"][path_key]
+                    os.makedirs(dir_path, exist_ok=True)
+                    logger.info(f"{path_name} directory created/verified: {dir_path}")
+                except Exception as dir_error:
+                    logger.error(f"Failed to create {path_name.lower()} directory: {str(dir_error)}")
+                    # Continue with initialization, as we might still be able to function
+            
+            # Ensure embedding cache directory exists
+            try:
+                if "cache_dir" not in config["embedding"]:
+                    config["embedding"]["cache_dir"] = "data/models/embeddings"
+                    
+                embedding_cache_dir = config["embedding"]["cache_dir"]
+                os.makedirs(embedding_cache_dir, exist_ok=True)
+                logger.info(f"Embedding cache directory created/verified: {embedding_cache_dir}")
+            except Exception as dir_error:
+                logger.error(f"Failed to create embedding cache directory: {str(dir_error)}")
+                # Continue with initialization
             
             # Initialize document processor
-            self.document_processor = DocumentProcessor(config)
+            try:
+                self.document_processor = DocumentProcessor(config)
+                logger.info("Document processor initialized")
+            except Exception as dp_error:
+                logger.warning(f"Failed to initialize document processor: {str(dp_error)}")
+                self.document_processor = None
+                # Continue with initialization
             
             # Initialize cache manager
-            self.cache_manager = CacheManager(config)
+            try:
+                self.cache_manager = CacheManager(config)
+                logger.info("Cache manager initialized")
+            except Exception as cm_error:
+                logger.warning(f"Failed to initialize cache manager: {str(cm_error)}")
+                self.cache_manager = None
+                # Continue with initialization
             
+            # Add default indexing configuration if missing
+            if "indexing" not in config:
+                logger.warning("Missing 'indexing' configuration section, using defaults")
+                config["indexing"] = {
+                    "chunk_size": 1000,
+                    "chunk_overlap": 200
+                }
+                
             # Import components (done here to avoid circular imports)
-            from tccc.document_library.vector_store import VectorStore
-            from tccc.document_library.query_engine import QueryEngine
-            from tccc.document_library.response_generator import ResponseGenerator
-            from tccc.document_library.medical_vocabulary import MedicalVocabularyManager
-            
-            # Initialize vector store (replaces direct FAISS usage)
-            self.vector_store = VectorStore(config)
-            success = self.vector_store.initialize()
-            if not success:
-                logger.error("Failed to initialize Vector Store")
+            try:
+                from tccc.document_library.vector_store import VectorStore
+                from tccc.document_library.query_engine import QueryEngine
+                from tccc.document_library.response_generator import ResponseGenerator
+                from tccc.document_library.medical_vocabulary import MedicalVocabularyManager
+            except ImportError as import_error:
+                logger.error(f"Failed to import required components: {str(import_error)}")
                 return False
             
-            # Initialize medical vocabulary
+            # Initialize vector store with improved error handling
+            self.vector_store = None
+            self.model = None
+            self.index = None
+            
+            try:
+                self.vector_store = VectorStore(config)
+                vector_store_init = self.vector_store.initialize()
+                
+                if vector_store_init:
+                    logger.info("Vector store initialized successfully")
+                    
+                    # Load embedding model (for backward compatibility)
+                    model_name = config.get("embedding", {}).get("model_name", "all-MiniLM-L12-v2")
+                    logger.info(f"Loading embedding model: {model_name}")
+                    self.model = self.vector_store.embedding_model
+                    
+                    # Initialize FAISS index (for backward compatibility)
+                    self.index = self.vector_store.index
+                else:
+                    logger.warning("Vector store initialization failed, using fallback")
+                    # Create minimal vector_store for operation
+                    if hasattr(self.vector_store, '_create_minimal_vector_store'):
+                        self.vector_store._create_minimal_vector_store()
+                        self.model = self.vector_store.embedding_model
+                        self.index = self.vector_store.index
+            except Exception as vs_error:
+                logger.error(f"Vector store initialization error: {str(vs_error)}")
+                # Create a minimal vector store implementation for continued operation
+                try:
+                    # Minimal implementation that will return empty results but won't crash
+                    # Define class methods properly with self parameter 
+                    class MinimalVectorStore:
+                        def __init__(self):
+                            self.index = None
+                            self.embedding_model = None
+                            self.initialized = True
+                            
+                        def get_status(self):
+                            return {"vectors": 0, "initialized": False}
+                            
+                        def add_embeddings(self, *args, **kwargs):
+                            return False
+                        
+                        def add(self, *args, **kwargs):
+                            return False
+                            
+                        def search(self, *args, **kwargs):
+                            return []
+                            
+                        def initialize(self):
+                            return True
+                            
+                        def _create_minimal_vector_store(self):
+                            return True
+                    
+                    # Create minimal class instance with proper methods
+                    self.vector_store = MinimalVectorStore()
+                    self.model = None
+                    self.index = None
+                except Exception as err:
+                    logger.error(f"Failed to create minimal vector store: {err}")
+            
+            # Initialize medical vocabulary with improved error handling
             try:
                 self.medical_vocabulary = MedicalVocabularyManager(config)
                 self.medical_vocabulary.initialize()
@@ -103,28 +259,54 @@ class DocumentLibrary:
                 logger.warning(f"Medical vocabulary initialization failed: {str(vocab_error)}")
                 self.medical_vocabulary = None
             
-            # Initialize query engine
-            self.query_engine = QueryEngine(config, self.vector_store, self.cache_manager)
+            # Initialize query engine with fallback
+            try:
+                if self.vector_store:
+                    self.query_engine = QueryEngine(config, self.vector_store, self.cache_manager)
+                    logger.info("Query engine initialized")
+                else:
+                    self.query_engine = None
+                    logger.warning("Skipping query engine initialization due to missing vector store")
+            except Exception as qe_error:
+                logger.warning(f"Query engine initialization failed: {str(qe_error)}")
+                self.query_engine = None
             
-            # Initialize response generator
-            self.response_generator = ResponseGenerator(config, self.query_engine)
-            
-            # Load embedding model (for backward compatibility)
-            logger.info(f"Loading embedding model: {config['embedding']['model_name']}")
-            self.model = self.vector_store.embedding_model
-            
-            # Initialize FAISS index (for backward compatibility)
-            self.index = self.vector_store.index
+            # Initialize response generator with fallback
+            try:
+                if self.query_engine:
+                    self.response_generator = ResponseGenerator(config, self.query_engine)
+                    logger.info("Response generator initialized")
+                else:
+                    self.response_generator = None
+                    logger.warning("Skipping response generator initialization due to missing query engine")
+            except Exception as rg_error:
+                logger.warning(f"Response generator initialization failed: {str(rg_error)}")
+                self.response_generator = None
             
             # Load existing documents if available
-            self._load_documents()
+            try:
+                self._load_documents()
+            except Exception as ld_error:
+                logger.warning(f"Failed to load existing documents: {str(ld_error)}")
+                # Initialize empty document collections as fallback
+                self.documents = {}
+                self.chunks = {}
+                self.chunk_to_doc = {}
             
+            # Mark as initialized with limited functionality if needed
             self.initialized = True
-            logger.info("Document Library initialized successfully")
+            
+            if not self.vector_store or not self.model or not self.index:
+                logger.warning("Document Library initialized with limited functionality")
+            else:
+                logger.info("Document Library initialized successfully")
+                
             return True
             
         except Exception as e:
             logger.error(f"Failed to initialize DocumentLibrary: {str(e)}")
+            # Set partial initialization to allow for some basic functionality
+            self.initialized = False
             return False
     
     def _initialize_index(self):
@@ -700,52 +882,113 @@ Note: Unable to retrieve specific context from the document library due to a sys
                     "status": "not_initialized"
                 }
             
-            # Get vector count
+            # Get vector count - with robust error handling
             vector_count = 0
-            if self.vector_store:
-                vector_status = self.vector_store.get_status()
-                vector_count = vector_status.get("vectors", 0)
-            elif self.index:
-                vector_count = self.index.ntotal
+            dimension = 384  # Default dimension
+            model_name = "unknown"  # Default model name
             
-            # Get cache stats if available
+            try:
+                if self.vector_store and hasattr(self.vector_store, 'get_status'):
+                    try:
+                        vector_status = self.vector_store.get_status()
+                        vector_count = vector_status.get("vectors", 0)
+                    except Exception as vs_error:
+                        logger.error(f"Failed to get vector store status: {vs_error}")
+                        # Continue with defaults
+                elif self.index:
+                    try:
+                        if hasattr(self.index, 'ntotal'):
+                            vector_count = self.index.ntotal
+                    except Exception as idx_error:
+                        logger.error(f"Failed to get index ntotal: {idx_error}")
+                        # Continue with defaults
+                
+                # Safely get config values with defaults
+                if self.config and isinstance(self.config, dict):
+                    embedding_config = self.config.get("embedding", {})
+                    if isinstance(embedding_config, dict):
+                        dimension = embedding_config.get("dimension", 384)
+                        model_name = embedding_config.get("model_name", "unknown")
+            except Exception as vector_error:
+                logger.error(f"Error getting vector information: {vector_error}")
+                # Continue with defaults
+            
+            # Get cache stats if available - with robust error handling
             cache_info = {
                 "memory_entries": 0,
                 "disk_entries": 0
             }
             
-            if hasattr(self, "cache_manager") and self.cache_manager:
-                cache_stats = self.cache_manager.get_stats()
-                if "error" not in cache_stats:
-                    cache_info = cache_stats
+            try:
+                if hasattr(self, "cache_manager") and self.cache_manager:
+                    try:
+                        cache_stats = self.cache_manager.get_stats()
+                        if isinstance(cache_stats, dict) and "error" not in cache_stats:
+                            cache_info = cache_stats
+                    except Exception as cache_error:
+                        logger.error(f"Failed to get cache stats: {cache_error}")
+                        # Continue with defaults
+            except Exception as cm_error:
+                logger.error(f"Error accessing cache manager: {cm_error}")
+                # Continue with defaults
             
             # Get medical vocabulary status
-            medical_vocab_status = "available" if (
-                hasattr(self, "medical_vocabulary") and 
-                self.medical_vocabulary and 
-                self.medical_vocabulary.initialized
-            ) else "not_available"
+            try:
+                medical_vocab_status = "available" if (
+                    hasattr(self, "medical_vocabulary") and 
+                    self.medical_vocabulary and 
+                    hasattr(self.medical_vocabulary, "initialized") and
+                    self.medical_vocabulary.initialized
+                ) else "not_available"
+            except Exception as mv_error:
+                logger.error(f"Error getting medical vocabulary status: {mv_error}")
+                medical_vocab_status = "error"
+            
+            # Check component existence with safe access
+            doc_processor_available = False
+            try:
+                doc_processor_available = hasattr(self, "document_processor") and self.document_processor is not None
+            except Exception:
+                pass
+                
+            vector_store_available = False
+            try:
+                vector_store_available = hasattr(self, "vector_store") and self.vector_store is not None
+            except Exception:
+                pass
+                
+            query_engine_available = False
+            try:
+                query_engine_available = hasattr(self, "query_engine") and self.query_engine is not None
+            except Exception:
+                pass
+                
+            response_generator_available = False
+            try:
+                response_generator_available = hasattr(self, "response_generator") and self.response_generator is not None
+            except Exception:
+                pass
             
             # Build status dictionary
             status = {
                 "status": "initialized",
                 "documents": {
-                    "count": len(self.documents),
-                    "chunks": len(self.chunks)
+                    "count": len(self.documents) if hasattr(self, "documents") else 0,
+                    "chunks": len(self.chunks) if hasattr(self, "chunks") else 0
                 },
                 "index": {
                     "vectors": vector_count,
-                    "dimension": self.config["embedding"]["dimension"]
+                    "dimension": dimension
                 },
                 "model": {
-                    "name": self.config["embedding"]["model_name"]
+                    "name": model_name
                 },
                 "cache": cache_info,
                 "components": {
-                    "document_processor": hasattr(self, "document_processor") and self.document_processor is not None,
-                    "vector_store": hasattr(self, "vector_store") and self.vector_store is not None,
-                    "query_engine": hasattr(self, "query_engine") and self.query_engine is not None,
-                    "response_generator": hasattr(self, "response_generator") and self.response_generator is not None,
+                    "document_processor": doc_processor_available,
+                    "vector_store": vector_store_available,
+                    "query_engine": query_engine_available,
+                    "response_generator": response_generator_available,
                     "medical_vocabulary": medical_vocab_status
                 }
             }
@@ -754,7 +997,19 @@ Note: Unable to retrieve specific context from the document library due to a sys
             
         except Exception as e:
             logger.error(f"Failed to get status: {str(e)}")
+            # Return minimal valid status that won't cause further errors
             return {
                 "status": "error",
-                "error": str(e)
+                "error": str(e),
+                "documents": {"count": 0, "chunks": 0},
+                "index": {"vectors": 0, "dimension": 384},
+                "model": {"name": "unknown"},
+                "cache": {"memory_entries": 0, "disk_entries": 0},
+                "components": {
+                    "document_processor": False,
+                    "vector_store": False, 
+                    "query_engine": False,
+                    "response_generator": False,
+                    "medical_vocabulary": "not_available"
+                }
             }
