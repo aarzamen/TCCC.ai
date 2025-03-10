@@ -600,15 +600,24 @@ class TCCCSystem:
             Transcription result
         """
         if not self.stt_engine:
+            logger.warning("STT engine not available for transcription")
             return None
             
         try:
-            # Use run_in_executor for CPU-bound task
-            loop = asyncio.get_event_loop()
-            transcription = await loop.run_in_executor(
-                None, 
-                lambda: self.stt_engine.transcribe_segment(audio_data, metadata)
-            )
+            # Use the new utility to handle sync/async methods
+            from tccc.utils.module_adapter import run_method_async
+            
+            # Determine the appropriate method to call
+            if hasattr(self.stt_engine, 'transcribe_segment_async') and callable(self.stt_engine.transcribe_segment_async):
+                method = self.stt_engine.transcribe_segment_async
+                logger.debug("Using transcribe_segment_async method")
+                transcription = await method(audio_data, metadata)
+            else:
+                # Fall back to synchronous method
+                method = self.stt_engine.transcribe_segment
+                logger.debug("Using transcribe_segment method with async wrapper")
+                transcription = await run_method_async(method, audio_data, metadata)
+                
             return transcription
         except Exception as e:
             logger.error(f"Error in transcription: {e}")
@@ -628,24 +637,25 @@ class TCCCSystem:
             Processing result
         """
         if not self.processing_core:
+            logger.warning("Processing core not available")
             return {"text": input_data.get("text", ""), "error": "No processing core available"}
             
         try:
-            # Check if process method is async
-            if hasattr(self.processing_core, 'process'):
-                process_method = self.processing_core.process
-                if asyncio.iscoroutinefunction(process_method):
-                    # Direct async call
-                    return await process_method(input_data)
-                else:
-                    # Use run_in_executor for CPU-bound task
-                    loop = asyncio.get_event_loop()
-                    return await loop.run_in_executor(
-                        None, 
-                        lambda: process_method(input_data)
-                    )
+            # Use the new utility to handle sync/async methods
+            from tccc.utils.module_adapter import run_method_async
+            
+            # Determine the appropriate method to call
+            if hasattr(self.processing_core, 'process_async') and callable(self.processing_core.process_async):
+                method = self.processing_core.process_async
+                logger.debug("Using process_async method")
+                return await method(input_data)
+            elif hasattr(self.processing_core, 'process') and callable(self.processing_core.process):
+                method = self.processing_core.process
+                logger.debug("Using process method with async wrapper")
+                return await run_method_async(method, input_data)
             else:
                 # Basic fallback processing
+                logger.warning("No processing method found on processing core")
                 return {
                     "text": input_data.get("text", ""),
                     "type": input_data.get("type", "processed_text"),
@@ -669,21 +679,28 @@ class TCCCSystem:
             Analysis result
         """
         if not self.llm_analysis:
+            logger.warning("LLM analysis not available")
             return {"summary": "No LLM analysis available", "topics": []}
             
         try:
-            # Check if analyze_transcription method is async
-            method = self.llm_analysis.analyze_transcription
-            if asyncio.iscoroutinefunction(method):
-                # Direct async call
+            # Use the new utility to handle sync/async methods
+            from tccc.utils.module_adapter import run_method_async
+            
+            # Determine the appropriate method to call
+            if hasattr(self.llm_analysis, 'analyze_transcription_async') and callable(self.llm_analysis.analyze_transcription_async):
+                method = self.llm_analysis.analyze_transcription_async
+                logger.debug("Using analyze_transcription_async method")
                 return await method(text)
+            elif hasattr(self.llm_analysis, 'analyze_transcription') and callable(self.llm_analysis.analyze_transcription):
+                method = self.llm_analysis.analyze_transcription
+                logger.debug("Using analyze_transcription method with async wrapper")
+                return await run_method_async(method, text)
             else:
-                # Use run_in_executor for CPU-bound task
-                loop = asyncio.get_event_loop()
-                return await loop.run_in_executor(
-                    None, 
-                    lambda: method(text)
-                )
+                logger.warning("No analysis method found on LLM analysis module")
+                return {
+                    "summary": "LLM analysis method not available",
+                    "topics": []
+                }
         except Exception as e:
             logger.error(f"Error in LLM analysis: {e}")
             return {
@@ -702,63 +719,72 @@ class TCCCSystem:
             # Initialize shared session ID
             thread_session_id = f"audio_session_{int(time.time())}"
             
-            while not self.stop_processing:
-                try:
-                    # Get standardized audio event from the pipeline
-                    audio_event = AudioPipelineAdapter.get_audio_segment(self.audio_pipeline)
-                    
-                    if audio_event:
-                        # Increment sequence
-                        audio_sequence += 1
+            # Create a dedicated event loop for this thread
+            event_loop = asyncio.new_event_loop()
+            asyncio.set_event_loop(event_loop)
+            
+            # Define the asynchronous worker function
+            async def process_audio_worker():
+                nonlocal audio_sequence
+                
+                while not self.stop_processing:
+                    try:
+                        # Get standardized audio event from the pipeline asynchronously
+                        audio_event = await AudioPipelineAdapter.get_audio_segment_async(self.audio_pipeline)
                         
-                        # Add sequence and session ID
-                        audio_event["sequence"] = audio_sequence
-                        audio_event["session_id"] = thread_session_id
-                        
-                        # Create an event loop for async processing
-                        event_loop = asyncio.new_event_loop()
-                        asyncio.set_event_loop(event_loop)
-                        
-                        try:
-                            # Process audio event asynchronously
-                            logger.debug(f"Processing audio segment {audio_sequence}")
-                            # Since we're in a thread, create a task and run until complete
-                            event_loop.run_until_complete(self.process_event(audio_event))
-                        except Exception as e:
-                            logger.error(f"Error processing audio event: {e}")
-                            # Create an error event
-                            error_event = ErrorEvent(
-                                source="audio_thread",
-                                error_code="audio_processing_error",
-                                message=str(e),
-                                component="system._process_audio_thread",
-                                recoverable=True,
-                                session_id=thread_session_id,
-                                sequence=audio_sequence
-                            ).to_dict()
+                        if audio_event:
+                            # Increment sequence
+                            audio_sequence += 1
                             
-                            # Store the error
+                            # Add sequence and session ID
+                            audio_event["sequence"] = audio_sequence
+                            audio_event["session_id"] = thread_session_id
+                            
                             try:
-                                self.data_store.store_event(error_event)
-                            except Exception as store_error:
-                                logger.error(f"Failed to store error event: {store_error}")
-                        finally:
-                            # Clean up event loop
-                            event_loop.close()
-                    
-                    # Adaptive sleep based on state
-                    if self.state == SystemState.PROCESSING or self.state == SystemState.ANALYZING:
-                        # Shorter sleep during active processing to ensure responsiveness
-                        time.sleep(0.02)  # Decreased from 0.05 for better responsiveness
-                    else:
-                        # Moderate sleep when idle to reduce CPU usage while maintaining responsiveness
-                        time.sleep(0.1)  # Decreased from 0.2 for better responsiveness
+                                # Process audio event asynchronously
+                                logger.debug(f"Processing audio segment {audio_sequence}")
+                                await self.process_event(audio_event)
+                            except Exception as e:
+                                logger.error(f"Error processing audio event: {e}")
+                                # Create an error event
+                                error_event = ErrorEvent(
+                                    source="audio_thread",
+                                    error_code="audio_processing_error",
+                                    message=str(e),
+                                    component="system._process_audio_thread",
+                                    recoverable=True,
+                                    session_id=thread_session_id,
+                                    sequence=audio_sequence
+                                ).to_dict()
+                                
+                                # Store the error
+                                try:
+                                    if self.data_store:
+                                        self.data_store.store_event(error_event)
+                                except Exception as store_error:
+                                    logger.error(f"Failed to store error event: {store_error}")
                         
-                except Exception as segment_error:
-                    # Local exception handler for segment processing
-                    logger.error(f"Error processing audio segment: {segment_error}")
-                    # Add a short delay to avoid tight error loops
-                    time.sleep(0.1)
+                        # Adaptive sleep based on state
+                        if self.state == SystemState.PROCESSING or self.state == SystemState.ANALYZING:
+                            # Shorter sleep during active processing to ensure responsiveness
+                            await asyncio.sleep(0.02)
+                        else:
+                            # Moderate sleep when idle to reduce CPU usage while maintaining responsiveness
+                            await asyncio.sleep(0.1)
+                            
+                    except Exception as segment_error:
+                        # Local exception handler for segment processing
+                        logger.error(f"Error processing audio segment: {segment_error}")
+                        # Add a short delay to avoid tight error loops
+                        await asyncio.sleep(0.1)
+            
+            # Run the async worker until stop_processing is set
+            try:
+                event_loop.run_until_complete(process_audio_worker())
+            finally:
+                # Clean up
+                event_loop.close()
+                logger.info("Audio processing thread event loop closed")
                 
         except Exception as thread_error:
             # Global exception handler for the thread
@@ -773,11 +799,12 @@ class TCCCSystem:
             def restart_thread():
                 time.sleep(2.0)  # Wait before restarting
                 logger.info("Attempting to restart audio processing thread")
-                self.processing_thread = threading.Thread(
-                    target=self._process_audio_thread,
-                    daemon=True
-                )
-                self.processing_thread.start()
+                if not self.stop_processing:
+                    self.processing_thread = threading.Thread(
+                        target=self._process_audio_thread,
+                        daemon=True
+                    )
+                    self.processing_thread.start()
             
             # Start recovery thread if not shutting down
             if not self.stop_processing:

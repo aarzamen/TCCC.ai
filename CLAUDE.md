@@ -27,6 +27,7 @@
 - `python verification_script_audio_pipeline.py` - Run audio pipeline verification
 - `python verification_script_stt_engine.py` - Run STT engine verification
 - `python verification_script_llm_analysis.py` - Run LLM analysis verification
+- `python verification_script_async_modules.py` - Verify async/sync interface compatibility
 
 ## Development Workflows
 - Save your state before exiting: `git stash save "work in progress"`

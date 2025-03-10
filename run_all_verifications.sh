@@ -53,6 +53,12 @@ echo "=================================================="
 run_verification "./test_system_integration.py" "Basic System Integration" 
 run_verification "./verification_script_system_enhanced.py" "System Integration" "--mock all"
 
+# Run interface and integration verifications
+echo -e "\n${YELLOW}RUNNING INTERFACE VERIFICATIONS${NC}"
+echo "=================================================="
+
+run_verification "./verification_script_async_modules.py" "Async/Sync Interface"
+
 # Calculate elapsed time
 END_TIME=$(date +%s)
 ELAPSED=$((END_TIME - START_TIME))
