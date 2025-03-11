@@ -1,0 +1,158 @@
+# TCCC.ai
+
+<p align="center">
+  <img src="images/blue_logo.png" alt="TCCC.ai Logo" width="200"/>
+</p>
+
+<p align="center">
+  <a href="https://github.com/tccc-ai/tccc-project/actions/workflows/ci.yml"><img src="https://github.com/tccc-ai/tccc-project/actions/workflows/ci.yml/badge.svg" alt="CI Status"></a>
+  <a href="https://codecov.io/gh/tccc-ai/tccc-project"><img src="https://codecov.io/gh/tccc-ai/tccc-project/branch/main/graph/badge.svg" alt="Coverage"></a>
+  <a href="https://github.com/tccc-ai/tccc-project/blob/main/LICENSE"><img src="https://img.shields.io/github/license/tccc-ai/tccc-project" alt="License"></a>
+  <a href="https://github.com/tccc-ai/tccc-project/releases"><img src="https://img.shields.io/github/v/release/tccc-ai/tccc-project" alt="Release"></a>
+</p>
+
+## Overview
+
+TCCC.ai (Tactical Combat Casualty Care AI) is an edge-deployed AI system designed to function as a "black box recorder" for combat medicine. Operating completely offline on the NVIDIA Jetson platform, it captures and processes audio during medical procedures to create structured documentation and timeline records without requiring network connectivity.
+
+This project modernizes the traditional field documentation process, replacing the paper-based documentation that is typically hastily completed in battlefield conditions. These forms are often difficult to read, can be damaged by environmental conditions, and risk being lost during evacuations. TCCC.ai is purpose-built for the practical challenges of combat medicine documentation, providing a more durable and legible alternative that preserves critical patient information throughout the evacuation chain.
+
+## Key Features
+
+- **Offline Speech Processing**: Captures and transcribes medical narratives in battlefield conditions without network connectivity
+- **Battlefield Audio Enhancement**: Multi-stage noise reduction optimized for combat environments
+- **Medical Entity Recognition**: Extracts medical procedures, timelines, and vital information
+- **Tactical Field Documentation**: Generates standardized casualty documentation for evacuation
+- **Edge Deployment**: Fully operational on NVIDIA Jetson platforms with optimized resource usage
+- **Integrates with Military Protocols**: Designed to comply with TCCC guidelines and documentation requirements
+
+## System Architecture
+
+TCCC.ai follows a modular architecture with clean interfaces between components:
+
+<p align="center">
+  <img src="docs/architecture/images/system_architecture.png" alt="TCCC.ai System Architecture" width="600"/>
+</p>
+
+### Core Components
+
+1. **Audio Pipeline**: Captures and processes speech input using multi-stage battlefield audio enhancement
+2. **Speech-to-Text**: Implements optimized Whisper model with battlefield-specific configurations
+3. **LLM Analysis**: Utilizes edge-optimized Phi-2 model to extract medical events and procedures
+4. **Document Library**: Employs RAG system with local vector database for medical reference
+5. **Processing Core**: Manages system resources and module coordination
+6. **Data Store**: Maintains timeline database and structured event storage
+
+## Getting Started
+
+### Prerequisites
+
+- Python 3.9+
+- NVIDIA Jetson device (for full functionality) or x86 system with CUDA support
+- 8GB+ RAM
+- 15GB+ storage space
+
+### Installation
+
+```bash
+# Clone the repository
+git clone https://github.com/tccc-ai/tccc-project.git
+cd tccc-project
+
+# Set up virtual environment
+python -m venv venv
+source venv/bin/activate  # On Windows: venv\Scripts\activate
+
+# Install the package with development dependencies
+pip install -e ".[dev]"
+
+# Download required models
+python scripts/models/download_models.py
+```
+
+### Basic Usage
+
+```python
+from tccc.system.system import TCCCSystem
+
+# Initialize the system
+system = TCCCSystem()
+system.initialize()
+
+# Start processing audio
+system.start()
+
+# The system will now capture audio, transcribe it, and analyze medical content
+```
+
+For more detailed usage examples, see the [examples](examples/) directory.
+
+## Contributing
+
+We welcome contributions to TCCC.ai! To contribute:
+
+1. Fork the repository
+2. Create your feature branch: `git checkout -b feature/amazing-feature`
+3. Commit your changes: `git commit -m 'Add some amazing feature'`
+4. Push to the branch: `git push origin feature/amazing-feature`
+5. Open a Pull Request
+
+See [CONTRIBUTING.md](CONTRIBUTING.md) for detailed contribution guidelines.
+
+## Development
+
+### Project Structure
+
+```
+tccc-ai/
+├── docs/                # Documentation
+├── examples/            # Usage examples
+├── scripts/             # Utility scripts
+├── src/                 # Source code
+│   └── tccc/            # Main package
+├── tests/               # Test suite
+└── tools/               # Development tools
+```
+
+### Testing
+
+```bash
+# Run unit tests
+pytest tests/unit/
+
+# Run integration tests
+pytest tests/integration/
+
+# Run with coverage
+pytest --cov=src tests/
+```
+
+### Documentation
+
+```bash
+# Build documentation
+cd docs
+mkdocs build
+
+# Serve documentation locally
+mkdocs serve
+```
+
+## Hardware Implementation
+
+The project is designed to run on:
+
+- NVIDIA Jetson Orin Nano 8GB (primary target)
+- NVIDIA Jetson Nano (legacy support, reduced functionality)
+- x86 systems with CUDA support (development environment)
+
+For detailed hardware setup instructions, see the [deployment guide](docs/guides/deployment.md).
+
+## License
+
+This project is licensed under the MIT License - see the [LICENSE](LICENSE) file for details.
+
+## Acknowledgments
+
+- This project leverages multiple open-source libraries and models, including Whisper, Phi-2, and FullSubNet
+- Development was assisted by Anthropic's Claude Code CLI tool

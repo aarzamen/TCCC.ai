@@ -1,0 +1,23 @@
+# Default owners for everything in the repo
+*                   @tccc-ai/maintainers
+
+# Audio pipeline
+/src/tccc/audio_pipeline/   @tccc-ai/audio-team
+
+# Speech to text
+/src/tccc/stt_engine/       @tccc-ai/speech-team
+
+# LLM analysis
+/src/tccc/llm_analysis/     @tccc-ai/llm-team
+
+# Document library
+/src/tccc/document_library/ @tccc-ai/docs-team
+
+# Processing core
+/src/tccc/processing_core/  @tccc-ai/core-team
+
+# Utils
+/src/tccc/utils/            @tccc-ai/core-team
+
+# Documentation
+/docs/                      @tccc-ai/documentation-team

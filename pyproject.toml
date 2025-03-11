@@ -1,0 +1,122 @@
+[build-system]
+requires = ["setuptools>=42", "wheel"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "tccc"
+version = "0.1.0"
+description = "Transcription, Compliance, and Customer Care AI System"
+readme = "README.md"
+requires-python = ">=3.9"
+license = { text = "MIT" }
+authors = [
+    { name = "TCCC Team", email = "dev@tccc.ai" }
+]
+maintainers = [
+    { name = "TCCC Team", email = "dev@tccc.ai" }
+]
+classifiers = [
+    "Development Status :: 3 - Alpha",
+    "Intended Audience :: Developers",
+    "Topic :: Software Development :: Libraries :: Python Modules",
+    "License :: OSI Approved :: MIT License",
+    "Programming Language :: Python :: 3",
+    "Programming Language :: Python :: 3.9",
+    "Programming Language :: Python :: 3.10",
+    "Programming Language :: Python :: 3.11",
+    "Operating System :: POSIX :: Linux",
+]
+dependencies = [
+    "numpy>=1.20.0",
+    "pyyaml>=6.0",
+    "pydantic>=2.0.0",
+    "python-dotenv>=1.0.0",
+    "sounddevice>=0.4.5",
+    "librosa>=0.10.0",
+    "pyaudio>=0.2.13", 
+    "webrtcvad>=2.0.10",
+    "noisereduce>=2.0.1",
+    "torch>=2.0.0",
+    "torchaudio>=2.0.0",
+    "transformers>=4.30.0",
+    "onnxruntime-gpu>=1.15.0",
+    "openai-whisper>=20231117",
+    "pyannote.audio>=3.0.0",
+    "speechbrain>=0.5.14",
+    "spacy>=3.6.0",
+    "sentence-transformers>=2.2.2",
+    "nltk>=3.8.1",
+    "sqlalchemy>=2.0.0",
+    "fastapi>=0.100.0",
+    "uvicorn>=0.22.0",
+    "websockets>=11.0.3",
+]
+
+[project.urls]
+"Homepage" = "https://github.com/tccc-ai/tccc-project"
+"Documentation" = "https://tccc.ai/docs"
+"Bug Tracker" = "https://github.com/tccc-ai/tccc-project/issues"
+"Source Code" = "https://github.com/tccc-ai/tccc-project"
+
+[project.optional-dependencies]
+dev = [
+    "black>=23.3.0",
+    "isort>=5.12.0",
+    "flake8>=6.0.0",
+    "mypy>=1.3.0",
+    "pytest>=7.3.1",
+    "pytest-asyncio>=0.21.0",
+    "pytest-cov>=4.1.0",
+    "pre-commit>=3.3.2",
+    "ruff>=0.0.262",
+]
+audio = [
+    "pyworld>=0.3.3",
+    "pyrubberband>=0.3.0",
+    "soundfile>=0.12.1",
+]
+gpu = [
+    "cupy-cuda12x>=12.0.0",
+    "nvidia-tensorrt>=8.6.0",
+    "onnx-graphsurgeon>=0.3.27",
+]
+docs = [
+    "mkdocs>=1.4.2",
+    "mkdocs-material>=9.0.12",
+    "mkdocstrings[python]>=0.19.0",
+]
+
+[project.scripts]
+tccc = "tccc.cli:main"
+
+[tool.black]
+line-length = 100
+target-version = ["py39", "py310", "py311"]
+include = '\.pyi?$'
+
+[tool.isort]
+profile = "black"
+line_length = 100
+
+[tool.mypy]
+python_version = "3.9"
+warn_return_any = true
+warn_unused_configs = true
+disallow_untyped_defs = true
+disallow_incomplete_defs = true
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+python_files = "test_*.py"
+python_functions = "test_*"
+markers = [
+    "slow: marks tests as slow (deselect with '-m \"not slow\"')",
+    "integration: marks tests as integration tests",
+    "hardware: marks tests that require specific hardware",
+]
+
+[tool.ruff]
+line-length = 100
+target-version = "py39"
+select = ["E", "F", "W", "I", "B", "C4", "ARG", "SIM"]
+ignore = ["E203", "E501"]

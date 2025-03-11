@@ -1,0 +1,163 @@
+# Contributing to TCCC.ai
+
+Thank you for your interest in contributing to TCCC.ai! This document provides guidelines and instructions for contributing to the project.
+
+## Code of Conduct
+
+By participating in this project, you agree to abide by our [Code of Conduct](CODE_OF_CONDUCT.md). Please read it before contributing.
+
+## Getting Started
+
+### Development Environment
+
+1. Fork the repository on GitHub
+2. Clone your fork locally:
+   ```bash
+   git clone https://github.com/YOUR-USERNAME/tccc-project.git
+   cd tccc-project
+   ```
+3. Set up your development environment:
+   ```bash
+   python -m venv venv
+   source venv/bin/activate  # On Windows: venv\Scripts\activate
+   pip install -e ".[dev]"
+   ```
+4. Install pre-commit hooks:
+   ```bash
+   pre-commit install
+   ```
+
+### Project Structure
+
+- `src/tccc/`: Main package code
+- `tests/`: Test suite
+- `docs/`: Documentation
+- `examples/`: Usage examples
+- `scripts/`: Utility scripts
+- `tools/`: Development tools
+
+## Development Workflow
+
+### Branching Strategy
+
+We use the following branch structure:
+- `main`: Stable release branch
+- `develop`: Integration branch for development
+- Feature branches: Named `feature/your-feature`
+- Bugfix branches: Named `fix/issue-description`
+
+### Making Changes
+
+1. Create a new branch:
+   ```bash
+   git checkout -b feature/your-feature-name
+   ```
+
+2. Make your changes following the style guidelines below
+
+3. Run tests to ensure your changes don't break existing functionality:
+   ```bash
+   pytest
+   ```
+
+4. Run pre-commit hooks on your changes:
+   ```bash
+   pre-commit run --all-files
+   ```
+
+5. Commit your changes with a descriptive commit message:
+   ```bash
+   git commit -m "feat: add your feature description"
+   ```
+
+   Follow [Conventional Commits](https://www.conventionalcommits.org/) for commit messages:
+   - `feat`: A new feature
+   - `fix`: A bug fix
+   - `docs`: Documentation changes
+   - `style`: Changes that don't affect code functionality
+   - `refactor`: Code refactoring
+   - `test`: Adding or updating tests
+   - `chore`: Maintenance tasks
+
+6. Push to your fork:
+   ```bash
+   git push origin feature/your-feature-name
+   ```
+
+7. Create a Pull Request from your fork to the main repository
+
+### Pull Request Process
+
+1. Ensure your PR has a descriptive title and clear description
+2. Link to any related issues
+3. Update documentation if necessary
+4. Make sure all CI checks pass
+5. Request code review from maintainers
+6. Address any feedback from reviewers
+
+## Style Guidelines
+
+### Python Code
+
+- We follow [PEP 8](https://pep8.org/) and [PEP 257](https://pep257.org/) style guides
+- Use [Black](https://black.readthedocs.io/) for code formatting
+- Sort imports with [isort](https://pycqa.github.io/isort/)
+- Validate code with [Ruff](https://github.com/charliermarsh/ruff)
+- Use [mypy](http://mypy-lang.org/) for type checking
+
+### Documentation
+
+- Use Markdown for documentation
+- Follow [Google Python Style Guide](https://google.github.io/styleguide/pyguide.html) for docstrings
+- Keep documentation up-to-date with code changes
+
+## Testing
+
+- Write tests for all new features and bug fixes
+- Aim for high test coverage
+- Place unit tests in the `tests/unit/` directory
+- Place integration tests in the `tests/integration/` directory
+- Run tests before submitting a PR:
+  ```bash
+  pytest
+  ```
+
+## Documentation
+
+- Update documentation for any changed functionality
+- Add examples for new features
+- Build and check documentation locally:
+  ```bash
+  cd docs
+  mkdocs serve
+  ```
+
+## Submitting Issues
+
+### Bug Reports
+
+When reporting bugs, include:
+- Clear and descriptive title
+- Steps to reproduce the issue
+- Expected behavior
+- Actual behavior
+- Environment details (OS, Python version, etc.)
+- Screenshots or logs if applicable
+
+### Feature Requests
+
+When requesting features, include:
+- Clear and descriptive title
+- Detailed description of the proposed feature
+- Rationale for adding the feature
+- Example use cases
+
+## Community
+
+Join our community channels to get help and discuss the project:
+- [GitHub Discussions](https://github.com/tccc-ai/tccc-project/discussions)
+- [Issue Tracker](https://github.com/tccc-ai/tccc-project/issues)
+
+## License
+
+By contributing to TCCC.ai, you agree that your contributions will be licensed under the project's [MIT License](LICENSE).
