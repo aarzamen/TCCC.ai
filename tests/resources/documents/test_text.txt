@@ -1,0 +1,54 @@
+MEDICAL ASSESSMENT PROTOCOL
+
+This document outlines the basic protocol for medical assessment in tactical situations.
+
+STEP 1: SCENE ASSESSMENT
+- Ensure scene safety before approaching
+- Identify potential threats or hazards
+- Determine number of casualties
+- Request additional resources if needed
+
+STEP 2: PRIMARY ASSESSMENT (MARCH)
+M - Massive Hemorrhage
+- Control life-threatening external bleeding
+- Apply tourniquets for limb hemorrhage
+- Apply direct pressure and hemostatic agents for other sites
+
+A - Airway
+- Assess airway patency
+- Clear obstructions
+- Consider advanced airway if needed
+
+R - Respiration
+- Assess breathing quality and rate
+- Check for tension pneumothorax
+- Perform needle decompression if indicated
+- Apply chest seals for open chest wounds
+
+C - Circulation
+- Check pulse (rate, quality)
+- Assess skin color and temperature
+- Initiate IV/IO access if needed
+- Control non-life-threatening bleeding
+
+H - Head Injury/Hypothermia
+- Assess level of consciousness (AVPU)
+- Check for signs of increased intracranial pressure
+- Prevent/treat hypothermia
+
+STEP 3: SECONDARY ASSESSMENT
+- Detailed head-to-toe examination
+- Document all findings
+- Reassess vital signs every 5 minutes for unstable patients
+- Prepare for evacuation
+
+STEP 4: DOCUMENTATION
+- Record all assessments, interventions and times
+- Document changes in patient condition
+- Complete casualty card
+
+EVACUATION CATEGORIES:
+1. Urgent (Red): Life-threatening injuries requiring immediate evacuation
+2. Priority (Yellow): Serious injuries requiring evacuation within 4 hours
+3. Routine (Green): Non-serious injuries that can wait for evacuation
+4. Expectant (Black): Injuries too severe to survive given available resources
