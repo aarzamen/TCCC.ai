@@ -1,0 +1,194 @@
+# TCCC.ai Terminal Snippets for Claude Code CLI
+
+## 1. Implement Module Function
+
+claude "Implement the [function_name] function for the [module_name] module that [purpose].
+
+Requirements:
+- Must follow interface: [interface_details]
+- Handle errors: [error_conditions]
+- Performance target: [performance_requirements]
+
+Context:
+- This function is called by: [calling_context]
+- Interacts with: [related_components]
+
+Example inputs/outputs:
+[examples]"
+
+## 2. Debug Module Issue
+
+claude "Debug the following error in the [module_name] module:
+
+```
+[error_message]
+```
+
+The error occurs when [reproduction_steps].
+Relevant code:
+```python
+[relevant_code]
+```
+
+Please:
+1. Identify the root cause
+2. Explain the issue
+3. Provide a corrected implementation
+4. Suggest how to prevent similar issues"
+
+## 3. Optimize Performance
+
+claude "Optimize the following [module_name] function for Jetson Orin Nano performance:
+
+```python
+[function_code]
+```
+
+Current performance metrics:
+- Execution time: [current_time]
+- Memory usage: [current_memory]
+- CPU/GPU utilization: [current_utilization]
+
+Target metrics:
+- Execution time: [target_time]
+- Memory usage: [target_memory]
+- CPU/GPU utilization: [target_utilization]
+
+Constraints:
+- Must maintain same interface and functionality
+- Must handle same error conditions
+- Consider hardware-specific optimizations"
+
+## 4. Generate Unit Tests
+
+claude "Create comprehensive unit tests for the following [module_name] function:
+
+```python
+[function_code]
+```
+
+Test requirements:
+- Test normal operation paths
+- Test all error conditions
+- Test edge cases: [edge_cases]
+- Include performance assertions where relevant
+- Use pytest framework with standard fixtures
+
+Include setup/teardown requirements and any mocking needed."
+
+## 5. Architecture Review (CRITICAL)
+
+claude "Perform an urgent architecture review for the [component_name] component.
+
+We're experiencing these critical issues:
+[issues_description]
+
+Relevant architecture:
+[architecture_description]
+
+Specifically analyze:
+1. Interface design problems
+2. Dependency issues or circular references
+3. Resource contention or race conditions
+4. State management flaws
+5. Error propagation weaknesses
+
+Provide specific recommendations with examples."
+
+## 6. Module Integration
+
+claude "Create integration code between the [module1] and [module2] modules.
+
+Module 1 Interface:
+```python
+[module1_interface]
+```
+
+Module 2 Interface:
+```python
+[module2_interface]
+```
+
+Integration requirements:
+- Handle async communication between modules
+- Manage resource sharing: [resource_details]
+- Implement proper error propagation
+- Include logging at integration points
+- Consider performance impact of integration
+
+Provide both the integration code and example usage."
+
+## 7. Document Component
+
+claude "Generate comprehensive documentation for the [component_name] in the [module_name] module.
+
+Include:
+1. Component overview and purpose
+2. Method documentation with parameters and return values
+3. Usage examples for common scenarios
+4. Thread safety considerations
+5. Performance characteristics
+6. Error handling approach
+
+Format the documentation using proper docstring format with Google style, including type hints and examples."
+
+## 8. Optimize Memory Usage
+
+claude "Optimize memory usage for the [component_name] in the [module_name] module.
+
+Current implementation:
+```python
+[current_implementation]
+```
+
+Current memory profile:
+- Peak memory usage: [peak_memory]
+- Retained memory: [retained_memory]
+- Allocation pattern: [allocation_pattern]
+
+Requirements:
+- Reduce peak memory by at least [target_reduction]
+- Maintain same functionality and error handling
+- Consider Jetson-specific memory constraints
+- Address any memory leaks or inefficient patterns
+
+Provide an optimized implementation with explanation of the memory improvements."
+
+## 9. Fix Race Condition
+
+claude "Fix the race condition in the [component_name] component:
+
+```python
+[problematic_code]
+```
+
+The race condition occurs when [condition_description] and causes [issue_description].
+
+Requirements:
+- Implement proper synchronization
+- Maintain performance as much as possible
+- Handle all edge cases
+- Include thorough documentation of the solution
+
+Provide a fixed implementation with explanation of the synchronization approach."
+
+## 10. Implement Feature
+
+claude "Implement the [feature_name] feature for the TCCC.ai system.
+
+Feature requirements:
+- [requirement_1]
+- [requirement_2]
+- [requirement_3]
+
+Interfaces to modify:
+1. [interface_1]
+2. [interface_2]
+
+Expected behavior:
+[behavior_description]
+
+Performance constraints:
+[performance_constraints]
+
+Provide an implementation plan followed by the actual implementation."

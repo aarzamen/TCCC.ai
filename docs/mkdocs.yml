@@ -1,0 +1,83 @@
+site_name: TCCC.ai Documentation
+site_description: Documentation for the TCCC.ai project
+site_url: https://tccc-ai.github.io/tccc-project/
+repo_url: https://github.com/tccc-ai/tccc-project
+repo_name: tccc-ai/tccc-project
+
+theme:
+  name: material
+  logo: assets/logo.png
+  favicon: assets/favicon.ico
+  palette:
+    primary: indigo
+    accent: blue
+  features:
+    - navigation.instant
+    - navigation.tracking
+    - navigation.expand
+    - navigation.indexes
+    - navigation.sections
+    - navigation.tabs
+    - toc.follow
+    - search.highlight
+    - search.share
+    - search.suggest
+
+nav:
+  - Home: index.md
+  - Architecture:
+    - Overview: architecture/system_architecture.md
+    - Components: architecture/components.md
+  - Modules:
+    - Audio Pipeline: modules/audio_pipeline.md
+    - Speech-to-Text Engine: modules/stt_engine.md
+    - LLM Analysis: modules/llm_analysis.md
+    - Document Library: modules/document_library.md
+    - Processing Core: modules/processing_core.md
+    - Data Store: modules/data_store.md
+  - User Guides:
+    - Getting Started: guides/getting_started.md
+    - Deployment: guides/deployment.md
+    - Display Setup: guides/display_setup.md
+    - Microphone Setup: guides/microphone_setup.md
+  - Development:
+    - Contribution Guide: development/contribution_guide.md
+    - Development Guide: development/development_guide.md
+    - Testing Guide: development/testing_guide.md
+
+markdown_extensions:
+  - admonition
+  - attr_list
+  - codehilite
+  - def_list
+  - footnotes
+  - meta
+  - pymdownx.details
+  - pymdownx.highlight
+  - pymdownx.inlinehilite
+  - pymdownx.keys
+  - pymdownx.snippets
+  - pymdownx.superfences
+  - pymdownx.tabbed
+  - pymdownx.tasklist:
+      custom_checkbox: true
+  - toc:
+      permalink: true
+
+plugins:
+  - search
+  - mkdocstrings:
+      handlers:
+        python:
+          selection:
+            docstring_style: google
+          rendering:
+            show_source: true
+  - git-revision-date-localized
+
+extra:
+  social:
+    - icon: fontawesome/brands/github
+      link: https://github.com/tccc-ai/tccc-project
+  version:
+    provider: mike
