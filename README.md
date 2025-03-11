@@ -135,6 +135,35 @@ The development process followed these principles:
 - Optimizing for edge deployment on constrained hardware
 - Testing each component in isolation
 
+### Claude Code CLI Integration
+
+This project includes a specialized toolkit for working with Claude Code CLI, enhancing developer productivity:
+
+```bash
+# List available CloudCode sections
+./tools/cloud_code/extract_cloudcode_section.sh -l
+
+# Prepare a Claude session for a specific module
+./tools/cloud_code/prepare_claude_session.sh "Audio Pipeline"
+
+# Use minimal context for simple tasks
+./tools/cloud_code/prepare_claude_session.sh -m "Document Library"
+
+# Include workflow information for testing
+./tools/cloud_code/prepare_claude_session.sh -w "Testing" "STT Engine" 
+
+# List available snippet templates
+./tools/cloud_code/use_snippet.sh -l
+
+# Use a snippet template with core context
+./tools/cloud_code/use_snippet.sh -c 1 "Audio Pipeline"
+
+# Preview a snippet without saving
+./tools/cloud_code/use_snippet.sh -p 3
+```
+
+See [tools/cloud_code/CLOUDCODE_README.md](tools/cloud_code/CLOUDCODE_README.md) for detailed instructions on using the CloudCode framework with this project.
+
 ## Installation & Setup
 
 ### Hardware Requirements

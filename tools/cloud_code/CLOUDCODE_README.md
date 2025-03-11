@@ -1,122 +1,185 @@
-# Claude Code CLI Integration for TCCC.ai
+# CloudCode: Claude Code CLI Framework for TCCC.ai
 
-This document explains how to effectively use the Claude Code CLI with the TCCC.ai project using the provided resources.
+This guide explains how to use the CloudCode framework to efficiently work with Claude Code CLI for TCCC.ai development.
 
-## Getting Started
+## 🚀 Overview
 
-The following resources are available to streamline your interactions with Claude Code CLI:
+CloudCode is a framework that optimizes your interaction with Claude Code CLI by providing:
 
-- **CLOUDCODE.md**: A comprehensive, modular reference document for Claude
-- **CLOUDCODE_SNIPPETS.txt**: Ready-to-use terminal snippets for common tasks
+1. **Structured Documentation**: Modular, task-specific content for Claude's context window
+2. **Helper Scripts**: Tools to extract relevant sections and prepare sessions
+3. **Prompt Templates**: Ready-to-use snippets for common development tasks
+4. **Best Practices**: Guidelines for efficient AI-assisted development
 
-## Using CLOUDCODE.md
+## 📋 Components
 
-The CLOUDCODE.md document is designed to be used selectively for each Claude Code session. Follow these steps:
+The CloudCode framework consists of:
 
-1. **Identify your current task** (e.g., implementing a feature in the Audio Pipeline module)
-2. **Include relevant sections** from CLOUDCODE.md in your Claude prompt:
-   - ALWAYS include Core sections: Project Context, Development Environment, Claude Code CLI Workflow
-   - ONLY include Module sections relevant to your current task
-   - Include Reference sections only when needed for specific features
+- **CLOUDCODE.md**: The core reference document with modular sections
+- **CLOUDCODE_SNIPPETS.txt**: Ready-to-use prompt templates
+- **CLOUDCODE_README.md**: This guide document
+- **Helper Scripts**:
+  - `extract_cloudcode_section.sh`: Extract specific sections from CLOUDCODE.md
+  - `prepare_claude_session.sh`: Prepare complete Claude sessions
+  - `use_snippet.sh`: Extract and prepare snippets for use
 
-### Section Types in CLOUDCODE.md
+## 📝 Core Documentation Structure
 
-- **[CORE]**: Essential project context - always include these
-- **[MODULE]**: Module-specific information - include only for relevant modules
-- **[WORKFLOW]**: Development workflow guidance - include when performing specific processes
-- **[REFERENCE]**: Technical reference information - include when implementing specific features
-- **[META]**: Document maintenance information - typically not needed for development tasks
+The CLOUDCODE.md file is organized into modular sections with specific tags:
 
-### Example Session Preparation
+- **[CORE]**: Essential project context that should always be included
+- **[MODULE]**: Module-specific documentation for each system component
+- **[WORKFLOW]**: Guidelines for specific development processes
+- **[REFERENCE]**: Technical information about specific technologies
+- **[META]**: Information about the CloudCode framework itself
 
-For implementing a feature in the Audio Pipeline:
+## 🔧 Using the Helper Scripts
 
-```bash
-# Copy sections to your clipboard
-cat CLOUDCODE.md | grep -A 50 "Project Context \[CORE\]" | pbcopy
-# (Paste into Claude)
+### Extract CloudCode Sections
 
-cat CLOUDCODE.md | grep -A 50 "Development Environment \[CORE\]" | pbcopy
-# (Paste into Claude)
-
-cat CLOUDCODE.md | grep -A 50 "Claude Code CLI Workflow \[CORE\]" | pbcopy
-# (Paste into Claude)
-
-cat CLOUDCODE.md | grep -A 50 "Audio Pipeline Module \[MODULE\]" | pbcopy
-# (Paste into Claude)
-```
-
-Then, follow with your specific implementation request.
-
-## Using Terminal Snippets
-
-The CLOUDCODE_SNIPPETS.txt file contains ready-to-use prompts for common development tasks:
-
-1. **Copy the relevant snippet** from CLOUDCODE_SNIPPETS.txt
-2. **Fill in the placeholder values** with your specific details
-3. **Paste into your terminal** with Claude Code CLI
-
-### Available Snippets
-
-1. Implement Module Function
-2. Debug Module Issue
-3. Optimize Performance
-4. Generate Unit Tests
-5. Architecture Review (CRITICAL)
-6. Module Integration
-7. Document Component
-8. Optimize Memory Usage
-9. Fix Race Condition
-10. Implement Feature
-
-### Example Snippet Usage
+Use `extract_cloudcode_section.sh` to pull specific sections from CLOUDCODE.md:
 
 ```bash
-# Copy a snippet
-cat CLOUDCODE_SNIPPETS.txt | grep -A 20 "1. Implement Module Function" | pbcopy
+# List available sections
+./extract_cloudcode_section.sh -l
 
-# Edit the placeholder values in your editor
-vim /tmp/my_prompt.txt
+# Extract a specific module section
+./extract_cloudcode_section.sh MODULE "Audio Pipeline"
 
-# Send to Claude Code CLI
-cat /tmp/my_prompt.txt | claude
+# Extract all CORE sections
+./extract_cloudcode_section.sh -a CORE
+
+# Extract CORE sections with shortcut
+./extract_cloudcode_section.sh -c
+
+# Save output to file
+./extract_cloudcode_section.sh MODULE "STT Engine" -o stt_context.txt
 ```
 
-## Best Practices
+### Prepare Complete Claude Sessions
 
-1. **Start with Context**: Always provide sufficient context for Claude by including relevant CLOUDCODE.md sections
-2. **Be Specific**: Replace all placeholders in snippets with detailed information
-3. **Use Modular Approach**: Only include sections relevant to your current task
-4. **Maintain Common Patterns**: Follow the project's established patterns when requesting implementations
-5. **Reference Existing Code**: Include examples of similar functionality from the codebase
-6. **Use /compact**: When conversations get long, use the `/compact` command to optimize context
-7. **Update CLOUDCODE.md**: When project evolves, update the documentation to maintain accuracy
+Use `prepare_claude_session.sh` to create ready-to-use Claude sessions:
 
-## Context Window Optimization
+```bash
+# Prepare session for specific module with all CORE sections
+./prepare_claude_session.sh "Audio Pipeline"
 
-To maximize Claude's context window usage:
+# Use minimal context (only Project Context)
+./prepare_claude_session.sh -m "Document Library"
 
-1. **Include Only Necessary Sections**: Be selective about which sections to include
-2. **Use Progressive Detail**: Start with high-level requests, add details iteratively
-3. **Reference File Paths**: Instead of pasting large files, reference paths when possible
-4. **Use Session Management**: For complex tasks spanning multiple sessions, summarize progress
+# Include a workflow section
+./prepare_claude_session.sh -w "Testing" "STT Engine"
 
-## Updating the CloudCode Framework
+# Include a reference section
+./prepare_claude_session.sh -r "Optimization Techniques" "LLM Analysis"
+
+# Save to specific file
+./prepare_claude_session.sh -o session.txt "Processing Core"
+```
+
+### Use Snippet Templates
+
+Use `use_snippet.sh` to extract and customize snippet templates:
+
+```bash
+# List available snippets
+./use_snippet.sh -l
+
+# Extract specific snippet
+./use_snippet.sh 1
+
+# Preview snippet without saving
+./use_snippet.sh -p 3
+
+# Extract snippet with CORE context
+./use_snippet.sh -c 5
+
+# Extract snippet with module-specific context
+./use_snippet.sh 2 "Audio Pipeline"
+
+# Save to specific file without opening editor
+./use_snippet.sh -n -o my_prompt.txt 4
+```
+
+## 👨‍💻 Workflow Example
+
+Here's a complete workflow example for implementing a new feature:
+
+```bash
+# 1. Prepare a session for your module
+./prepare_claude_session.sh "STT Engine"
+
+# 2. Start Claude with the prepared session
+cat /tmp/claude_code/session_*.txt | claude
+
+# 3. For a specific implementation task, use a snippet
+./use_snippet.sh -c 1 "STT Engine"
+
+# 4. Edit the snippet in your editor to add details
+# (Editor opens automatically)
+
+# 5. Send the customized snippet to Claude
+cat /tmp/claude_code/snippet_*.txt | claude
+
+# 6. For debugging, use the debug snippet
+./use_snippet.sh 2
+```
+
+## 🌟 Best Practices
+
+### Context Optimization
+
+1. **Include Only What's Needed**: Only include sections relevant to your current task
+2. **Use Minimal Context**: For simple tasks, use the `-m` flag with `prepare_claude_session.sh`
+3. **Use Progressive Detail**: Start with high-level prompts, then add details progressively
+4. **Use /compact Command**: When conversations get long, use `/compact` in Claude Code CLI
+
+### Effective Prompting
+
+1. **Be Specific**: Replace all placeholders in snippets with detailed information
+2. **Reference Existing Code**: Include examples of similar functionality from the codebase
+3. **Specify Constraints**: Always mention performance and resource constraints
+4. **Include Interface Details**: Provide expected interfaces and contract requirements
+5. **Use Modular Prompting**: Break complex tasks into smaller, focused prompts
+
+### Session Management
+
+1. **Save Sessions**: Save important sessions using `-o` flag with descriptive filenames
+2. **Document Tasks**: Create brief task descriptions at the start of each session
+3. **Summarize Progress**: At the end of sessions, ask Claude to summarize progress
+4. **Track File Changes**: Keep note of which files were modified in each session
+
+## 🔄 Framework Maintenance
 
 As the project evolves:
 
-1. Update CLOUDCODE.md with new modules or changed interfaces
-2. Refine snippets based on common usage patterns
-3. Add new reference sections for additional technologies
-4. Maintain the modular structure for efficient context management
+1. **Update Module Documentation**: Keep module interfaces and implementations up-to-date
+2. **Refine Snippets**: Adjust snippets based on common usage patterns
+3. **Add New Sections**: Add new modules and reference sections as needed
+4. **Organize by Use Case**: Group related information for common development scenarios
 
-## Troubleshooting
+## 🆘 Troubleshooting
 
-If you encounter issues with Claude Code CLI:
+If you encounter issues:
 
-1. **Context Window Limitations**: If Claude seems to miss information, you may be exceeding the context window. Use `/compact` or reduce the included sections.
-2. **Unclear Responses**: Ensure your prompts include specific interface details and requirements.
-3. **Inconsistent Code**: Check that you've included relevant module sections with implementation considerations.
-4. **Performance Issues**: Make sure to include hardware constraints and performance targets in your requests.
+1. **Context Limits**: If Claude misses information, you're likely exceeding the context window
+   - Use `/compact` command
+   - Use fewer sections with `-m` flag
+   - Split complex tasks into multiple sessions
 
-For more assistance, refer to the full documentation in CLOUDCODE.md.
+2. **Script Errors**: Ensure scripts have execution permissions
+   ```bash
+   chmod +x extract_cloudcode_section.sh prepare_claude_session.sh use_snippet.sh
+   ```
+
+3. **Unclear Responses**: Ensure your prompts include:
+   - Specific requirements and acceptance criteria
+   - Interface details and expected behavior
+   - Error handling expectations
+   - Performance considerations
+
+## 🌐 Resources
+
+- **Claude Documentation**: https://docs.anthropic.com/claude/
+- **Claude Code CLI**: https://github.com/anthropics/claude-code/
+- **Project Repository**: [TCCC.ai Repository URL]
