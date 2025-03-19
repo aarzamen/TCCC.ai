@@ -66,6 +66,9 @@ The project has reached a significant milestone with approximately 22,000 lines 
 | Data Store | Working with no issues identified |
 | System Integration | Currently failing at the verification stage |
 
+![Videoshop_2025-03-19_13-03-35-540](https://github.com/user-attachments/assets/ef56819d-0927-4e58-a5be-4a9a190c0f01)
+
+
 **Primary Development Focus:** Fixing system integration and event flow between components.
 
 ## Technical Architecture
