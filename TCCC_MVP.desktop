@@ -1,0 +1,9 @@
+[Desktop Entry]
+Version=1.0
+Type=Application
+Name=TCCC MVP System
+Comment=Launch Tactical Combat Casualty Care MVP
+Exec=/home/ama/tccc-project/launch_tccc_mvp.sh
+Icon=/home/ama/tccc-project/icons/tccc_icon.png
+Terminal=true
+Categories=Utility;
