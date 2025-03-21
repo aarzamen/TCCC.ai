@@ -1,0 +1,8 @@
+[Desktop Entry]
+Version=1.0
+Type=Application
+Name=TCCC Basic Demo
+Comment=Simple demonstration of TCCC basic functionality
+Exec=/home/ama/tccc-project/run_tccc_basic_demo.sh
+Terminal=true
+Categories=Utility;
