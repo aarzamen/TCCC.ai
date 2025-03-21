@@ -13,7 +13,6 @@
 
 ## Hardware Configuration
 - ALWAYS use the Razer Seiren V3 Mini microphone (device ID 0)
-- ALWAYS use the WaveShare display with 1280x800 resolution
 - ALWAYS use the actual functional LLM model (Phi-2), not mock implementations
 - ALWAYS create desktop shortcuts for any functionality
 - ALWAYS make scripts executable with `chmod +x script_name.sh`
@@ -47,6 +46,15 @@
 - Check component status: `grep "Verification" verification_status.log`
 - List modified files: `git status -s`
 - Save current branch work: `git add . && git commit -m "WIP: Save current progress" && git push origin HEAD`
+- Hardware note: Display resolution 1560x720 via HDMI
+
+## Working with Large Files
+- Use `grep -n "pattern" filename` to find specific lines in large files
+- Use `tail -n 100 filename` or `head -n 100 filename` to view beginning or end of large files
+- Use Python chunk processing: `python -c "with open('file.py') as f: print(''.join(f.readlines()[500:600]))"`
+- Use file splitting: `split -l 1000 large_file.py split_file_`
+- For large Python files, use GrepTool pattern matching for specific functions: `"def\s+function_name"`
+- When examining large Python modules, first search for class definitions: `"class\s+ClassName"`
 
 ## Current Focus - System Integration
 - Run system verification: `python verification_script_system_enhanced.py`
@@ -65,18 +73,5 @@
 - Live speech-to-text with audio preprocessing: `python run_mic_pipeline.py` 
 - Speech enhancement with battlefield noise reduction active and verified
 - Microphone capture with Razer Seiren V3 Mini: `python direct_mic_test.py --device 0`
-- Display output on WaveShare screen (1280x800): `python test_display_enhanced.py`
+- Display output through standard HDMI: `python test_display_enhanced.py`
 - Complete STT pipeline with display: `python microphone_to_text.py --use-display`
-
-## Multi-Agent Collaboration
-- Split tasks between multiple Claude instances for parallel work
-- Each agent focuses on specific components:
-  - Agent 1: Audio pipeline and STT engine
-  - Agent 2: LLM analysis and document library
-  - Agent 3: Processing core and system integration
-- Use shared documentation for coordination:
-  - Create task files with naming pattern: `AGENT<N>_TASK.md`
-  - Update shared status in `AGENT_STATUS.md`
-  - Leave code comments with `<!-- AGENT<N>: comment -->` format
-- Before merging changes, run `./check_agent_conflicts.sh` to verify no conflicts
-- Use workflow: `python create_multi_agent_workspace.py --agents 3 --task "System Integration"`
