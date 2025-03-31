@@ -1,0 +1,773 @@
+=== Transcription Results ===
+
+[19:21:55] The patient has a gunshot wound to the right leg with significant bleeding.
+[19:21:55] I'm applying a tourniquet above the wound site to control hemorrhage.
+[19:21:55] Hemorrhage is now controlled. Moving on to airway assessment.
+[19:21:55] Patient's airway is clear. Breathing is rapid but adequate.
+[19:21:55] Vital signs are: BP 110/70, pulse 120, respiratory rate 22.
+[19:21:56] The patient has a gunshot wound to the right leg with significant bleeding.
+[19:21:56] I'm applying a tourniquet above the wound site to control hemorrhage.
+[19:21:56] Hemorrhage is now controlled. Moving on to airway assessment.
+[19:21:56] Patient's airway is clear. Breathing is rapid but adequate.
+[19:21:56] Vital signs are: BP 110/70, pulse 120, respiratory rate 22.
+[19:21:56] The patient has a gunshot wound to the right leg with significant bleeding.
+[19:21:56] I'm applying a tourniquet above the wound site to control hemorrhage.
+[19:21:57] Hemorrhage is now controlled. Moving on to airway assessment.
+[19:21:57] Patient's airway is clear. Breathing is rapid but adequate.
+[19:21:57] Vital signs are: BP 110/70, pulse 120, respiratory rate 22.
+[19:21:57] The patient has a gunshot wound to the right leg with significant bleeding.
+[19:21:57] I'm applying a tourniquet above the wound site to control hemorrhage.
+[19:21:57] Hemorrhage is now controlled. Moving on to airway assessment.
+[19:21:58] Patient's airway is clear. Breathing is rapid but adequate.
+[19:21:58] Vital signs are: BP 110/70, pulse 120, respiratory rate 22.
+[19:21:58] The patient has a gunshot wound to the right leg with significant bleeding.
+[19:21:58] I'm applying a tourniquet above the wound site to control hemorrhage.
+[19:21:58] Hemorrhage is now controlled. Moving on to airway assessment.
+[19:21:58] Patient's airway is clear. Breathing is rapid but adequate.
+[19:21:58] Vital signs are: BP 110/70, pulse 120, respiratory rate 22.
+[19:21:59] The patient has a gunshot wound to the right leg with significant bleeding.
+[19:21:59] I'm applying a tourniquet above the wound site to control hemorrhage.
+[19:21:59] Hemorrhage is now controlled. Moving on to airway assessment.
+[19:21:59] Patient's airway is clear. Breathing is rapid but adequate.
+[19:21:59] Vital signs are: BP 110/70, pulse 120, respiratory rate 22.
+[19:21:59] The patient has a gunshot wound to the right leg with significant bleeding.
+[19:21:59] I'm applying a tourniquet above the wound site to control hemorrhage.
+[19:22:00] Hemorrhage is now controlled. Moving on to airway assessment.
+[19:22:00] Patient's airway is clear. Breathing is rapid but adequate.
+[19:22:00] Vital signs are: BP 110/70, pulse 120, respiratory rate 22.
+[19:22:00] The patient has a gunshot wound to the right leg with significant bleeding.
+[19:22:00] I'm applying a tourniquet above the wound site to control hemorrhage.
+[19:22:00] Hemorrhage is now controlled. Moving on to airway assessment.
+[19:22:01] Patient's airway is clear. Breathing is rapid but adequate.
+[19:22:01] Vital signs are: BP 110/70, pulse 120, respiratory rate 22.
+[19:22:01] The patient has a gunshot wound to the right leg with significant bleeding.
+[19:22:01] I'm applying a tourniquet above the wound site to control hemorrhage.
+[19:22:01] Hemorrhage is now controlled. Moving on to airway assessment.
+[19:22:01] Patient's airway is clear. Breathing is rapid but adequate.
+[19:22:01] Vital signs are: BP 110/70, pulse 120, respiratory rate 22.
+[19:22:02] The patient has a gunshot wound to the right leg with significant bleeding.
+[19:22:02] I'm applying a tourniquet above the wound site to control hemorrhage.
+[19:22:02] Hemorrhage is now controlled. Moving on to airway assessment.
+[19:22:02] Patient's airway is clear. Breathing is rapid but adequate.
+[19:22:02] Vital signs are: BP 110/70, pulse 120, respiratory rate 22.
+[19:22:02] The patient has a gunshot wound to the right leg with significant bleeding.
+[19:22:03] I'm applying a tourniquet above the wound site to control hemorrhage.
+[19:22:03] Hemorrhage is now controlled. Moving on to airway assessment.
+[19:22:03] Patient's airway is clear. Breathing is rapid but adequate.
+[19:22:03] Vital signs are: BP 110/70, pulse 120, respiratory rate 22.
+[19:22:03] The patient has a gunshot wound to the right leg with significant bleeding.
+[19:22:03] I'm applying a tourniquet above the wound site to control hemorrhage.
+[19:22:03] Hemorrhage is now controlled. Moving on to airway assessment.
+[19:22:04] Patient's airway is clear. Breathing is rapid but adequate.
+[19:22:04] Vital signs are: BP 110/70, pulse 120, respiratory rate 22.
+[19:22:04] The patient has a gunshot wound to the right leg with significant bleeding.
+[19:22:04] I'm applying a tourniquet above the wound site to control hemorrhage.
+[19:22:04] Hemorrhage is now controlled. Moving on to airway assessment.
+[19:22:04] Patient's airway is clear. Breathing is rapid but adequate.
+[19:22:04] Vital signs are: BP 110/70, pulse 120, respiratory rate 22.
+[19:22:05] The patient has a gunshot wound to the right leg with significant bleeding.
+[19:22:05] I'm applying a tourniquet above the wound site to control hemorrhage.
+[19:22:05] Hemorrhage is now controlled. Moving on to airway assessment.
+[19:22:05] Patient's airway is clear. Breathing is rapid but adequate.
+[19:22:05] Vital signs are: BP 110/70, pulse 120, respiratory rate 22.
+[19:22:05] The patient has a gunshot wound to the right leg with significant bleeding.
+[19:22:06] I'm applying a tourniquet above the wound site to control hemorrhage.
+[19:22:06] Hemorrhage is now controlled. Moving on to airway assessment.
+[19:22:06] Patient's airway is clear. Breathing is rapid but adequate.
+[19:22:06] Vital signs are: BP 110/70, pulse 120, respiratory rate 22.
+[19:22:06] The patient has a gunshot wound to the right leg with significant bleeding.
+[19:22:06] I'm applying a tourniquet above the wound site to control hemorrhage.
+[19:22:06] Hemorrhage is now controlled. Moving on to airway assessment.
+[19:22:07] Patient's airway is clear. Breathing is rapid but adequate.
+[19:22:07] Vital signs are: BP 110/70, pulse 120, respiratory rate 22.
+[19:22:07] The patient has a gunshot wound to the right leg with significant bleeding.
+[19:22:07] I'm applying a tourniquet above the wound site to control hemorrhage.
+[19:22:07] Hemorrhage is now controlled. Moving on to airway assessment.
+[19:22:07] Patient's airway is clear. Breathing is rapid but adequate.
+[19:22:08] Vital signs are: BP 110/70, pulse 120, respiratory rate 22.
+[19:22:08] The patient has a gunshot wound to the right leg with significant bleeding.
+[19:22:08] I'm applying a tourniquet above the wound site to control hemorrhage.
+[19:22:08] Hemorrhage is now controlled. Moving on to airway assessment.
+[19:22:08] Patient's airway is clear. Breathing is rapid but adequate.
+[19:22:08] Vital signs are: BP 110/70, pulse 120, respiratory rate 22.
+[19:22:08] The patient has a gunshot wound to the right leg with significant bleeding.
+[19:22:09] I'm applying a tourniquet above the wound site to control hemorrhage.
+[19:22:09] Hemorrhage is now controlled. Moving on to airway assessment.
+[19:22:09] Patient's airway is clear. Breathing is rapid but adequate.
+[19:22:09] Vital signs are: BP 110/70, pulse 120, respiratory rate 22.
+[19:22:09] The patient has a gunshot wound to the right leg with significant bleeding.
+[19:22:09] I'm applying a tourniquet above the wound site to control hemorrhage.
+[19:22:09] Hemorrhage is now controlled. Moving on to airway assessment.
+[19:22:10] Patient's airway is clear. Breathing is rapid but adequate.
+[19:22:10] Vital signs are: BP 110/70, pulse 120, respiratory rate 22.
+[19:22:10] The patient has a gunshot wound to the right leg with significant bleeding.
+[19:22:10] I'm applying a tourniquet above the wound site to control hemorrhage.
+[19:22:10] Hemorrhage is now controlled. Moving on to airway assessment.
+[19:22:10] Patient's airway is clear. Breathing is rapid but adequate.
+[19:22:11] Vital signs are: BP 110/70, pulse 120, respiratory rate 22.
+[19:22:11] The patient has a gunshot wound to the right leg with significant bleeding.
+[19:22:11] I'm applying a tourniquet above the wound site to control hemorrhage.
+[19:22:11] Hemorrhage is now controlled. Moving on to airway assessment.
+[19:22:11] Patient's airway is clear. Breathing is rapid but adequate.
+[19:22:11] Vital signs are: BP 110/70, pulse 120, respiratory rate 22.
+[19:22:11] The patient has a gunshot wound to the right leg with significant bleeding.
+[19:22:12] I'm applying a tourniquet above the wound site to control hemorrhage.
+[19:22:12] Hemorrhage is now controlled. Moving on to airway assessment.
+[19:22:12] Patient's airway is clear. Breathing is rapid but adequate.
+[19:22:12] Vital signs are: BP 110/70, pulse 120, respiratory rate 22.
+[19:22:12] The patient has a gunshot wound to the right leg with significant bleeding.
+[19:22:12] I'm applying a tourniquet above the wound site to control hemorrhage.
+[19:22:12] Hemorrhage is now controlled. Moving on to airway assessment.
+[19:22:13] Patient's airway is clear. Breathing is rapid but adequate.
+[19:22:13] Vital signs are: BP 110/70, pulse 120, respiratory rate 22.
+[19:22:13] The patient has a gunshot wound to the right leg with significant bleeding.
+[19:22:13] I'm applying a tourniquet above the wound site to control hemorrhage.
+[19:22:13] Hemorrhage is now controlled. Moving on to airway assessment.
+[19:22:13] Patient's airway is clear. Breathing is rapid but adequate.
+[19:22:14] Vital signs are: BP 110/70, pulse 120, respiratory rate 22.
+[19:22:14] The patient has a gunshot wound to the right leg with significant bleeding.
+[19:22:14] I'm applying a tourniquet above the wound site to control hemorrhage.
+[19:22:14] Hemorrhage is now controlled. Moving on to airway assessment.
+[19:22:14] Patient's airway is clear. Breathing is rapid but adequate.
+[19:22:14] Vital signs are: BP 110/70, pulse 120, respiratory rate 22.
+[19:22:14] The patient has a gunshot wound to the right leg with significant bleeding.
+[19:22:15] I'm applying a tourniquet above the wound site to control hemorrhage.
+[19:22:15] Hemorrhage is now controlled. Moving on to airway assessment.
+[19:22:15] Patient's airway is clear. Breathing is rapid but adequate.
+[19:22:15] Vital signs are: BP 110/70, pulse 120, respiratory rate 22.
+[19:22:15] The patient has a gunshot wound to the right leg with significant bleeding.
+[19:22:15] I'm applying a tourniquet above the wound site to control hemorrhage.
+[19:22:16] Hemorrhage is now controlled. Moving on to airway assessment.
+[19:22:16] Patient's airway is clear. Breathing is rapid but adequate.
+[19:22:16] Vital signs are: BP 110/70, pulse 120, respiratory rate 22.
+[19:22:16] The patient has a gunshot wound to the right leg with significant bleeding.
+[19:22:16] I'm applying a tourniquet above the wound site to control hemorrhage.
+[19:22:16] Hemorrhage is now controlled. Moving on to airway assessment.
+[19:22:16] Patient's airway is clear. Breathing is rapid but adequate.
+[19:22:17] Vital signs are: BP 110/70, pulse 120, respiratory rate 22.
+[19:22:17] The patient has a gunshot wound to the right leg with significant bleeding.
+[19:22:17] I'm applying a tourniquet above the wound site to control hemorrhage.
+[19:22:17] Hemorrhage is now controlled. Moving on to airway assessment.
+[19:22:17] Patient's airway is clear. Breathing is rapid but adequate.
+[19:22:17] Vital signs are: BP 110/70, pulse 120, respiratory rate 22.
+[19:22:17] The patient has a gunshot wound to the right leg with significant bleeding.
+[19:22:18] I'm applying a tourniquet above the wound site to control hemorrhage.
+[19:22:18] Hemorrhage is now controlled. Moving on to airway assessment.
+[19:22:18] Patient's airway is clear. Breathing is rapid but adequate.
+[19:22:18] Vital signs are: BP 110/70, pulse 120, respiratory rate 22.
+[19:22:18] The patient has a gunshot wound to the right leg with significant bleeding.
+[19:22:18] I'm applying a tourniquet above the wound site to control hemorrhage.
+[19:22:19] Hemorrhage is now controlled. Moving on to airway assessment.
+[19:22:19] Patient's airway is clear. Breathing is rapid but adequate.
+[19:22:19] Vital signs are: BP 110/70, pulse 120, respiratory rate 22.
+[19:22:19] The patient has a gunshot wound to the right leg with significant bleeding.
+[19:22:19] I'm applying a tourniquet above the wound site to control hemorrhage.
+[19:22:19] Hemorrhage is now controlled. Moving on to airway assessment.
+[19:22:19] Patient's airway is clear. Breathing is rapid but adequate.
+[19:22:20] Vital signs are: BP 110/70, pulse 120, respiratory rate 22.
+[19:22:20] The patient has a gunshot wound to the right leg with significant bleeding.
+[19:22:20] I'm applying a tourniquet above the wound site to control hemorrhage.
+[19:22:20] Hemorrhage is now controlled. Moving on to airway assessment.
+[19:22:20] Patient's airway is clear. Breathing is rapid but adequate.
+[19:22:20] Vital signs are: BP 110/70, pulse 120, respiratory rate 22.
+[19:22:21] The patient has a gunshot wound to the right leg with significant bleeding.
+[19:22:21] I'm applying a tourniquet above the wound site to control hemorrhage.
+[19:22:21] Hemorrhage is now controlled. Moving on to airway assessment.
+[19:22:21] Patient's airway is clear. Breathing is rapid but adequate.
+[19:22:21] Vital signs are: BP 110/70, pulse 120, respiratory rate 22.
+[19:22:21] The patient has a gunshot wound to the right leg with significant bleeding.
+[19:22:21] I'm applying a tourniquet above the wound site to control hemorrhage.
+[19:22:22] Hemorrhage is now controlled. Moving on to airway assessment.
+[19:22:22] Patient's airway is clear. Breathing is rapid but adequate.
+[19:22:22] Vital signs are: BP 110/70, pulse 120, respiratory rate 22.
+[19:22:22] The patient has a gunshot wound to the right leg with significant bleeding.
+[19:22:22] I'm applying a tourniquet above the wound site to control hemorrhage.
+[19:22:22] Hemorrhage is now controlled. Moving on to airway assessment.
+[19:22:22] Patient's airway is clear. Breathing is rapid but adequate.
+[19:22:23] Vital signs are: BP 110/70, pulse 120, respiratory rate 22.
+[19:22:23] The patient has a gunshot wound to the right leg with significant bleeding.
+[19:22:23] I'm applying a tourniquet above the wound site to control hemorrhage.
+[19:22:23] Hemorrhage is now controlled. Moving on to airway assessment.
+[19:22:23] Patient's airway is clear. Breathing is rapid but adequate.
+[19:22:23] Vital signs are: BP 110/70, pulse 120, respiratory rate 22.
+[19:22:24] The patient has a gunshot wound to the right leg with significant bleeding.
+[19:22:24] I'm applying a tourniquet above the wound site to control hemorrhage.
+[19:22:24] Hemorrhage is now controlled. Moving on to airway assessment.
+[19:22:24] Patient's airway is clear. Breathing is rapid but adequate.
+[19:22:24] Vital signs are: BP 110/70, pulse 120, respiratory rate 22.
+[19:22:24] The patient has a gunshot wound to the right leg with significant bleeding.
+[19:22:24] I'm applying a tourniquet above the wound site to control hemorrhage.
+[19:22:25] Hemorrhage is now controlled. Moving on to airway assessment.
+[19:22:25] Patient's airway is clear. Breathing is rapid but adequate.
+[19:22:25] Vital signs are: BP 110/70, pulse 120, respiratory rate 22.
+[19:22:25] The patient has a gunshot wound to the right leg with significant bleeding.
+[19:22:25] I'm applying a tourniquet above the wound site to control hemorrhage.
+[19:22:25] Hemorrhage is now controlled. Moving on to airway assessment.
+[19:22:25] Patient's airway is clear. Breathing is rapid but adequate.
+[19:22:26] Vital signs are: BP 110/70, pulse 120, respiratory rate 22.
+[19:22:26] The patient has a gunshot wound to the right leg with significant bleeding.
+[19:22:26] I'm applying a tourniquet above the wound site to control hemorrhage.
+[19:22:26] Hemorrhage is now controlled. Moving on to airway assessment.
+[19:22:26] Patient's airway is clear. Breathing is rapid but adequate.
+[19:22:26] Vital signs are: BP 110/70, pulse 120, respiratory rate 22.
+[19:22:27] The patient has a gunshot wound to the right leg with significant bleeding.
+[19:22:27] I'm applying a tourniquet above the wound site to control hemorrhage.
+[19:22:27] Hemorrhage is now controlled. Moving on to airway assessment.
+[19:22:27] Patient's airway is clear. Breathing is rapid but adequate.
+[19:22:27] Vital signs are: BP 110/70, pulse 120, respiratory rate 22.
+[19:22:27] The patient has a gunshot wound to the right leg with significant bleeding.
+[19:22:27] I'm applying a tourniquet above the wound site to control hemorrhage.
+[19:22:28] Hemorrhage is now controlled. Moving on to airway assessment.
+[19:22:28] Patient's airway is clear. Breathing is rapid but adequate.
+[19:22:28] Vital signs are: BP 110/70, pulse 120, respiratory rate 22.
+[19:22:28] The patient has a gunshot wound to the right leg with significant bleeding.
+[19:22:28] I'm applying a tourniquet above the wound site to control hemorrhage.
+[19:22:28] Hemorrhage is now controlled. Moving on to airway assessment.
+[19:22:29] Patient's airway is clear. Breathing is rapid but adequate.
+[19:22:29] Vital signs are: BP 110/70, pulse 120, respiratory rate 22.
+[19:22:29] The patient has a gunshot wound to the right leg with significant bleeding.
+[19:22:29] I'm applying a tourniquet above the wound site to control hemorrhage.
+[19:22:29] Hemorrhage is now controlled. Moving on to airway assessment.
+[19:22:29] Patient's airway is clear. Breathing is rapid but adequate.
+[19:22:29] Vital signs are: BP 110/70, pulse 120, respiratory rate 22.
+[19:22:30] The patient has a gunshot wound to the right leg with significant bleeding.
+[19:22:30] I'm applying a tourniquet above the wound site to control hemorrhage.
+[19:22:30] Hemorrhage is now controlled. Moving on to airway assessment.
+[19:22:30] Patient's airway is clear. Breathing is rapid but adequate.
+[19:22:30] Vital signs are: BP 110/70, pulse 120, respiratory rate 22.
+[19:22:30] The patient has a gunshot wound to the right leg with significant bleeding.
+[19:22:30] I'm applying a tourniquet above the wound site to control hemorrhage.
+[19:22:31] Hemorrhage is now controlled. Moving on to airway assessment.
+[19:22:31] Patient's airway is clear. Breathing is rapid but adequate.
+[19:22:31] Vital signs are: BP 110/70, pulse 120, respiratory rate 22.
+[19:22:31] The patient has a gunshot wound to the right leg with significant bleeding.
+[19:22:31] I'm applying a tourniquet above the wound site to control hemorrhage.
+[19:22:31] Hemorrhage is now controlled. Moving on to airway assessment.
+[19:22:32] Patient's airway is clear. Breathing is rapid but adequate.
+[19:22:32] Vital signs are: BP 110/70, pulse 120, respiratory rate 22.
+[19:22:32] The patient has a gunshot wound to the right leg with significant bleeding.
+[19:22:32] I'm applying a tourniquet above the wound site to control hemorrhage.
+[19:22:32] Hemorrhage is now controlled. Moving on to airway assessment.
+[19:22:32] Patient's airway is clear. Breathing is rapid but adequate.
+[19:22:32] Vital signs are: BP 110/70, pulse 120, respiratory rate 22.
+[19:22:33] The patient has a gunshot wound to the right leg with significant bleeding.
+[19:22:33] I'm applying a tourniquet above the wound site to control hemorrhage.
+[19:22:33] Hemorrhage is now controlled. Moving on to airway assessment.
+[19:22:33] Patient's airway is clear. Breathing is rapid but adequate.
+[19:22:33] Vital signs are: BP 110/70, pulse 120, respiratory rate 22.
+[19:22:33] The patient has a gunshot wound to the right leg with significant bleeding.
+[19:22:34] I'm applying a tourniquet above the wound site to control hemorrhage.
+[19:22:34] Hemorrhage is now controlled. Moving on to airway assessment.
+[19:22:34] Patient's airway is clear. Breathing is rapid but adequate.
+[19:22:34] Vital signs are: BP 110/70, pulse 120, respiratory rate 22.
+[19:22:34] The patient has a gunshot wound to the right leg with significant bleeding.
+[19:22:34] I'm applying a tourniquet above the wound site to control hemorrhage.
+[19:22:34] Hemorrhage is now controlled. Moving on to airway assessment.
+[19:22:35] Patient's airway is clear. Breathing is rapid but adequate.
+[19:22:35] Vital signs are: BP 110/70, pulse 120, respiratory rate 22.
+[19:22:35] The patient has a gunshot wound to the right leg with significant bleeding.
+[19:22:35] I'm applying a tourniquet above the wound site to control hemorrhage.
+[19:22:35] Hemorrhage is now controlled. Moving on to airway assessment.
+[19:22:35] Patient's airway is clear. Breathing is rapid but adequate.
+[19:22:35] Vital signs are: BP 110/70, pulse 120, respiratory rate 22.
+[19:22:36] The patient has a gunshot wound to the right leg with significant bleeding.
+[19:22:36] I'm applying a tourniquet above the wound site to control hemorrhage.
+[19:22:36] Hemorrhage is now controlled. Moving on to airway assessment.
+[19:22:36] Patient's airway is clear. Breathing is rapid but adequate.
+[19:22:36] Vital signs are: BP 110/70, pulse 120, respiratory rate 22.
+[19:22:36] The patient has a gunshot wound to the right leg with significant bleeding.
+[19:22:37] I'm applying a tourniquet above the wound site to control hemorrhage.
+[19:22:37] Hemorrhage is now controlled. Moving on to airway assessment.
+[19:22:37] Patient's airway is clear. Breathing is rapid but adequate.
+[19:22:37] Vital signs are: BP 110/70, pulse 120, respiratory rate 22.
+[19:22:37] The patient has a gunshot wound to the right leg with significant bleeding.
+[19:22:37] I'm applying a tourniquet above the wound site to control hemorrhage.
+[19:22:37] Hemorrhage is now controlled. Moving on to airway assessment.
+[19:22:38] Patient's airway is clear. Breathing is rapid but adequate.
+[19:22:38] Vital signs are: BP 110/70, pulse 120, respiratory rate 22.
+[19:22:38] The patient has a gunshot wound to the right leg with significant bleeding.
+[19:22:38] I'm applying a tourniquet above the wound site to control hemorrhage.
+[19:22:38] Hemorrhage is now controlled. Moving on to airway assessment.
+[19:22:38] Patient's airway is clear. Breathing is rapid but adequate.
+[19:22:38] Vital signs are: BP 110/70, pulse 120, respiratory rate 22.
+[19:22:39] The patient has a gunshot wound to the right leg with significant bleeding.
+[19:22:39] I'm applying a tourniquet above the wound site to control hemorrhage.
+[19:22:39] Hemorrhage is now controlled. Moving on to airway assessment.
+[19:22:39] Patient's airway is clear. Breathing is rapid but adequate.
+[19:22:39] Vital signs are: BP 110/70, pulse 120, respiratory rate 22.
+[19:22:39] The patient has a gunshot wound to the right leg with significant bleeding.
+[19:22:40] I'm applying a tourniquet above the wound site to control hemorrhage.
+[19:22:40] Hemorrhage is now controlled. Moving on to airway assessment.
+[19:22:40] Patient's airway is clear. Breathing is rapid but adequate.
+[19:22:40] Vital signs are: BP 110/70, pulse 120, respiratory rate 22.
+[19:22:40] The patient has a gunshot wound to the right leg with significant bleeding.
+[19:22:40] I'm applying a tourniquet above the wound site to control hemorrhage.
+[19:22:40] Hemorrhage is now controlled. Moving on to airway assessment.
+[19:22:41] Patient's airway is clear. Breathing is rapid but adequate.
+[19:22:41] Vital signs are: BP 110/70, pulse 120, respiratory rate 22.
+[19:22:41] The patient has a gunshot wound to the right leg with significant bleeding.
+[19:22:41] I'm applying a tourniquet above the wound site to control hemorrhage.
+[19:22:41] Hemorrhage is now controlled. Moving on to airway assessment.
+[19:22:41] Patient's airway is clear. Breathing is rapid but adequate.
+[19:22:42] Vital signs are: BP 110/70, pulse 120, respiratory rate 22.
+[19:22:42] The patient has a gunshot wound to the right leg with significant bleeding.
+[19:22:42] I'm applying a tourniquet above the wound site to control hemorrhage.
+[19:22:42] Hemorrhage is now controlled. Moving on to airway assessment.
+[19:22:42] Patient's airway is clear. Breathing is rapid but adequate.
+[19:22:42] Vital signs are: BP 110/70, pulse 120, respiratory rate 22.
+[19:22:42] The patient has a gunshot wound to the right leg with significant bleeding.
+[19:22:43] I'm applying a tourniquet above the wound site to control hemorrhage.
+[19:22:43] Hemorrhage is now controlled. Moving on to airway assessment.
+[19:22:43] Patient's airway is clear. Breathing is rapid but adequate.
+[19:22:43] Vital signs are: BP 110/70, pulse 120, respiratory rate 22.
+[19:22:43] The patient has a gunshot wound to the right leg with significant bleeding.
+[19:22:43] I'm applying a tourniquet above the wound site to control hemorrhage.
+[19:22:43] Hemorrhage is now controlled. Moving on to airway assessment.
+[19:22:44] Patient's airway is clear. Breathing is rapid but adequate.
+[19:22:44] Vital signs are: BP 110/70, pulse 120, respiratory rate 22.
+[19:22:44] The patient has a gunshot wound to the right leg with significant bleeding.
+[19:22:44] I'm applying a tourniquet above the wound site to control hemorrhage.
+[19:22:44] Hemorrhage is now controlled. Moving on to airway assessment.
+[19:22:44] Patient's airway is clear. Breathing is rapid but adequate.
+[19:22:45] Vital signs are: BP 110/70, pulse 120, respiratory rate 22.
+[19:22:45] The patient has a gunshot wound to the right leg with significant bleeding.
+[19:22:45] I'm applying a tourniquet above the wound site to control hemorrhage.
+[19:22:45] Hemorrhage is now controlled. Moving on to airway assessment.
+[19:22:45] Patient's airway is clear. Breathing is rapid but adequate.
+[19:22:45] Vital signs are: BP 110/70, pulse 120, respiratory rate 22.
+[19:22:45] The patient has a gunshot wound to the right leg with significant bleeding.
+[19:22:46] I'm applying a tourniquet above the wound site to control hemorrhage.
+[19:22:46] Hemorrhage is now controlled. Moving on to airway assessment.
+[19:22:46] Patient's airway is clear. Breathing is rapid but adequate.
+[19:22:46] Vital signs are: BP 110/70, pulse 120, respiratory rate 22.
+[19:22:46] The patient has a gunshot wound to the right leg with significant bleeding.
+[19:22:46] I'm applying a tourniquet above the wound site to control hemorrhage.
+[19:22:47] Hemorrhage is now controlled. Moving on to airway assessment.
+[19:22:47] Patient's airway is clear. Breathing is rapid but adequate.
+[19:22:47] Vital signs are: BP 110/70, pulse 120, respiratory rate 22.
+[19:22:47] The patient has a gunshot wound to the right leg with significant bleeding.
+[19:22:47] I'm applying a tourniquet above the wound site to control hemorrhage.
+[19:22:47] Hemorrhage is now controlled. Moving on to airway assessment.
+[19:22:47] Patient's airway is clear. Breathing is rapid but adequate.
+[19:22:48] Vital signs are: BP 110/70, pulse 120, respiratory rate 22.
+[19:22:48] The patient has a gunshot wound to the right leg with significant bleeding.
+[19:22:48] I'm applying a tourniquet above the wound site to control hemorrhage.
+[19:22:48] Hemorrhage is now controlled. Moving on to airway assessment.
+[19:22:48] Patient's airway is clear. Breathing is rapid but adequate.
+[19:22:48] Vital signs are: BP 110/70, pulse 120, respiratory rate 22.
+[19:22:48] The patient has a gunshot wound to the right leg with significant bleeding.
+[19:22:49] I'm applying a tourniquet above the wound site to control hemorrhage.
+[19:22:49] Hemorrhage is now controlled. Moving on to airway assessment.
+[19:22:49] Patient's airway is clear. Breathing is rapid but adequate.
+[19:22:49] Vital signs are: BP 110/70, pulse 120, respiratory rate 22.
+[19:22:49] The patient has a gunshot wound to the right leg with significant bleeding.
+[19:22:49] I'm applying a tourniquet above the wound site to control hemorrhage.
+[19:22:50] Hemorrhage is now controlled. Moving on to airway assessment.
+[19:22:50] Patient's airway is clear. Breathing is rapid but adequate.
+[19:22:50] Vital signs are: BP 110/70, pulse 120, respiratory rate 22.
+[19:22:50] The patient has a gunshot wound to the right leg with significant bleeding.
+[19:22:50] I'm applying a tourniquet above the wound site to control hemorrhage.
+[19:22:50] Hemorrhage is now controlled. Moving on to airway assessment.
+[19:22:50] Patient's airway is clear. Breathing is rapid but adequate.
+[19:22:51] Vital signs are: BP 110/70, pulse 120, respiratory rate 22.
+[19:22:51] The patient has a gunshot wound to the right leg with significant bleeding.
+[19:22:51] I'm applying a tourniquet above the wound site to control hemorrhage.
+[19:22:51] Hemorrhage is now controlled. Moving on to airway assessment.
+[19:22:51] Patient's airway is clear. Breathing is rapid but adequate.
+[19:22:51] Vital signs are: BP 110/70, pulse 120, respiratory rate 22.
+[19:22:51] The patient has a gunshot wound to the right leg with significant bleeding.
+[19:22:52] I'm applying a tourniquet above the wound site to control hemorrhage.
+[19:22:52] Hemorrhage is now controlled. Moving on to airway assessment.
+[19:22:52] Patient's airway is clear. Breathing is rapid but adequate.
+[19:22:52] Vital signs are: BP 110/70, pulse 120, respiratory rate 22.
+[19:22:52] The patient has a gunshot wound to the right leg with significant bleeding.
+[19:22:52] I'm applying a tourniquet above the wound site to control hemorrhage.
+[19:22:53] Hemorrhage is now controlled. Moving on to airway assessment.
+[19:22:53] Patient's airway is clear. Breathing is rapid but adequate.
+[19:22:53] Vital signs are: BP 110/70, pulse 120, respiratory rate 22.
+[19:22:53] The patient has a gunshot wound to the right leg with significant bleeding.
+[19:22:53] I'm applying a tourniquet above the wound site to control hemorrhage.
+[19:22:53] Hemorrhage is now controlled. Moving on to airway assessment.
+[19:22:53] Patient's airway is clear. Breathing is rapid but adequate.
+[19:22:54] Vital signs are: BP 110/70, pulse 120, respiratory rate 22.
+[19:22:54] The patient has a gunshot wound to the right leg with significant bleeding.
+[19:22:54] I'm applying a tourniquet above the wound site to control hemorrhage.
+[19:22:54] Hemorrhage is now controlled. Moving on to airway assessment.
+[19:22:54] Patient's airway is clear. Breathing is rapid but adequate.
+[19:22:54] Vital signs are: BP 110/70, pulse 120, respiratory rate 22.
+[19:22:55] The patient has a gunshot wound to the right leg with significant bleeding.
+[19:22:55] I'm applying a tourniquet above the wound site to control hemorrhage.
+[19:22:55] Hemorrhage is now controlled. Moving on to airway assessment.
+[19:22:55] Patient's airway is clear. Breathing is rapid but adequate.
+[19:22:55] Vital signs are: BP 110/70, pulse 120, respiratory rate 22.
+[19:22:55] The patient has a gunshot wound to the right leg with significant bleeding.
+[19:22:55] I'm applying a tourniquet above the wound site to control hemorrhage.
+[19:22:56] Hemorrhage is now controlled. Moving on to airway assessment.
+[19:22:56] Patient's airway is clear. Breathing is rapid but adequate.
+[19:22:56] Vital signs are: BP 110/70, pulse 120, respiratory rate 22.
+[19:22:56] The patient has a gunshot wound to the right leg with significant bleeding.
+[19:22:56] I'm applying a tourniquet above the wound site to control hemorrhage.
+[19:22:56] Hemorrhage is now controlled. Moving on to airway assessment.
+[19:22:56] Patient's airway is clear. Breathing is rapid but adequate.
+[19:22:57] Vital signs are: BP 110/70, pulse 120, respiratory rate 22.
+[19:22:57] The patient has a gunshot wound to the right leg with significant bleeding.
+[19:22:57] I'm applying a tourniquet above the wound site to control hemorrhage.
+[19:22:57] Hemorrhage is now controlled. Moving on to airway assessment.
+[19:22:57] Patient's airway is clear. Breathing is rapid but adequate.
+[19:22:57] Vital signs are: BP 110/70, pulse 120, respiratory rate 22.
+[19:22:58] The patient has a gunshot wound to the right leg with significant bleeding.
+[19:22:58] I'm applying a tourniquet above the wound site to control hemorrhage.
+[19:22:58] Hemorrhage is now controlled. Moving on to airway assessment.
+[19:22:58] Patient's airway is clear. Breathing is rapid but adequate.
+[19:22:58] Vital signs are: BP 110/70, pulse 120, respiratory rate 22.
+[19:22:58] The patient has a gunshot wound to the right leg with significant bleeding.
+[19:22:58] I'm applying a tourniquet above the wound site to control hemorrhage.
+[19:22:59] Hemorrhage is now controlled. Moving on to airway assessment.
+[19:22:59] Patient's airway is clear. Breathing is rapid but adequate.
+[19:22:59] Vital signs are: BP 110/70, pulse 120, respiratory rate 22.
+[19:22:59] The patient has a gunshot wound to the right leg with significant bleeding.
+[19:22:59] I'm applying a tourniquet above the wound site to control hemorrhage.
+[19:22:59] Hemorrhage is now controlled. Moving on to airway assessment.
+[19:23:00] Patient's airway is clear. Breathing is rapid but adequate.
+[19:23:00] Vital signs are: BP 110/70, pulse 120, respiratory rate 22.
+[19:23:00] The patient has a gunshot wound to the right leg with significant bleeding.
+[19:23:00] I'm applying a tourniquet above the wound site to control hemorrhage.
+[19:23:00] Hemorrhage is now controlled. Moving on to airway assessment.
+[19:23:00] Patient's airway is clear. Breathing is rapid but adequate.
+[19:23:00] Vital signs are: BP 110/70, pulse 120, respiratory rate 22.
+[19:23:01] The patient has a gunshot wound to the right leg with significant bleeding.
+[19:23:01] I'm applying a tourniquet above the wound site to control hemorrhage.
+[19:23:01] Hemorrhage is now controlled. Moving on to airway assessment.
+[19:23:01] Patient's airway is clear. Breathing is rapid but adequate.
+[19:23:01] Vital signs are: BP 110/70, pulse 120, respiratory rate 22.
+[19:23:01] The patient has a gunshot wound to the right leg with significant bleeding.
+[19:23:01] I'm applying a tourniquet above the wound site to control hemorrhage.
+[19:23:02] Hemorrhage is now controlled. Moving on to airway assessment.
+[19:23:02] Patient's airway is clear. Breathing is rapid but adequate.
+[19:23:02] Vital signs are: BP 110/70, pulse 120, respiratory rate 22.
+[19:23:02] The patient has a gunshot wound to the right leg with significant bleeding.
+[19:23:02] I'm applying a tourniquet above the wound site to control hemorrhage.
+[19:23:02] Hemorrhage is now controlled. Moving on to airway assessment.
+[19:23:03] Patient's airway is clear. Breathing is rapid but adequate.
+[19:23:03] Vital signs are: BP 110/70, pulse 120, respiratory rate 22.
+[19:23:03] The patient has a gunshot wound to the right leg with significant bleeding.
+[19:23:03] I'm applying a tourniquet above the wound site to control hemorrhage.
+[19:23:03] Hemorrhage is now controlled. Moving on to airway assessment.
+[19:23:03] Patient's airway is clear. Breathing is rapid but adequate.
+[19:23:03] Vital signs are: BP 110/70, pulse 120, respiratory rate 22.
+[19:23:04] The patient has a gunshot wound to the right leg with significant bleeding.
+[19:23:04] I'm applying a tourniquet above the wound site to control hemorrhage.
+[19:23:04] Hemorrhage is now controlled. Moving on to airway assessment.
+[19:23:04] Patient's airway is clear. Breathing is rapid but adequate.
+[19:23:04] Vital signs are: BP 110/70, pulse 120, respiratory rate 22.
+[19:23:04] The patient has a gunshot wound to the right leg with significant bleeding.
+[19:23:05] I'm applying a tourniquet above the wound site to control hemorrhage.
+[19:23:05] Hemorrhage is now controlled. Moving on to airway assessment.
+[19:23:05] Patient's airway is clear. Breathing is rapid but adequate.
+[19:23:05] Vital signs are: BP 110/70, pulse 120, respiratory rate 22.
+[19:23:05] The patient has a gunshot wound to the right leg with significant bleeding.
+[19:23:05] I'm applying a tourniquet above the wound site to control hemorrhage.
+[19:23:05] Hemorrhage is now controlled. Moving on to airway assessment.
+[19:23:06] Patient's airway is clear. Breathing is rapid but adequate.
+[19:23:06] Vital signs are: BP 110/70, pulse 120, respiratory rate 22.
+[19:23:06] The patient has a gunshot wound to the right leg with significant bleeding.
+[19:23:06] I'm applying a tourniquet above the wound site to control hemorrhage.
+[19:23:06] Hemorrhage is now controlled. Moving on to airway assessment.
+[19:23:06] Patient's airway is clear. Breathing is rapid but adequate.
+[19:23:06] Vital signs are: BP 110/70, pulse 120, respiratory rate 22.
+[19:23:07] The patient has a gunshot wound to the right leg with significant bleeding.
+[19:23:07] I'm applying a tourniquet above the wound site to control hemorrhage.
+[19:23:07] Hemorrhage is now controlled. Moving on to airway assessment.
+[19:23:07] Patient's airway is clear. Breathing is rapid but adequate.
+[19:23:07] Vital signs are: BP 110/70, pulse 120, respiratory rate 22.
+[19:23:07] The patient has a gunshot wound to the right leg with significant bleeding.
+[19:23:08] I'm applying a tourniquet above the wound site to control hemorrhage.
+[19:23:08] Hemorrhage is now controlled. Moving on to airway assessment.
+[19:23:08] Patient's airway is clear. Breathing is rapid but adequate.
+[19:23:08] Vital signs are: BP 110/70, pulse 120, respiratory rate 22.
+[19:23:08] The patient has a gunshot wound to the right leg with significant bleeding.
+[19:23:08] I'm applying a tourniquet above the wound site to control hemorrhage.
+[19:23:08] Hemorrhage is now controlled. Moving on to airway assessment.
+[19:23:09] Patient's airway is clear. Breathing is rapid but adequate.
+[19:23:09] Vital signs are: BP 110/70, pulse 120, respiratory rate 22.
+[19:23:09] The patient has a gunshot wound to the right leg with significant bleeding.
+[19:23:09] I'm applying a tourniquet above the wound site to control hemorrhage.
+[19:23:09] Hemorrhage is now controlled. Moving on to airway assessment.
+[19:23:09] Patient's airway is clear. Breathing is rapid but adequate.
+[19:23:09] Vital signs are: BP 110/70, pulse 120, respiratory rate 22.
+[19:23:10] The patient has a gunshot wound to the right leg with significant bleeding.
+[19:23:10] I'm applying a tourniquet above the wound site to control hemorrhage.
+[19:23:10] Hemorrhage is now controlled. Moving on to airway assessment.
+[19:23:10] Patient's airway is clear. Breathing is rapid but adequate.
+[19:23:10] Vital signs are: BP 110/70, pulse 120, respiratory rate 22.
+[19:23:10] The patient has a gunshot wound to the right leg with significant bleeding.
+[19:23:11] I'm applying a tourniquet above the wound site to control hemorrhage.
+[19:23:11] Hemorrhage is now controlled. Moving on to airway assessment.
+[19:23:11] Patient's airway is clear. Breathing is rapid but adequate.
+[19:23:11] Vital signs are: BP 110/70, pulse 120, respiratory rate 22.
+[19:23:11] The patient has a gunshot wound to the right leg with significant bleeding.
+[19:23:11] I'm applying a tourniquet above the wound site to control hemorrhage.
+[19:23:11] Hemorrhage is now controlled. Moving on to airway assessment.
+[19:23:12] Patient's airway is clear. Breathing is rapid but adequate.
+[19:23:12] Vital signs are: BP 110/70, pulse 120, respiratory rate 22.
+[19:23:12] The patient has a gunshot wound to the right leg with significant bleeding.
+[19:23:12] I'm applying a tourniquet above the wound site to control hemorrhage.
+[19:23:12] Hemorrhage is now controlled. Moving on to airway assessment.
+[19:23:12] Patient's airway is clear. Breathing is rapid but adequate.
+[19:23:13] Vital signs are: BP 110/70, pulse 120, respiratory rate 22.
+[19:23:13] The patient has a gunshot wound to the right leg with significant bleeding.
+[19:23:13] I'm applying a tourniquet above the wound site to control hemorrhage.
+[19:23:13] Hemorrhage is now controlled. Moving on to airway assessment.
+[19:23:13] Patient's airway is clear. Breathing is rapid but adequate.
+[19:23:13] Vital signs are: BP 110/70, pulse 120, respiratory rate 22.
+[19:23:13] The patient has a gunshot wound to the right leg with significant bleeding.
+[19:23:14] I'm applying a tourniquet above the wound site to control hemorrhage.
+[19:23:14] Hemorrhage is now controlled. Moving on to airway assessment.
+[19:23:14] Patient's airway is clear. Breathing is rapid but adequate.
+[19:23:14] Vital signs are: BP 110/70, pulse 120, respiratory rate 22.
+[19:23:14] The patient has a gunshot wound to the right leg with significant bleeding.
+[19:23:14] I'm applying a tourniquet above the wound site to control hemorrhage.
+[19:23:14] Hemorrhage is now controlled. Moving on to airway assessment.
+[19:23:15] Patient's airway is clear. Breathing is rapid but adequate.
+[19:23:15] Vital signs are: BP 110/70, pulse 120, respiratory rate 22.
+[19:23:15] The patient has a gunshot wound to the right leg with significant bleeding.
+[19:23:15] I'm applying a tourniquet above the wound site to control hemorrhage.
+[19:23:15] Hemorrhage is now controlled. Moving on to airway assessment.
+[19:23:15] Patient's airway is clear. Breathing is rapid but adequate.
+[19:23:16] Vital signs are: BP 110/70, pulse 120, respiratory rate 22.
+[19:23:16] The patient has a gunshot wound to the right leg with significant bleeding.
+[19:23:16] I'm applying a tourniquet above the wound site to control hemorrhage.
+[19:23:16] Hemorrhage is now controlled. Moving on to airway assessment.
+[19:23:16] Patient's airway is clear. Breathing is rapid but adequate.
+[19:23:16] Vital signs are: BP 110/70, pulse 120, respiratory rate 22.
+[19:23:16] The patient has a gunshot wound to the right leg with significant bleeding.
+[19:23:17] I'm applying a tourniquet above the wound site to control hemorrhage.
+[19:23:17] Hemorrhage is now controlled. Moving on to airway assessment.
+[19:23:17] Patient's airway is clear. Breathing is rapid but adequate.
+[19:23:17] Vital signs are: BP 110/70, pulse 120, respiratory rate 22.
+[19:23:17] The patient has a gunshot wound to the right leg with significant bleeding.
+[19:23:17] I'm applying a tourniquet above the wound site to control hemorrhage.
+[19:23:17] Hemorrhage is now controlled. Moving on to airway assessment.
+[19:23:18] Patient's airway is clear. Breathing is rapid but adequate.
+[19:23:18] Vital signs are: BP 110/70, pulse 120, respiratory rate 22.
+[19:23:18] The patient has a gunshot wound to the right leg with significant bleeding.
+[19:23:18] I'm applying a tourniquet above the wound site to control hemorrhage.
+[19:23:18] Hemorrhage is now controlled. Moving on to airway assessment.
+[19:23:18] Patient's airway is clear. Breathing is rapid but adequate.
+[19:23:19] Vital signs are: BP 110/70, pulse 120, respiratory rate 22.
+[19:23:19] The patient has a gunshot wound to the right leg with significant bleeding.
+[19:23:19] I'm applying a tourniquet above the wound site to control hemorrhage.
+[19:23:19] Hemorrhage is now controlled. Moving on to airway assessment.
+[19:23:19] Patient's airway is clear. Breathing is rapid but adequate.
+[19:23:19] Vital signs are: BP 110/70, pulse 120, respiratory rate 22.
+[19:23:19] The patient has a gunshot wound to the right leg with significant bleeding.
+[19:23:20] I'm applying a tourniquet above the wound site to control hemorrhage.
+[19:23:20] Hemorrhage is now controlled. Moving on to airway assessment.
+[19:23:20] Patient's airway is clear. Breathing is rapid but adequate.
+[19:23:20] Vital signs are: BP 110/70, pulse 120, respiratory rate 22.
+[19:23:20] The patient has a gunshot wound to the right leg with significant bleeding.
+[19:23:20] I'm applying a tourniquet above the wound site to control hemorrhage.
+[19:23:21] Hemorrhage is now controlled. Moving on to airway assessment.
+[19:23:21] Patient's airway is clear. Breathing is rapid but adequate.
+[19:23:21] Vital signs are: BP 110/70, pulse 120, respiratory rate 22.
+[19:23:21] The patient has a gunshot wound to the right leg with significant bleeding.
+[19:23:21] I'm applying a tourniquet above the wound site to control hemorrhage.
+[19:23:21] Hemorrhage is now controlled. Moving on to airway assessment.
+[19:23:21] Patient's airway is clear. Breathing is rapid but adequate.
+[19:23:22] Vital signs are: BP 110/70, pulse 120, respiratory rate 22.
+[19:23:22] The patient has a gunshot wound to the right leg with significant bleeding.
+[19:23:22] I'm applying a tourniquet above the wound site to control hemorrhage.
+[19:23:22] Hemorrhage is now controlled. Moving on to airway assessment.
+[19:23:22] Patient's airway is clear. Breathing is rapid but adequate.
+[19:23:22] Vital signs are: BP 110/70, pulse 120, respiratory rate 22.
+[19:23:22] The patient has a gunshot wound to the right leg with significant bleeding.
+[19:23:23] I'm applying a tourniquet above the wound site to control hemorrhage.
+[19:23:23] Hemorrhage is now controlled. Moving on to airway assessment.
+[19:23:23] Patient's airway is clear. Breathing is rapid but adequate.
+[19:23:23] Vital signs are: BP 110/70, pulse 120, respiratory rate 22.
+[19:23:23] The patient has a gunshot wound to the right leg with significant bleeding.
+[19:23:23] I'm applying a tourniquet above the wound site to control hemorrhage.
+[19:23:24] Hemorrhage is now controlled. Moving on to airway assessment.
+[19:23:24] Patient's airway is clear. Breathing is rapid but adequate.
+[19:23:24] Vital signs are: BP 110/70, pulse 120, respiratory rate 22.
+[19:23:24] The patient has a gunshot wound to the right leg with significant bleeding.
+[19:23:24] I'm applying a tourniquet above the wound site to control hemorrhage.
+[19:23:24] Hemorrhage is now controlled. Moving on to airway assessment.
+[19:23:24] Patient's airway is clear. Breathing is rapid but adequate.
+[19:23:25] Vital signs are: BP 110/70, pulse 120, respiratory rate 22.
+[19:23:25] The patient has a gunshot wound to the right leg with significant bleeding.
+[19:23:25] I'm applying a tourniquet above the wound site to control hemorrhage.
+[19:23:25] Hemorrhage is now controlled. Moving on to airway assessment.
+[19:23:25] Patient's airway is clear. Breathing is rapid but adequate.
+[19:23:25] Vital signs are: BP 110/70, pulse 120, respiratory rate 22.
+[19:23:26] The patient has a gunshot wound to the right leg with significant bleeding.
+[19:23:26] I'm applying a tourniquet above the wound site to control hemorrhage.
+[19:23:26] Hemorrhage is now controlled. Moving on to airway assessment.
+[19:23:26] Patient's airway is clear. Breathing is rapid but adequate.
+[19:23:26] Vital signs are: BP 110/70, pulse 120, respiratory rate 22.
+[19:23:26] The patient has a gunshot wound to the right leg with significant bleeding.
+[19:23:26] I'm applying a tourniquet above the wound site to control hemorrhage.
+[19:23:27] Hemorrhage is now controlled. Moving on to airway assessment.
+[19:23:27] Patient's airway is clear. Breathing is rapid but adequate.
+[19:23:27] Vital signs are: BP 110/70, pulse 120, respiratory rate 22.
+[19:23:27] The patient has a gunshot wound to the right leg with significant bleeding.
+[19:23:27] I'm applying a tourniquet above the wound site to control hemorrhage.
+[19:23:27] Hemorrhage is now controlled. Moving on to airway assessment.
+[19:23:27] Patient's airway is clear. Breathing is rapid but adequate.
+[19:23:28] Vital signs are: BP 110/70, pulse 120, respiratory rate 22.
+[19:23:28] The patient has a gunshot wound to the right leg with significant bleeding.
+[19:23:28] I'm applying a tourniquet above the wound site to control hemorrhage.
+[19:23:28] Hemorrhage is now controlled. Moving on to airway assessment.
+[19:23:28] Patient's airway is clear. Breathing is rapid but adequate.
+[19:23:28] Vital signs are: BP 110/70, pulse 120, respiratory rate 22.
+[19:23:29] The patient has a gunshot wound to the right leg with significant bleeding.
+[19:23:29] I'm applying a tourniquet above the wound site to control hemorrhage.
+[19:23:29] Hemorrhage is now controlled. Moving on to airway assessment.
+[19:23:29] Patient's airway is clear. Breathing is rapid but adequate.
+[19:23:29] Vital signs are: BP 110/70, pulse 120, respiratory rate 22.
+[19:23:29] The patient has a gunshot wound to the right leg with significant bleeding.
+[19:23:29] I'm applying a tourniquet above the wound site to control hemorrhage.
+[19:23:30] Hemorrhage is now controlled. Moving on to airway assessment.
+[19:23:30] Patient's airway is clear. Breathing is rapid but adequate.
+[19:23:30] Vital signs are: BP 110/70, pulse 120, respiratory rate 22.
+[19:23:30] The patient has a gunshot wound to the right leg with significant bleeding.
+[19:23:30] I'm applying a tourniquet above the wound site to control hemorrhage.
+[19:23:30] Hemorrhage is now controlled. Moving on to airway assessment.
+[19:23:30] Patient's airway is clear. Breathing is rapid but adequate.
+[19:23:31] Vital signs are: BP 110/70, pulse 120, respiratory rate 22.
+[19:23:31] The patient has a gunshot wound to the right leg with significant bleeding.
+[19:23:31] I'm applying a tourniquet above the wound site to control hemorrhage.
+[19:23:31] Hemorrhage is now controlled. Moving on to airway assessment.
+[19:23:31] Patient's airway is clear. Breathing is rapid but adequate.
+[19:23:31] Vital signs are: BP 110/70, pulse 120, respiratory rate 22.
+[19:23:32] The patient has a gunshot wound to the right leg with significant bleeding.
+[19:23:32] I'm applying a tourniquet above the wound site to control hemorrhage.
+[19:23:32] Hemorrhage is now controlled. Moving on to airway assessment.
+[19:23:32] Patient's airway is clear. Breathing is rapid but adequate.
+[19:23:32] Vital signs are: BP 110/70, pulse 120, respiratory rate 22.
+[19:23:32] The patient has a gunshot wound to the right leg with significant bleeding.
+[19:23:32] I'm applying a tourniquet above the wound site to control hemorrhage.
+[19:23:33] Hemorrhage is now controlled. Moving on to airway assessment.
+[19:23:33] Patient's airway is clear. Breathing is rapid but adequate.
+[19:23:33] Vital signs are: BP 110/70, pulse 120, respiratory rate 22.
+[19:23:33] The patient has a gunshot wound to the right leg with significant bleeding.
+[19:23:33] I'm applying a tourniquet above the wound site to control hemorrhage.
+[19:23:33] Hemorrhage is now controlled. Moving on to airway assessment.
+[19:23:34] Patient's airway is clear. Breathing is rapid but adequate.
+[19:23:34] Vital signs are: BP 110/70, pulse 120, respiratory rate 22.
+[19:23:34] The patient has a gunshot wound to the right leg with significant bleeding.
+[19:23:34] I'm applying a tourniquet above the wound site to control hemorrhage.
+[19:23:34] Hemorrhage is now controlled. Moving on to airway assessment.
+[19:23:34] Patient's airway is clear. Breathing is rapid but adequate.
+[19:23:34] Vital signs are: BP 110/70, pulse 120, respiratory rate 22.
+[19:23:35] The patient has a gunshot wound to the right leg with significant bleeding.
+[19:23:35] I'm applying a tourniquet above the wound site to control hemorrhage.
+[19:23:35] Hemorrhage is now controlled. Moving on to airway assessment.
+[19:23:35] Patient's airway is clear. Breathing is rapid but adequate.
+[19:23:35] Vital signs are: BP 110/70, pulse 120, respiratory rate 22.
+[19:23:35] The patient has a gunshot wound to the right leg with significant bleeding.
+[19:23:35] I'm applying a tourniquet above the wound site to control hemorrhage.
+[19:23:36] Hemorrhage is now controlled. Moving on to airway assessment.
+[19:23:36] Patient's airway is clear. Breathing is rapid but adequate.
+[19:23:36] Vital signs are: BP 110/70, pulse 120, respiratory rate 22.
+[19:23:36] The patient has a gunshot wound to the right leg with significant bleeding.
+[19:23:36] I'm applying a tourniquet above the wound site to control hemorrhage.
+[19:23:36] Hemorrhage is now controlled. Moving on to airway assessment.
+[19:23:37] Patient's airway is clear. Breathing is rapid but adequate.
+[19:23:37] Vital signs are: BP 110/70, pulse 120, respiratory rate 22.
+[19:23:37] The patient has a gunshot wound to the right leg with significant bleeding.
+[19:23:37] I'm applying a tourniquet above the wound site to control hemorrhage.
+[19:23:37] Hemorrhage is now controlled. Moving on to airway assessment.
+[19:23:37] Patient's airway is clear. Breathing is rapid but adequate.
+[19:23:37] Vital signs are: BP 110/70, pulse 120, respiratory rate 22.
+[19:23:38] The patient has a gunshot wound to the right leg with significant bleeding.
+[19:23:38] I'm applying a tourniquet above the wound site to control hemorrhage.
+[19:23:38] Hemorrhage is now controlled. Moving on to airway assessment.
+[19:23:38] Patient's airway is clear. Breathing is rapid but adequate.
+[19:23:38] Vital signs are: BP 110/70, pulse 120, respiratory rate 22.
+[19:23:38] The patient has a gunshot wound to the right leg with significant bleeding.
+[19:23:38] I'm applying a tourniquet above the wound site to control hemorrhage.
+[19:23:39] Hemorrhage is now controlled. Moving on to airway assessment.
+[19:23:39] Patient's airway is clear. Breathing is rapid but adequate.
+[19:23:39] Vital signs are: BP 110/70, pulse 120, respiratory rate 22.
+[19:23:39] The patient has a gunshot wound to the right leg with significant bleeding.
+[19:23:39] I'm applying a tourniquet above the wound site to control hemorrhage.
+[19:23:39] Hemorrhage is now controlled. Moving on to airway assessment.
+[19:23:40] Patient's airway is clear. Breathing is rapid but adequate.
+[19:23:40] Vital signs are: BP 110/70, pulse 120, respiratory rate 22.
+[19:23:40] The patient has a gunshot wound to the right leg with significant bleeding.
+[19:23:40] I'm applying a tourniquet above the wound site to control hemorrhage.
+[19:23:40] Hemorrhage is now controlled. Moving on to airway assessment.
+[19:23:40] Patient's airway is clear. Breathing is rapid but adequate.
+[19:23:40] Vital signs are: BP 110/70, pulse 120, respiratory rate 22.
+[19:23:41] The patient has a gunshot wound to the right leg with significant bleeding.
+[19:23:41] I'm applying a tourniquet above the wound site to control hemorrhage.
+[19:23:41] Hemorrhage is now controlled. Moving on to airway assessment.
+[19:23:41] Patient's airway is clear. Breathing is rapid but adequate.
+[19:23:41] Vital signs are: BP 110/70, pulse 120, respiratory rate 22.
+[19:23:41] The patient has a gunshot wound to the right leg with significant bleeding.
+[19:23:42] I'm applying a tourniquet above the wound site to control hemorrhage.
+[19:23:42] Hemorrhage is now controlled. Moving on to airway assessment.
+[19:23:42] Patient's airway is clear. Breathing is rapid but adequate.
+[19:23:42] Vital signs are: BP 110/70, pulse 120, respiratory rate 22.
+[19:23:42] The patient has a gunshot wound to the right leg with significant bleeding.
+[19:23:42] I'm applying a tourniquet above the wound site to control hemorrhage.
+[19:23:42] Hemorrhage is now controlled. Moving on to airway assessment.
+[19:23:43] Patient's airway is clear. Breathing is rapid but adequate.
+[19:23:43] Vital signs are: BP 110/70, pulse 120, respiratory rate 22.
+[19:23:43] The patient has a gunshot wound to the right leg with significant bleeding.
+[19:23:43] I'm applying a tourniquet above the wound site to control hemorrhage.
+[19:23:43] Hemorrhage is now controlled. Moving on to airway assessment.
+[19:23:43] Patient's airway is clear. Breathing is rapid but adequate.
+[19:23:43] Vital signs are: BP 110/70, pulse 120, respiratory rate 22.
+[19:23:44] The patient has a gunshot wound to the right leg with significant bleeding.
+[19:23:44] I'm applying a tourniquet above the wound site to control hemorrhage.
+[19:23:44] Hemorrhage is now controlled. Moving on to airway assessment.
+[19:23:44] Patient's airway is clear. Breathing is rapid but adequate.
+[19:23:44] Vital signs are: BP 110/70, pulse 120, respiratory rate 22.
+[19:23:44] The patient has a gunshot wound to the right leg with significant bleeding.
+[19:23:45] I'm applying a tourniquet above the wound site to control hemorrhage.
+[19:23:45] Hemorrhage is now controlled. Moving on to airway assessment.
+[19:23:45] Patient's airway is clear. Breathing is rapid but adequate.
+[19:23:45] Vital signs are: BP 110/70, pulse 120, respiratory rate 22.
+[19:23:45] The patient has a gunshot wound to the right leg with significant bleeding.
+[19:23:45] I'm applying a tourniquet above the wound site to control hemorrhage.
+[19:23:45] Hemorrhage is now controlled. Moving on to airway assessment.
+[19:23:46] Patient's airway is clear. Breathing is rapid but adequate.
+[19:23:46] Vital signs are: BP 110/70, pulse 120, respiratory rate 22.
+[19:23:46] The patient has a gunshot wound to the right leg with significant bleeding.
+[19:23:46] I'm applying a tourniquet above the wound site to control hemorrhage.
+[19:23:46] Hemorrhage is now controlled. Moving on to airway assessment.
+[19:23:46] Patient's airway is clear. Breathing is rapid but adequate.
+[19:23:47] Vital signs are: BP 110/70, pulse 120, respiratory rate 22.
+[19:23:47] The patient has a gunshot wound to the right leg with significant bleeding.
+[19:23:47] I'm applying a tourniquet above the wound site to control hemorrhage.
+[19:23:47] Hemorrhage is now controlled. Moving on to airway assessment.
+[19:23:47] Patient's airway is clear. Breathing is rapid but adequate.
+[19:23:47] Vital signs are: BP 110/70, pulse 120, respiratory rate 22.
+[19:23:47] The patient has a gunshot wound to the right leg with significant bleeding.
+[19:23:48] I'm applying a tourniquet above the wound site to control hemorrhage.
+[19:23:48] Hemorrhage is now controlled. Moving on to airway assessment.
+[19:23:48] Patient's airway is clear. Breathing is rapid but adequate.
+[19:23:48] Vital signs are: BP 110/70, pulse 120, respiratory rate 22.
+[19:23:48] The patient has a gunshot wound to the right leg with significant bleeding.
+[19:23:48] I'm applying a tourniquet above the wound site to control hemorrhage.
+[19:23:48] Hemorrhage is now controlled. Moving on to airway assessment.
+[19:23:49] Patient's airway is clear. Breathing is rapid but adequate.
+[19:23:49] Vital signs are: BP 110/70, pulse 120, respiratory rate 22.
+[19:23:49] The patient has a gunshot wound to the right leg with significant bleeding.
+[19:23:49] I'm applying a tourniquet above the wound site to control hemorrhage.
+[19:23:49] Hemorrhage is now controlled. Moving on to airway assessment.
+[19:23:49] Patient's airway is clear. Breathing is rapid but adequate.
+[19:23:50] Vital signs are: BP 110/70, pulse 120, respiratory rate 22.
+[19:23:50] The patient has a gunshot wound to the right leg with significant bleeding.
+[19:23:50] I'm applying a tourniquet above the wound site to control hemorrhage.
+[19:23:50] Hemorrhage is now controlled. Moving on to airway assessment.
+[19:23:50] Patient's airway is clear. Breathing is rapid but adequate.
+[19:23:50] Vital signs are: BP 110/70, pulse 120, respiratory rate 22.
+[19:23:50] The patient has a gunshot wound to the right leg with significant bleeding.
+[19:23:51] I'm applying a tourniquet above the wound site to control hemorrhage.
+[19:23:51] Hemorrhage is now controlled. Moving on to airway assessment.
+[19:23:51] Patient's airway is clear. Breathing is rapid but adequate.
+[19:23:51] Vital signs are: BP 110/70, pulse 120, respiratory rate 22.
+[19:23:51] The patient has a gunshot wound to the right leg with significant bleeding.

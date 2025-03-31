@@ -1,0 +1,1 @@
+to take microphone input and feed it directly into the console. I don't need to do any cutting or pasting or any other intermediary steps. He can use any method he wants. It needs to be tailored for a one-shot attempt and I don't want to fuck with this anymore.

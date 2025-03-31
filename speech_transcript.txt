@@ -1,0 +1,15 @@
+TCCC Speech Recognition Demo
+=============================
+
+[05:24:27] hemorrhage
+[05:24:31] hemorrhage  hemorrhage
+[05:24:33] hemorrhage
+[05:24:48] pplspspspspspspspspspspspspspspspspspspspspspspspspspspspspspspspspspspspspspspspspspspspspspspspspspspspspspspspspspspspspspspspspspspspspspspspspspspspspspspspspspspspspspspspspspspspspspspspspspspspspspspspspspspspspspspspspspspspspspspspspspspspspspspspspspspspspspspspspspspspspspspspspspspspspspspspspspspspspspspspspspspspspspspspspspspspspspspspspspspspspspspspspspspspspspspspspspspspspspspspspspspspspspspspspspspspspspspspspspspspsps
+[05:24:53] chest
+[05:24:56] hemorrhage hemorrhage hemorrhage
+[05:25:09] pgggggggggggggggggggggggggggggggggggggggggggggggggggggggggggggggggggggggggggggggggggggggggggggggggggggggggggggggggggggggggggggggggggggggggggggggggggggggggggggggggggggggggggggggggggggggggggggggggggggggggggggggggggggggggggggg
+[05:25:14] cation pneumothorax
+[05:25:20] hemorrhage
+[05:25:46] hemorrhage hemorrhage
+[05:25:50] hemorrhage  hemorrhage  hemorrhage
+[05:25:53] hemorrhage hemorrhage

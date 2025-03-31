@@ -1,0 +1,1 @@
+This is a test quad that I am speaking to normally with the Logitech headphone. I think whatever the script does, it should just go to whichever actual microphone exists. Let's see, I don't have that much to say. I just want to see this shit work. Ctrl-C to stop.

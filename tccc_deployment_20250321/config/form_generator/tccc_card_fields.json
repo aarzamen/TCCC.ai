@@ -1,0 +1,636 @@
+{
+  "casualty_info": {
+    "rank": {
+      "method": "direct",
+      "properties": ["rank"],
+      "categories": ["entities"],
+      "base_confidence": 0.7,
+      "metadata": {
+        "display_name": "Rank",
+        "field_type": "text",
+        "section": "1. CASUALTY INFORMATION"
+      }
+    },
+    "last_name": {
+      "method": "direct",
+      "properties": ["last_name", "name"],
+      "categories": ["entities"],
+      "base_confidence": 0.7,
+      "metadata": {
+        "display_name": "Last Name",
+        "field_type": "text",
+        "section": "1. CASUALTY INFORMATION"
+      }
+    },
+    "first_name": {
+      "method": "direct",
+      "properties": ["first_name", "name"],
+      "categories": ["entities"],
+      "base_confidence": 0.7,
+      "metadata": {
+        "display_name": "First Name",
+        "field_type": "text",
+        "section": "1. CASUALTY INFORMATION"
+      }
+    },
+    "ssn": {
+      "method": "direct",
+      "properties": ["ssn", "id", "service_number"],
+      "categories": ["entities"],
+      "base_confidence": 0.7,
+      "metadata": {
+        "display_name": "SSN / ID No.",
+        "field_type": "text",
+        "section": "1. CASUALTY INFORMATION"
+      }
+    },
+    "unit": {
+      "method": "direct",
+      "properties": ["unit", "organization"],
+      "categories": ["entities"],
+      "base_confidence": 0.7,
+      "metadata": {
+        "display_name": "Unit",
+        "field_type": "text",
+        "section": "1. CASUALTY INFORMATION"
+      }
+    },
+    "battle_roster": {
+      "method": "direct",
+      "properties": ["battle_roster", "roster_number"],
+      "categories": ["entities"],
+      "base_confidence": 0.7,
+      "metadata": {
+        "display_name": "Battle Roster No.",
+        "field_type": "text",
+        "section": "1. CASUALTY INFORMATION"
+      }
+    },
+    "date_time_of_injury": {
+      "method": "derived",
+      "derivation": "datetime",
+      "properties": ["timestamp", "time", "date", "injury_time"],
+      "categories": ["temporal", "entities"],
+      "format": "%Y-%m-%d %H:%M",
+      "base_confidence": 0.8,
+      "metadata": {
+        "display_name": "Date/Time of Injury",
+        "field_type": "datetime",
+        "section": "1. CASUALTY INFORMATION"
+      }
+    }
+  },
+  
+  "mechanism_of_injury": {
+    "mechanism": {
+      "method": "direct",
+      "properties": ["mechanism", "injury_mechanism", "cause"],
+      "categories": ["entities"],
+      "base_confidence": 0.8,
+      "metadata": {
+        "display_name": "Mechanism of Injury",
+        "field_type": "text",
+        "section": "2. MECHANISM OF INJURY"
+      }
+    },
+    "blunt": {
+      "method": "pattern",
+      "patterns": [
+        {
+          "pattern": "\\b(blunt|fall|impact|collision|crush)\\b",
+          "confidence": 0.8
+        }
+      ],
+      "text_properties": ["mechanism", "injury_mechanism", "text", "value"],
+      "categories": ["entities", "procedures"],
+      "metadata": {
+        "display_name": "Blunt",
+        "field_type": "checkbox",
+        "section": "2. MECHANISM OF INJURY"
+      }
+    },
+    "penetrating": {
+      "method": "pattern",
+      "patterns": [
+        {
+          "pattern": "\\b(penetrat|gunshot|gsw|stab|shrapnel|fragmentation|bullet)\\b",
+          "confidence": 0.8
+        }
+      ],
+      "text_properties": ["mechanism", "injury_mechanism", "text", "value"],
+      "categories": ["entities", "procedures"],
+      "metadata": {
+        "display_name": "Penetrating",
+        "field_type": "checkbox",
+        "section": "2. MECHANISM OF INJURY"
+      }
+    },
+    "burn": {
+      "method": "pattern",
+      "patterns": [
+        {
+          "pattern": "\\b(burn|thermal|fire|flame|scald)\\b",
+          "confidence": 0.8
+        }
+      ],
+      "text_properties": ["mechanism", "injury_mechanism", "text", "value"],
+      "categories": ["entities", "procedures"],
+      "metadata": {
+        "display_name": "Burn",
+        "field_type": "checkbox",
+        "section": "2. MECHANISM OF INJURY"
+      }
+    }
+  },
+  
+  "injuries": {
+    "injuries_description": {
+      "method": "direct",
+      "properties": ["injuries", "description", "diagnosis"],
+      "categories": ["entities"],
+      "base_confidence": 0.7,
+      "metadata": {
+        "display_name": "Injuries",
+        "field_type": "textarea",
+        "section": "3. INJURIES"
+      }
+    },
+    "head": {
+      "method": "pattern",
+      "patterns": [
+        {
+          "pattern": "\\b(head|skull|brain|concussion|tbi)\\b",
+          "confidence": 0.8
+        }
+      ],
+      "text_properties": ["injuries", "description", "text", "value"],
+      "categories": ["entities"],
+      "metadata": {
+        "display_name": "Head",
+        "field_type": "checkbox",
+        "section": "3. INJURIES"
+      }
+    },
+    "neck": {
+      "method": "pattern",
+      "patterns": [
+        {
+          "pattern": "\\b(neck|cervical|throat|airway)\\b",
+          "confidence": 0.8
+        }
+      ],
+      "text_properties": ["injuries", "description", "text", "value"],
+      "categories": ["entities"],
+      "metadata": {
+        "display_name": "Neck",
+        "field_type": "checkbox",
+        "section": "3. INJURIES"
+      }
+    },
+    "chest": {
+      "method": "pattern",
+      "patterns": [
+        {
+          "pattern": "\\b(chest|thorax|thoracic|lung|pneumothorax|rib)\\b",
+          "confidence": 0.8
+        }
+      ],
+      "text_properties": ["injuries", "description", "text", "value"],
+      "categories": ["entities"],
+      "metadata": {
+        "display_name": "Chest",
+        "field_type": "checkbox",
+        "section": "3. INJURIES"
+      }
+    },
+    "abdomen": {
+      "method": "pattern",
+      "patterns": [
+        {
+          "pattern": "\\b(abdomen|abdominal|stomach|intestine|bowel|liver|spleen)\\b",
+          "confidence": 0.8
+        }
+      ],
+      "text_properties": ["injuries", "description", "text", "value"],
+      "categories": ["entities"],
+      "metadata": {
+        "display_name": "Abdomen",
+        "field_type": "checkbox",
+        "section": "3. INJURIES"
+      }
+    },
+    "pelvis": {
+      "method": "pattern",
+      "patterns": [
+        {
+          "pattern": "\\b(pelvis|pelvic|hip)\\b",
+          "confidence": 0.8
+        }
+      ],
+      "text_properties": ["injuries", "description", "text", "value"],
+      "categories": ["entities"],
+      "metadata": {
+        "display_name": "Pelvis",
+        "field_type": "checkbox",
+        "section": "3. INJURIES"
+      }
+    },
+    "extremities": {
+      "method": "pattern",
+      "patterns": [
+        {
+          "pattern": "\\b(extremit|arm|leg|limb|hand|foot|thigh|calf|forearm|shoulder|elbow|knee|ankle|wrist)\\b",
+          "confidence": 0.8
+        }
+      ],
+      "text_properties": ["injuries", "description", "text", "value"],
+      "categories": ["entities"],
+      "metadata": {
+        "display_name": "Extremities",
+        "field_type": "checkbox",
+        "section": "3. INJURIES"
+      }
+    }
+  },
+  
+  "signs_and_symptoms": {
+    "level_of_consciousness": {
+      "method": "direct",
+      "properties": ["consciousness", "mental_status", "gcs"],
+      "categories": ["vitals", "entities"],
+      "base_confidence": 0.7,
+      "metadata": {
+        "display_name": "Level of Consciousness",
+        "field_type": "select",
+        "section": "4. SIGNS AND SYMPTOMS",
+        "options": ["Alert", "Verbal", "Pain", "Unresponsive"]
+      }
+    },
+    "heart_rate": {
+      "method": "derived",
+      "derivation": "latest_vital_sign",
+      "vital_type": "heart_rate",
+      "base_confidence": 0.8,
+      "metadata": {
+        "display_name": "Heart Rate",
+        "field_type": "text",
+        "section": "4. SIGNS AND SYMPTOMS"
+      }
+    },
+    "blood_pressure": {
+      "method": "derived",
+      "derivation": "latest_vital_sign",
+      "vital_type": "blood_pressure",
+      "base_confidence": 0.8,
+      "metadata": {
+        "display_name": "Blood Pressure",
+        "field_type": "text",
+        "section": "4. SIGNS AND SYMPTOMS"
+      }
+    },
+    "respiratory_rate": {
+      "method": "derived",
+      "derivation": "latest_vital_sign",
+      "vital_type": "respiratory_rate",
+      "base_confidence": 0.8,
+      "metadata": {
+        "display_name": "Respiratory Rate",
+        "field_type": "text",
+        "section": "4. SIGNS AND SYMPTOMS"
+      }
+    },
+    "oxygen_saturation": {
+      "method": "derived",
+      "derivation": "latest_vital_sign",
+      "vital_type": "oxygen_saturation",
+      "base_confidence": 0.8,
+      "metadata": {
+        "display_name": "SpO2",
+        "field_type": "text",
+        "section": "4. SIGNS AND SYMPTOMS"
+      }
+    },
+    "temperature": {
+      "method": "derived",
+      "derivation": "latest_vital_sign",
+      "vital_type": "temperature",
+      "base_confidence": 0.8,
+      "metadata": {
+        "display_name": "Temperature",
+        "field_type": "text",
+        "section": "4. SIGNS AND SYMPTOMS"
+      }
+    }
+  },
+  
+  "treatment": {
+    "tourniquet": {
+      "method": "pattern",
+      "patterns": [
+        {
+          "pattern": "\\b(tourniquet|tq)\\b",
+          "confidence": 0.9
+        }
+      ],
+      "text_properties": ["name", "value", "text"],
+      "categories": ["procedures", "medications"],
+      "metadata": {
+        "display_name": "Tourniquet",
+        "field_type": "checkbox",
+        "section": "5. TREATMENT"
+      }
+    },
+    "tourniquet_time": {
+      "method": "derived",
+      "derivation": "datetime",
+      "properties": ["time", "timestamp"],
+      "categories": ["procedures"],
+      "format": "%H:%M",
+      "base_confidence": 0.7,
+      "metadata": {
+        "display_name": "Time Applied",
+        "field_type": "time",
+        "section": "5. TREATMENT"
+      }
+    },
+    "pressure_dressing": {
+      "method": "pattern",
+      "patterns": [
+        {
+          "pattern": "\\b(pressure dressing|hemostatic|combat gauze|bandage)\\b",
+          "confidence": 0.8
+        }
+      ],
+      "text_properties": ["name", "value", "text"],
+      "categories": ["procedures", "medications"],
+      "metadata": {
+        "display_name": "Pressure Dressing",
+        "field_type": "checkbox",
+        "section": "5. TREATMENT"
+      }
+    },
+    "needle_decompression": {
+      "method": "pattern",
+      "patterns": [
+        {
+          "pattern": "\\b(needle decomp|chest needle|tension pneumo)\\b",
+          "confidence": 0.9
+        }
+      ],
+      "text_properties": ["name", "value", "text"],
+      "categories": ["procedures"],
+      "metadata": {
+        "display_name": "Needle Decompression",
+        "field_type": "checkbox",
+        "section": "5. TREATMENT"
+      }
+    },
+    "chest_seal": {
+      "method": "pattern",
+      "patterns": [
+        {
+          "pattern": "\\b(chest seal|occlusive dressing)\\b",
+          "confidence": 0.8
+        }
+      ],
+      "text_properties": ["name", "value", "text"],
+      "categories": ["procedures"],
+      "metadata": {
+        "display_name": "Chest Seal",
+        "field_type": "checkbox",
+        "section": "5. TREATMENT"
+      }
+    },
+    "airway": {
+      "method": "pattern",
+      "patterns": [
+        {
+          "pattern": "\\b(airway|npa|opa|intubation|cricothyroidotomy|cric|supraglottic)\\b",
+          "confidence": 0.8
+        }
+      ],
+      "text_properties": ["name", "value", "text"],
+      "categories": ["procedures"],
+      "metadata": {
+        "display_name": "Airway",
+        "field_type": "checkbox",
+        "section": "5. TREATMENT"
+      }
+    }
+  },
+  
+  "medications": {
+    "txa": {
+      "method": "pattern",
+      "patterns": [
+        {
+          "pattern": "\\b(txa|tranexamic acid)\\b",
+          "confidence": 0.9
+        }
+      ],
+      "text_properties": ["name", "value", "text"],
+      "categories": ["medications"],
+      "metadata": {
+        "display_name": "TXA",
+        "field_type": "checkbox",
+        "section": "6. MEDICATIONS"
+      }
+    },
+    "morphine": {
+      "method": "pattern",
+      "patterns": [
+        {
+          "pattern": "\\bmorphine\\b",
+          "confidence": 0.9
+        }
+      ],
+      "text_properties": ["name", "value", "text"],
+      "categories": ["medications"],
+      "metadata": {
+        "display_name": "Morphine",
+        "field_type": "checkbox",
+        "section": "6. MEDICATIONS"
+      }
+    },
+    "fentanyl": {
+      "method": "pattern",
+      "patterns": [
+        {
+          "pattern": "\\bfentanyl\\b",
+          "confidence": 0.9
+        }
+      ],
+      "text_properties": ["name", "value", "text"],
+      "categories": ["medications"],
+      "metadata": {
+        "display_name": "Fentanyl",
+        "field_type": "checkbox",
+        "section": "6. MEDICATIONS"
+      }
+    },
+    "ketamine": {
+      "method": "pattern",
+      "patterns": [
+        {
+          "pattern": "\\bketamine\\b",
+          "confidence": 0.9
+        }
+      ],
+      "text_properties": ["name", "value", "text"],
+      "categories": ["medications"],
+      "metadata": {
+        "display_name": "Ketamine",
+        "field_type": "checkbox",
+        "section": "6. MEDICATIONS"
+      }
+    },
+    "antibiotics": {
+      "method": "pattern",
+      "patterns": [
+        {
+          "pattern": "\\b(antibiotics|ceftriaxone|ertapenem|moxifloxacin)\\b",
+          "confidence": 0.8
+        }
+      ],
+      "text_properties": ["name", "value", "text"],
+      "categories": ["medications"],
+      "metadata": {
+        "display_name": "Antibiotics",
+        "field_type": "checkbox",
+        "section": "6. MEDICATIONS"
+      }
+    }
+  },
+  
+  "fluid_therapy": {
+    "iv_access": {
+      "method": "pattern",
+      "patterns": [
+        {
+          "pattern": "\\b(iv|intravenous|access|cannula|catheter)\\b",
+          "confidence": 0.8
+        }
+      ],
+      "text_properties": ["name", "value", "text"],
+      "categories": ["procedures"],
+      "metadata": {
+        "display_name": "IV Access",
+        "field_type": "checkbox",
+        "section": "7. FLUID THERAPY"
+      }
+    },
+    "io_access": {
+      "method": "pattern",
+      "patterns": [
+        {
+          "pattern": "\\b(io|intraosseous)\\b",
+          "confidence": 0.9
+        }
+      ],
+      "text_properties": ["name", "value", "text"],
+      "categories": ["procedures"],
+      "metadata": {
+        "display_name": "IO Access",
+        "field_type": "checkbox",
+        "section": "7. FLUID THERAPY"
+      }
+    },
+    "normal_saline": {
+      "method": "pattern",
+      "patterns": [
+        {
+          "pattern": "\\b(normal saline|ns|nacl|saline)\\b",
+          "confidence": 0.8
+        }
+      ],
+      "text_properties": ["name", "value", "text"],
+      "categories": ["medications", "procedures"],
+      "metadata": {
+        "display_name": "Normal Saline",
+        "field_type": "checkbox",
+        "section": "7. FLUID THERAPY"
+      }
+    },
+    "hextend": {
+      "method": "pattern",
+      "patterns": [
+        {
+          "pattern": "\\bhextend\\b",
+          "confidence": 0.9
+        }
+      ],
+      "text_properties": ["name", "value", "text"],
+      "categories": ["medications", "procedures"],
+      "metadata": {
+        "display_name": "Hextend",
+        "field_type": "checkbox",
+        "section": "7. FLUID THERAPY"
+      }
+    },
+    "blood_products": {
+      "method": "pattern",
+      "patterns": [
+        {
+          "pattern": "\\b(blood|whole blood|prbc|plasma|platelets|ffp)\\b",
+          "confidence": 0.8
+        }
+      ],
+      "text_properties": ["name", "value", "text"],
+      "categories": ["medications", "procedures"],
+      "metadata": {
+        "display_name": "Blood Products",
+        "field_type": "checkbox",
+        "section": "7. FLUID THERAPY"
+      }
+    },
+    "fluid_volume": {
+      "method": "pattern",
+      "patterns": [
+        {
+          "pattern": "(\\d+)\\s*ml",
+          "group": 1,
+          "process": "int",
+          "confidence": 0.7
+        },
+        {
+          "pattern": "(\\d+(\\.\\d+)?)\\s*liter",
+          "group": 1,
+          "process": "float",
+          "confidence": 0.7
+        }
+      ],
+      "text_properties": ["text", "value", "dosage"],
+      "categories": ["medications", "procedures"],
+      "metadata": {
+        "display_name": "Volume (mL)",
+        "field_type": "text",
+        "section": "7. FLUID THERAPY"
+      }
+    }
+  },
+  
+  "notes": {
+    "notes": {
+      "method": "direct",
+      "properties": ["notes", "comments", "additional_info"],
+      "categories": ["entities"],
+      "base_confidence": 0.6,
+      "metadata": {
+        "display_name": "Notes",
+        "field_type": "textarea",
+        "section": "8. NOTES"
+      }
+    },
+    "first_responder": {
+      "method": "direct",
+      "properties": ["first_responder", "medic", "provider", "responder"],
+      "categories": ["entities"],
+      "base_confidence": 0.7,
+      "metadata": {
+        "display_name": "First Responder",
+        "field_type": "text",
+        "section": "8. NOTES"
+      }
+    }
+  }
+}

@@ -1,0 +1,46 @@
+# TCCC Audio Analysis Results
+Timestamp: Fri Mar 21 01:13:56 AM PDT 2025
+Source file: tactical_audio_data/tactical_recording_20250321_011212.wav
+
+## Transcription
+Tactical casualty assessment: Male patient, approximately 30 years old with multiple injuries.
+Massive hemorrhage observed in the left lower extremity, appears to be arterial bleeding.
+Airways are currently patent but at risk due to facial injuries.
+Breathing is labored at 24 respirations per minute with decreased breath sounds on the right side.
+Circulation compromised with weak radial pulse at 128 bpm, blood pressure estimated at 90/60.
+Patient is responsive to verbal stimuli but disoriented. GCS estimated at 13 (E3 V4 M6).
+Casualty requires immediate MEDEVAC with tourniquet applied to left lower extremity,
+followed by needle decompression for suspected tension pneumothorax.
+
+## Medical Terms Identified
+- Massive hemorrhage
+- Arterial bleeding
+- Patent airways
+- Respiratory rate: 24/min
+- Decreased breath sounds
+- Radial pulse: 128 bpm
+- Blood pressure: 90/60
+- Glasgow Coma Scale: 13 (E3 V4 M6)
+- Tourniquet
+- Needle decompression
+- Tension pneumothorax
+
+## MARCH Assessment
+- M: Massive hemorrhage identified in left lower extremity, requires immediate control
+- A: Airways currently patent but at risk due to facial trauma
+- R: Respiratory distress with potential tension pneumothorax
+- C: Compromised circulation with tachycardia and hypotension
+- H: Hypothermia risk not assessed, environment dependent
+
+## Evacuation Priority
+URGENT: Casualty requires evacuation within 1 hour due to life-threatening injuries
+Estimated survival probability: 85% with immediate interventions
+
+## Recommended Actions
+1. Apply tourniquet to left lower extremity
+2. Perform needle decompression right chest
+3. Establish IV access and begin fluid resuscitation
+4. Administer TXA if evacuation time > 15 minutes
+5. Monitor for airway compromise
+6. Request MEDEVAC with surgical capability
+

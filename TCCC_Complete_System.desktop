@@ -1,0 +1,10 @@
+[Desktop Entry]
+Type=Application
+Name=TCCC Complete System
+Comment=Full Speech-to-Text-to-Analysis Pipeline
+Exec=bash -c "cd /home/ama/tccc-project && ./tccc_full_demo_console.sh"
+Icon=/home/ama/tccc-project/images/blue_logo.png
+Terminal=true
+Categories=Medical;Science;
+StartupNotify=true
+Keywords=TCCC;speech;medical;

@@ -1,0 +1,188 @@
+# Audio Pipeline Configuration
+
+# Audio capture settings
+audio:
+  # Sample rate in Hz (16000 recommended for speech recognition)
+  sample_rate: 16000
+  
+  # Number of channels (1 for mono, 2 for stereo)
+  channels: 1
+  
+  # Sample format (int16, int32, float32)
+  format: "int16"
+  
+  # Chunk size in frames for input
+  chunk_size: 1024
+  
+  # Chunk size for processing (FFT, etc.)
+  # Should match requirements of processing algorithms
+  process_chunk_size: 2048
+  
+  # Chunk size for output to downstream components
+  # Should match the expected input size of the STT engine
+  output_chunk_size: 16000
+  
+  # Buffer size in chunks
+  buffer_size: 10
+  
+  # Format for internal processing (int16, float32)
+  process_format: "float32"
+  
+  # Format for output to downstream components
+  output_format: "float32"
+
+# Noise reduction settings
+noise_reduction:
+  # Enable noise reduction
+  enabled: true
+  
+  # Noise reduction strength (0.0 - 1.0)
+  strength: 0.7
+  
+  # Spectral gating threshold
+  threshold_db: -20
+  
+  # Smoothing factor
+  smoothing: 0.05
+
+# Audio enhancement settings
+enhancement:
+  # Enable audio enhancement
+  enabled: true
+  
+  # Gain normalization target level
+  target_level_db: -16
+  
+  # Compression settings
+  compression:
+    threshold_db: -24
+    ratio: 4.0
+    attack_ms: 5
+    release_ms: 50
+
+# Voice activity detection
+vad:
+  # Enable voice activity detection
+  enabled: true
+  
+  # Sensitivity (0-3, higher is more sensitive)
+  sensitivity: 2
+  
+  # Frame duration in ms
+  frame_duration_ms: 30
+  
+  # Minimum speech duration in ms
+  min_speech_duration_ms: 100
+  
+  # Padding duration in ms (before and after detected speech)
+  padding_duration_ms: 300
+
+# Battlefield-specific noise filtering (new)
+battlefield_filtering:
+  # Enable battlefield-specific filtering
+  enabled: true
+  
+  # Use outdoor mode (more aggressive filtering for outdoor environments)
+  outdoor_mode: true
+  
+  # Filter gunshot-like sounds
+  transient_protection: true
+  
+  # Compensate for varying distances
+  distance_compensation: true
+  
+  # Adapt to environment over time
+  environmental_adaptation: true
+  
+  # Acoustic model for battlefield conditions
+  acoustic_models:
+    # Threshold for transient detection (dB)
+    transient_threshold_db: 15
+    
+    # Wind reduction strength (0.0-1.0)
+    wind_reduction_strength: 0.85
+
+# Voice isolation (new)
+voice_isolation:
+  # Enable voice isolation
+  enabled: true
+  
+  # Voice isolation strength (0.0-1.0)
+  strength: 0.8
+  
+  # Focus width (Hz) - controls how focused the voice enhancement is
+  focus_width: 200
+  
+  # Voice boost (dB) - additional gain for voice frequencies
+  voice_boost_db: 6
+
+# Hardware acceleration settings for Jetson Orin Nano
+hardware:
+  # Enable hardware acceleration
+  enable_acceleration: true
+  
+  # CUDA device ID (-1 for CPU only)
+  cuda_device: 0
+  
+  # Use TensorRT optimization
+  use_tensorrt: true
+  
+  # CUDA stream options
+  cuda_streams: 2
+  
+  # Mixed precision inference
+  mixed_precision: true
+
+# Input/output settings
+io:
+  # Audio input sources available
+  input_sources:
+    - name: "default_microphone"
+      type: "microphone"
+      device_id: 0
+    
+    - name: "voip"
+      type: "network"
+      host: "127.0.0.1"
+      port: 5060
+      protocol: "sip"
+    
+    - name: "test_file"
+      type: "file"
+      path: "test_data/sample_call.wav"
+  
+  # Default input source
+  default_input: "default_microphone"
+  
+  # Output streaming settings
+  stream_output:
+    buffer_size: 5
+    timeout_ms: 100
+
+# Chunk size management
+chunk_management:
+  # Enable automatic chunk size management
+  enabled: true
+  
+  # Allow overlapping windows (useful for FFT-based processing)
+  overlapping_windows: true
+  
+  # Overlap percentage (0.0-1.0)
+  overlap_percent: 0.25
+  
+  # Buffer prefill level before starting output
+  buffer_prefill_ms: 500
+  
+  # Maximum buffer size in ms 
+  max_buffer_ms: 5000
+  
+  # Optimize chunk sizes for specific processing tasks
+  optimized_sizes:
+    # FFT processing (should be power of 2)
+    fft: 2048
+    
+    # VAD processing (should match frame duration)
+    vad: 480  # 30ms at 16kHz
+    
+    # STT processing (should be large enough for meaningful recognition)
+    stt: 16000  # 1 second at 16kHz

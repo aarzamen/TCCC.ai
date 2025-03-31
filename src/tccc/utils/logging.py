@@ -195,9 +195,9 @@ class ContextLogger:
         """Log a warning message with context."""
         self.logger.warning(self._format_message(msg, context))
     
-    def error(self, msg: str, context: Optional[Dict[str, Any]] = None):
+    def error(self, msg: str, context: Optional[Dict[str, Any]] = None, exc_info=False):
         """Log an error message with context."""
-        self.logger.error(self._format_message(msg, context))
+        self.logger.error(self._format_message(msg, context), exc_info=exc_info)
     
     def critical(self, msg: str, context: Optional[Dict[str, Any]] = None):
         """Log a critical message with context."""

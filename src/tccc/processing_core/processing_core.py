@@ -2,7 +2,8 @@
 Processing Core module for TCCC.ai system.
 
 This module implements the main Processing Core component of the TCCC.ai system.
-Includes module registration system with dependency tracking.
+Includes module registration system with dependency tracking and event-based
+communication with other system components.
 """
 
 import asyncio
@@ -15,6 +16,11 @@ import networkx as nx
 
 from tccc.utils.logging import get_logger
 from tccc.utils.config import Config
+from tccc.utils.event_schema import (
+    BaseEvent, EventType, ErrorSeverity, TranscriptionEvent, 
+    ProcessedTextEvent, ErrorEvent, create_event
+)
+from tccc.utils.event_bus import get_event_bus
 from tccc.processing_core.entity_extractor import EntityExtractor, Entity
 from tccc.processing_core.intent_classifier import IntentClassifier, Intent
 from tccc.processing_core.sentiment_analyzer import SentimentAnalyzer, SentimentAnalysis
@@ -251,8 +257,298 @@ class ProcessingCore:
         self.conversation_lock = threading.RLock()
         self.module_lock = threading.RLock()
         
+        # Event bus
+        self.event_bus = None
+        self.session_id = None
+        self.sequence_counter = 0
+        
         # Current operational state
         self.operational_state = ModuleState.UNINITIALIZED
+    
+    def _get_event_bus(self):
+        """Get the event bus singleton instance."""
+        if not self.event_bus:
+            self.event_bus = get_event_bus()
+        return self.event_bus
+    
+    def _get_next_sequence(self) -> int:
+        """Get the next sequence number for events."""
+        self.sequence_counter += 1
+        return self.sequence_counter
+    
+    def subscribe_to_transcription_events(self) -> bool:
+        """
+        Subscribe to transcription events from the STT engine.
+        
+        Returns:
+            Success status
+        """
+        try:
+            event_bus = self._get_event_bus()
+            success = event_bus.subscribe(
+                subscriber="processing_core",
+                event_types=[EventType.TRANSCRIPTION],
+                callback=self._handle_transcription_event
+            )
+            
+            if success:
+                logger.info("Processing Core subscribed to transcription events")
+            else:
+                logger.error("Failed to subscribe to transcription events")
+                
+            return success
+        except Exception as e:
+            logger.error(f"Error subscribing to transcription events: {e}")
+            return False
+    
+    def _handle_transcription_event(self, event: BaseEvent) -> None:
+        """
+        Handle incoming transcription events from the STT engine.
+        
+        Args:
+            event: The transcription event
+        """
+        if not self.initialized:
+            logger.warning("Processing Core received event before initialization")
+            return
+            
+        try:
+            # Only handle transcription events
+            if event.type != EventType.TRANSCRIPTION.value:
+                return
+                
+            logger.debug(f"Processing Core received transcription event: {event.data.get('text', '')[:30]}...")
+            
+            # Extract event data
+            text = event.data.get("text", "")
+            segments = event.data.get("segments", [])
+            language = event.data.get("language", "en")
+            confidence = event.data.get("confidence", 0.0)
+            is_partial = event.data.get("is_partial", False)
+            
+            # Skip partial results if configured to do so
+            if is_partial and hasattr(self, 'skip_partial_results') and self.skip_partial_results:
+                return
+                
+            # Create TranscriptionSegment
+            segment = TranscriptionSegment(
+                text=text,
+                confidence=confidence,
+                is_final=not is_partial,
+                metadata={
+                    "language": language,
+                    "segments": segments,
+                    "session_id": event.session_id,
+                    "sequence": event.sequence,
+                    "source": event.source
+                }
+            )
+            
+            # Process via existing method (async handling)
+            asyncio.create_task(self._process_transcription_event(segment, event.session_id))
+                
+        except Exception as e:
+            logger.error(f"Error handling transcription event: {e}")
+            self._emit_error_event(
+                error_code="PROCESSING_ERROR",
+                message=f"Error processing transcription: {e}",
+                severity=ErrorSeverity.ERROR,
+                session_id=event.session_id if hasattr(event, 'session_id') else None
+            )
+    
+    async def _process_transcription_event(self, segment: TranscriptionSegment, session_id: str) -> None:
+        """
+        Process a transcription event asynchronously and emit results.
+        
+        Args:
+            segment: The transcription segment to process
+            session_id: The session ID from the original event
+        """
+        try:
+            # Process the transcription using the existing method
+            processed_segment = await self.processTranscription(segment)
+            
+            # Emit processed text event with the results
+            self._emit_processed_text_event(
+                processed_segment=processed_segment,
+                session_id=session_id
+            )
+            
+        except Exception as e:
+            logger.error(f"Error in async transcription processing: {e}")
+            self._emit_error_event(
+                error_code="ASYNC_PROCESSING_ERROR",
+                message=f"Error in async transcription processing: {e}",
+                severity=ErrorSeverity.ERROR,
+                session_id=session_id
+            )
+    
+    def _emit_processed_text_event(self, processed_segment: ProcessedSegment, session_id: Optional[str] = None) -> bool:
+        """
+        Emit a processed text event.
+        
+        Args:
+            processed_segment: The processed segment with analysis results
+            session_id: Optional session ID for correlation
+            
+        Returns:
+            Success status
+        """
+        try:
+            # Prepare entities for event
+            entities = []
+            if processed_segment.entities:
+                for entity in processed_segment.entities:
+                    entities.append({
+                        "text": entity.text,
+                        "entity_type": entity.entity_type,
+                        "start": entity.start,
+                        "end": entity.end,
+                        "confidence": entity.confidence,
+                        "metadata": entity.metadata
+                    })
+            
+            # Prepare intents for event
+            intents = []
+            if processed_segment.intents:
+                for intent in processed_segment.intents:
+                    intents.append({
+                        "intent_type": intent.intent_type,
+                        "confidence": intent.confidence,
+                        "metadata": intent.metadata
+                    })
+            
+            # Prepare sentiment for event
+            sentiment = None
+            if processed_segment.sentiment:
+                sentiment = {
+                    "sentiment": processed_segment.sentiment.sentiment,
+                    "score": processed_segment.sentiment.score,
+                    "components": processed_segment.sentiment.components
+                }
+            
+            # Create and emit event
+            event_bus = self._get_event_bus()
+            event = ProcessedTextEvent(
+                source="processing_core",
+                text=processed_segment.text,
+                entities=entities,
+                intent={"intents": intents, "primary": intents[0]["intent_type"] if intents else "unknown"},
+                sentiment=sentiment,
+                metadata=processed_segment.metadata,
+                session_id=session_id or str(time.time()),
+                sequence=self._get_next_sequence()
+            )
+            
+            success = event_bus.publish(event)
+            
+            if not success:
+                logger.warning("Failed to publish processed text event")
+                
+            return success
+            
+        except Exception as e:
+            logger.error(f"Error emitting processed text event: {e}")
+            self._emit_error_event(
+                error_code="EVENT_EMISSION_ERROR",
+                message=f"Error emitting processed text event: {e}",
+                severity=ErrorSeverity.ERROR,
+                session_id=session_id
+            )
+            return False
+    
+    def _emit_error_event(self, error_code: str, message: str, 
+                         severity: ErrorSeverity = ErrorSeverity.ERROR,
+                         session_id: Optional[str] = None) -> bool:
+        """
+        Emit an error event.
+        
+        Args:
+            error_code: Error code
+            message: Error message
+            severity: Error severity
+            session_id: Optional session ID for correlation
+            
+        Returns:
+            Success status
+        """
+        try:
+            event_bus = self._get_event_bus()
+            event = ErrorEvent(
+                source="processing_core",
+                error_code=error_code,
+                message=message,
+                severity=severity,
+                component="processing_core",
+                recoverable=True,
+                session_id=session_id or self.session_id,
+                sequence=self._get_next_sequence()
+            )
+            
+            return event_bus.publish(event)
+        except Exception as e:
+            logger.error(f"Error emitting error event: {e}")
+            return False
+    
+    def _emit_system_status_event(self, state: str) -> bool:
+        """
+        Emit a system status event.
+        
+        Args:
+            state: Current system state
+            
+        Returns:
+            Success status
+        """
+        try:
+            # Gather component status
+            component_status = {}
+            for name, info in self.modules.items():
+                component_status[name] = {
+                    "state": info.state.name,
+                    "last_updated": info.last_state_change
+                }
+            
+            # Gather resource usage
+            resource_usage = {}
+            if self.resource_monitor:
+                resource_usage = {
+                    "cpu": self.resource_monitor.get_cpu_usage(),
+                    "memory": self.resource_monitor.get_memory_usage(),
+                    "concurrent_tasks": self.current_concurrent_tasks if hasattr(self, 'current_concurrent_tasks') else 1
+                }
+            
+            # Create and emit event
+            event_bus = self._get_event_bus()
+            event = create_event(
+                event_type=EventType.SYSTEM_STATUS,
+                source="processing_core",
+                state=state,
+                components=component_status,
+                resources=resource_usage,
+                metadata={
+                    "module_count": len(self.modules),
+                    "conversation_count": len(self.conversations),
+                    "uptime_seconds": time.time() - self.metrics.last_reset_time if hasattr(self.metrics, 'last_reset_time') else 0
+                },
+                session_id=self.session_id,
+                sequence=self._get_next_sequence()
+            )
+            
+            success = event_bus.publish(event)
+            if not success:
+                logger.warning("Failed to publish system status event")
+                
+            return success
+            
+        except Exception as e:
+            logger.error(f"Error emitting system status event: {e}")
+            self._emit_error_event(
+                error_code="STATUS_EVENT_ERROR",
+                message=f"Error emitting system status event: {e}",
+                severity=ErrorSeverity.WARNING
+            )
+            return False
     
     def register_module(self, name: str, module_type: str, instance: Any, 
                         dependencies: List[str] = None, config: Dict[str, Any] = None) -> bool:
@@ -406,6 +702,10 @@ class ProcessingCore:
             # Update operational state
             self.operational_state = ModuleState.INITIALIZING
             
+            # Initialize event bus connection and create session ID
+            self.event_bus = self._get_event_bus()
+            self.session_id = f"processing_core_{int(time.time())}"
+            
             # Initialize resource monitor first
             resource_config = config.get("resource_management", {})
             self.resource_monitor = ResourceMonitor(resource_config)
@@ -493,6 +793,19 @@ class ProcessingCore:
             self.min_concurrent_tasks = 1
             self.current_concurrent_tasks = self.max_concurrent_tasks
             
+            # Configure event handling
+            self.skip_partial_results = config.get("general", {}).get("skip_partial_results", True)
+            
+            # Subscribe to transcription events
+            event_handling_enabled = config.get("event_handling", {}).get("enabled", True)
+            if event_handling_enabled:
+                success = self.subscribe_to_transcription_events()
+                if not success:
+                    logger.warning("Failed to subscribe to transcription events, will use direct method calls")
+            
+            # Publish initialization event
+            self._emit_system_status_event(state="initialized")
+            
             self.initialized = True
             self.operational_state = ModuleState.READY
             logger.info("Processing Core initialized successfully")
@@ -501,6 +814,18 @@ class ProcessingCore:
         except Exception as e:
             logger.error(f"Failed to initialize Processing Core: {str(e)}")
             self.operational_state = ModuleState.ERROR
+            
+            # Emit error event for initialization failure
+            try:
+                self._emit_error_event(
+                    error_code="INIT_FAILED",
+                    message=f"Processing Core initialization failed: {e}",
+                    severity=ErrorSeverity.CRITICAL
+                )
+            except Exception:
+                # If error event emission fails, just log it
+                pass
+                
             return False
     
     def _on_resource_update(self, usage, *args, **kwargs):
@@ -1036,11 +1361,13 @@ class ProcessingCore:
         Get the current status of the processing core.
         
         Returns:
-            A dictionary with status information.
+            A dictionary with status information (using ModuleState enum for 'status').
         """
         if not self.initialized:
-            return {"status": "not_initialized", "initialized": False}
-            
+            # Use the internal operational_state if available, otherwise UNINITIALIZED
+            state = self.operational_state if hasattr(self, 'operational_state') else ModuleState.UNINITIALIZED
+            return {"status": state, "initialized": False}
+        
         try:
             # Get module status
             module_status = self.get_module_status()
@@ -1050,9 +1377,9 @@ class ProcessingCore:
             
             # Build status dictionary
             status = {
-                "status": "ok",
+                "status": self.operational_state, # Use the internal state directly
                 "initialized": self.initialized,
-                "operational_state": self.operational_state.name,
+                "operational_state_name": self.operational_state.name, # Keep name for reference if needed
                 "modules": module_status,
                 "metrics": metrics,
                 "conversation_count": len(self.conversations),
@@ -1064,10 +1391,10 @@ class ProcessingCore:
         except Exception as e:
             logger.error(f"Error getting processing core status: {e}")
             return {
-                "status": "error",
+                "status": ModuleState.ERROR, # Use Enum member for error
                 "initialized": self.initialized,
                 "error": str(e),
-                "operational_state": self.operational_state.name if hasattr(self, 'operational_state') else "UNKNOWN"
+                "operational_state_name": self.operational_state.name if hasattr(self, 'operational_state') else "UNKNOWN"
             }
     
     def shutdown(self):
@@ -1077,6 +1404,20 @@ class ProcessingCore:
         """
         logger.info("Shutting down Processing Core")
         self.operational_state = ModuleState.SHUTDOWN
+        
+        # Emit shutdown status event 
+        try:
+            self._emit_system_status_event(state="shutting_down")
+        except Exception as e:
+            logger.error(f"Error emitting shutdown status event: {e}")
+        
+        # Unsubscribe from events
+        if self.event_bus:
+            try:
+                self.event_bus.unsubscribe(subscriber="processing_core")
+                logger.info("Unsubscribed from all events")
+            except Exception as e:
+                logger.error(f"Error unsubscribing from events: {e}")
         
         # Get modules in reverse dependency order
         try:
@@ -1107,6 +1448,16 @@ class ProcessingCore:
                     logger.info(f"Module {module_name} shutdown complete")
                 except Exception as e:
                     logger.error(f"Error shutting down module {module_name}: {str(e)}")
+                    
+                    # Emit error event for module shutdown failure
+                    try:
+                        self._emit_error_event(
+                            error_code="MODULE_SHUTDOWN_ERROR",
+                            message=f"Error shutting down module {module_name}: {e}",
+                            severity=ErrorSeverity.WARNING
+                        )
+                    except Exception:
+                        pass
         
         # For backward compatibility, ensure these are definitely stopped
         if self.resource_monitor:
@@ -1120,6 +1471,26 @@ class ProcessingCore:
                 self.state_manager.stop()
             except Exception as e:
                 logger.error(f"Error stopping state manager: {str(e)}")
+        
+        # Emit final shutdown event
+        try:
+            # Create a final error event
+            event = ErrorEvent(
+                source="processing_core",
+                error_code="SHUTDOWN_COMPLETE",
+                message="Processing Core has shut down",
+                severity=ErrorSeverity.INFO,
+                component="processing_core",
+                recoverable=True,
+                session_id=self.session_id,
+                sequence=self._get_next_sequence()
+            )
+            
+            # Publish directly without using helper method
+            if self.event_bus:
+                self.event_bus.publish(event)
+        except Exception as e:
+            logger.error(f"Error emitting final shutdown event: {e}")
         
         self.initialized = False
         logger.info("Processing Core shutdown complete")

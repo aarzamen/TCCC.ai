@@ -1,0 +1,19 @@
+# FullSubNet Integration Note
+
+This is an offline/placeholder setup for the FullSubNet integration. To complete the setup:
+
+1. When internet access is available, download the pre-trained model:
+   - Visit https://github.com/Audio-WestlakeU/FullSubNet/releases/download/v1.0.0/fullsubnet_best_model_58epochs.pth
+   - Save the file to: fullsubnet_integration/models/fullsubnet_best_model_58epochs.pth
+   - Update the config file to point to this model
+
+2. Install required dependencies:
+   - PyTorch: pip install torch==1.12.0 torchaudio==0.12.0
+   - SoundFile: pip install soundfile
+   - Librosa: pip install librosa
+
+3. Clone the FullSubNet repository:
+   - git clone https://github.com/Audio-WestlakeU/FullSubNet.git fullsubnet
+   - Install it with: pip install -e fullsubnet/
+
+For now, the integration will work in offline/placeholder mode with basic audio processing.

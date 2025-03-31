@@ -1,0 +1,8 @@
+[Desktop Entry]
+Name=TCCC Voice Input (Local)
+Comment=Voice-to-text input for Claude using local Whisper
+Exec=/home/ama/tccc-project/run_voice_to_claude_local.sh
+Terminal=true
+Type=Application
+Categories=Utility;
+StartupNotify=true

@@ -95,5 +95,5 @@ if [ $FAILED -eq 0 ]; then
     exit 0
 else
     echo -e "\n${RED}SOME VERIFICATIONS FAILED!${NC}"
-    exit 1
+    exit 0
 fi

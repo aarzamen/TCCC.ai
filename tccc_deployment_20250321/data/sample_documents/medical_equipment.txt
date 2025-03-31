@@ -1,0 +1,36 @@
+# Medical Equipment for TCCC
+
+## Individual First Aid Kit (IFAK)
+Standard components:
+
+1. Combat Application Tourniquet (CAT)
+2. Hemostatic gauze (Combat Gauze)
+3. Pressure bandage
+4. Nasopharyngeal airway
+5. Chest seal
+6. Surgical tape
+7. Trauma shears
+8. Gloves
+9. Casualty card
+
+## Medical Operator Kit
+Advanced components:
+
+1. Backup tourniquets
+2. Additional hemostatic agents
+3. Intravenous access supplies
+4. Fluid bags (Hextend, NS)
+5. Chest decompression needle
+6. Advanced airway equipment
+7. Surgical cricothyroidotomy kit
+8. Medication module
+9. Hypothermia prevention kit
+
+## Evacuation Equipment
+For casualty movement:
+
+1. Tactical litters
+2. Poleless litters
+3. Improvised carrying devices
+4. SKEDCO rescue system
+5. Casualty drag straps

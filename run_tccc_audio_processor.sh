@@ -21,6 +21,11 @@ echo "3. View previous analysis results"
 echo "4. Exit"
 read -p "> " CHOICE
 
+# Default to 1 if no input provided
+if [ -z "$CHOICE" ]; then
+    CHOICE=1
+fi
+
 case $CHOICE in
     1)
         ./capture_tactical_audio.sh
@@ -46,17 +51,27 @@ case $CHOICE in
         
         echo -e "${BLUE}Select a result file to view:${NC}"
         for i in "${!RESULTS[@]}"; do
-            echo "$((i+1)). ${RESULTS[$i]}"
+            # Extract timestamp from filename for better display
+            FILENAME=$(basename "${RESULTS[$i]}")
+            TIMESTAMP=$(echo $FILENAME | sed 's/tactical_analysis_\(.*\)\.txt/\1/')
+            echo "$((i+1)). Analysis from $TIMESTAMP"
         done
         
         read -p "> " RESULT_CHOICE
+        # Default to 1 if empty
+        if [ -z "$RESULT_CHOICE" ]; then
+            RESULT_CHOICE=1
+        fi
+        
         if [ "$RESULT_CHOICE" -gt 0 ] && [ "$RESULT_CHOICE" -le "${#RESULTS[@]}" ]; then
             SELECTED=${RESULTS[$((RESULT_CHOICE-1))]}
-            if command -v less &> /dev/null; then
-                less "$SELECTED"
-            else
-                cat "$SELECTED"
-            fi
+            echo -e "${GREEN}Displaying: ${SELECTED}${NC}"
+            echo
+            # Simply use cat for display in terminal
+            cat "$SELECTED"
+            echo
+            echo -e "${BLUE}Press Enter to continue...${NC}"
+            read
         else
             echo -e "${RED}Invalid selection.${NC}"
         fi

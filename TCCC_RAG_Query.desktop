@@ -1,0 +1,10 @@
+[Desktop Entry]
+Version=1.0
+Type=Application
+Name=TCCC RAG Query
+Comment=Launch TCCC RAG Query System
+Exec=/home/ama/tccc-project/launch_rag_on_jetson.sh
+Icon=system-search
+Terminal=true
+Categories=Medical;Utility
+Keywords=TCCC;Medical;RAG;Query

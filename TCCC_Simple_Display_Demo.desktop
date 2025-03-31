@@ -1,0 +1,9 @@
+[Desktop Entry]
+Name=TCCC Simple Display Demo
+Comment=Cycles through TCCC display data until touched
+Exec=/home/ama/tccc-project/tccc_simple_display_demo.py
+Terminal=true
+Type=Application
+Categories=Utility;
+Icon=/home/ama/tccc-project/images/blue_logo.png
+StartupNotify=true

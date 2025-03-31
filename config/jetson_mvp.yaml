@@ -1,0 +1,55 @@
+# TCCC.ai Jetson MVP Configuration
+# Optimized for minimal resource usage on edge devices
+
+# System settings
+system:
+  log_level: INFO
+  cache_dir: "data/cache"
+  tmp_dir: "data/tmp"
+
+# Audio settings for Jetson
+audio_pipeline:
+  sample_rate: 16000
+  channels: 1
+  bit_depth: 16
+  chunk_size: 2048
+  vad_enabled: true
+  vad_threshold: 0.5
+  vad_min_speech_duration_ms: 250
+  battlefield_noise_filter: true
+  enhanced_voice_isolation: true
+
+# STT engine settings
+stt_engine:
+  model: "tiny.en"
+  model_path: "models/stt"
+  compute_type: "float16"
+  device: "cuda"
+  beam_size: 1
+  language: "en"
+
+# LLM settings
+llm_analysis:
+  model: "phi-2"
+  model_path: "models/llm/phi-2"
+  quantization: "int8"
+  max_tokens: 256
+  temperature: 0.3
+  device: "cuda"
+
+# Document library settings
+document_library:
+  embedding_model: "all-MiniLM-L6-v2"
+  embedding_model_path: "models/embeddings/all-MiniLM-L6-v2"
+  documents_path: "data/documents"
+  vector_db_path: "data/document_index/document_index.faiss"
+  cache_enabled: true
+  cache_path: "data/query_cache"
+
+# Power and resource management
+power_management:
+  mode: "balanced"
+  max_memory_usage_gb: 6.0
+  cpu_threads: 2
+  enable_monitoring: true
+  monitoring_interval_seconds: 10

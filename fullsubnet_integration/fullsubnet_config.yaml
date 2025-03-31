@@ -1,0 +1,16 @@
+fullsubnet:
+  enabled: true
+  model_path: "fullsubnet_integration/models/fullsubnet_model_placeholder.pth"
+  use_gpu: true
+  sample_rate: 16000
+  batch_size: 1
+  chunk_size: 16000
+  frame_length: 512
+  frame_shift: 256
+  n_fft: 512
+  win_length: 512
+  hop_length: 256
+  normalized_input: true
+  normalized_output: true
+  gpu_acceleration: true
+  fallback_to_cpu: true

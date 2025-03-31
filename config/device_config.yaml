@@ -1,0 +1,22 @@
+# TCCC Device Configuration
+# Generated on: Sat Mar 29 10:21:17 PM PDT 2025
+
+audio:
+  input:
+    device: 0  # Razer Seiren V3 Mini
+    name: "Razer Seiren V3 Mini"
+    fallback_device: 1
+  output:
+    device: "hdmi"
+    name: "HDMI Audio Output"
+    fallback_device: "default"
+  
+display:
+  type: "hdmi"
+  name: "Waveshare HDMI Display"
+  resolution: "1560x720"
+
+hardware:
+  platform: "jetson_nano"
+  memory: "4GB"
+  optimize_for_device: true

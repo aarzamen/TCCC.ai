@@ -1,0 +1,10 @@
+[Desktop Entry]
+Version=1.0
+Type=Application
+Name=TCCC RAG Explorer
+Comment=Comprehensive RAG Testing Tool for TCCC Project
+Exec=bash -c 'cd /home/ama/tccc-project && ./launch_tccc_rag_tool.sh'
+Icon=/home/ama/tccc-project/icons/tccc_rag_icon3.svg
+Terminal=true
+Categories=Development;Medical;TCCC;
+Keywords=RAG;TCCC;Medical;Query;

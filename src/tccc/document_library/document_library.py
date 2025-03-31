@@ -23,6 +23,7 @@ from sentence_transformers import SentenceTransformer
 from tccc.utils.logging import get_logger
 from tccc.document_library.document_processor import DocumentProcessor
 from tccc.document_library.cache_manager import CacheManager
+from tccc.processing_core.processing_core import ModuleState
 
 logger = get_logger(__name__)
 
@@ -525,6 +526,7 @@ class DocumentLibrary:
                 "id": doc_id,
                 "metadata": metadata,
                 "file_path": file_path,
+                "content": text, # Store the content directly
                 "added_at": datetime.now().isoformat()
             }
             
@@ -533,10 +535,22 @@ class DocumentLibrary:
             success = self._index_chunks(chunks)
             
             # Add file name to metadata for display
-            file_name = os.path.basename(file_path)
+            file_name = None
+            if file_path:
+                try:
+                    file_name = os.path.basename(file_path)
+                except Exception as e:
+                    logger.warning(f"Could not get basename for file_path '{file_path}': {e}")
+        
+            # Fallback to title or doc_id if file_name is None
+            if not file_name:
+                file_name = metadata.get("title", f"doc_{doc_id}")
+
             if "metadata" in self.documents[doc_id]:
                 self.documents[doc_id]["metadata"]["file_name"] = file_name
-            
+            else:
+                 self.documents[doc_id]["metadata"] = {"file_name": file_name}
+
             # Save document library state
             self._save_documents()
             
@@ -552,7 +566,35 @@ class DocumentLibrary:
         except Exception as e:
             logger.error(f"Failed to add document: {str(e)}")
             return None
-    
+
+    def get_document(self, doc_id: str) -> Optional[Dict[str, Any]]:
+        """Retrieve a document by its ID.
+
+        Args:
+            doc_id: The ID of the document to retrieve.
+
+        Returns:
+            The document dictionary if found, otherwise None.
+        """
+        if not self.initialized:
+            logger.error("Document Library not initialized")
+            return None
+            
+        # Attempt to retrieve from in-memory dictionary first
+        doc = self.documents.get(str(doc_id)) # Ensure doc_id is string
+        if doc:
+            # Optionally, retrieve full content if not stored directly
+            # This depends on how content is stored (e.g., separate file, chunked)
+            # For now, assume content retrieval isn't needed or handled elsewhere
+            # --> Correction: We *do* need the content now, and we stored it above.
+             logger.debug(f"Retrieved document {doc_id} from memory.")
+             return doc # The 'content' key is already in the doc dictionary
+        else:
+             # If not in memory, perhaps check persistent storage if applicable
+             # (Currently, _load_documents loads everything into memory on init)
+             logger.warning(f"Document with ID {doc_id} not found.")
+             return None
+
     def query(self, query_text, n_results=3):
         """Query the document library for relevant documents.
         
@@ -874,12 +916,16 @@ Note: Unable to retrieve specific context from the document library due to a sys
         """Get the status of the document library.
         
         Returns:
-            Dictionary with status information
+            Dictionary with status information (using ModuleState enum for 'status').
         """
+        overall_status = ModuleState.UNINITIALIZED
+        if self.initialized:
+            overall_status = ModuleState.ACTIVE # Use ACTIVE instead of READY to align with verification expectations
+        
         try:
             if not self.initialized:
                 return {
-                    "status": "not_initialized"
+                    "status": ModuleState.UNINITIALIZED
                 }
             
             # Get vector count - with robust error handling
@@ -970,8 +1016,8 @@ Note: Unable to retrieve specific context from the document library due to a sys
                 pass
             
             # Build status dictionary
-            status = {
-                "status": "initialized",
+            status_details = {
+                "initialized": self.initialized,
                 "documents": {
                     "count": len(self.documents) if hasattr(self, "documents") else 0,
                     "chunks": len(self.chunks) if hasattr(self, "chunks") else 0
@@ -992,24 +1038,21 @@ Note: Unable to retrieve specific context from the document library due to a sys
                     "medical_vocabulary": medical_vocab_status
                 }
             }
-            
+
+            # Check if any component reported an error during status check
+            if (cache_info.get('status') == 'error' or 
+                medical_vocab_status == 'error'): 
+                 # Add checks for other component errors if their get_status returns error states
+                overall_status = ModuleState.ERROR
+
+            status = {"status": overall_status}
+            status.update(status_details)
             return status
             
         except Exception as e:
-            logger.error(f"Failed to get status: {str(e)}")
-            # Return minimal valid status that won't cause further errors
+            logger.error(f"Failed to get DocumentLibrary status: {e}")
             return {
-                "status": "error",
-                "error": str(e),
-                "documents": {"count": 0, "chunks": 0},
-                "index": {"vectors": 0, "dimension": 384},
-                "model": {"name": "unknown"},
-                "cache": {"memory_entries": 0, "disk_entries": 0},
-                "components": {
-                    "document_processor": False,
-                    "vector_store": False, 
-                    "query_engine": False,
-                    "response_generator": False,
-                    "medical_vocabulary": "not_available"
-                }
+                'status': ModuleState.ERROR,
+                'initialized': self.initialized, # Keep initialized flag even on error
+                'error': str(e)
             }

@@ -1,0 +1,9 @@
+[Desktop Entry]
+Type=Application
+Name=TCCC Optimized Voice
+Comment=Run optimized audio-to-text pipeline with caching
+Exec=gnome-terminal -- /home/ama/tccc-project/run_optimized_audio_stt.sh
+Icon=/home/ama/tccc-project/images/blue_logo.png
+Terminal=false
+Categories=Utility;
+StartupNotify=true

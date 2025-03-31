@@ -1,0 +1,1020 @@
+{
+  "input": "Patient is a 28-year-old soldier with blast injuries from an IED explosion approximately 30 minutes ago. Initial assessment shows severe right leg trauma with arterial bleeding now controlled by tourniquet applied at 09:30. Patient also presented with tension pneumothorax which was relieved by needle decompression at 09:35.\n\nCurrent vital signs:\n- BP: 100/60 mmHg\n- HR: 115 bpm\n- RR: 24/min\n- SpO2: 92% on room air\n- GCS: 14 (E4V4M6)\n\nPatient was given 10mg morphine IV at 09:40 for pain management followed by 1g ceftriaxone IV for infection prophylaxis. Two large-bore IVs have been established with Hextend infusing at 100mL/hr.\n\nPatient is conscious but confused and reports chest pain and difficulty breathing. The right leg wound shows exposed bone and significant tissue damage. There is also shrapnel injury to right lateral chest wall.\n\nMEDEVAC has been requested for urgent surgical evacuation.",
+  "entities": [
+    {
+      "type": "procedure",
+      "value": "tourniquet application",
+      "time": "0930 hours",
+      "location": "right thigh",
+      "provider": "Medic 1-2",
+      "outcome": "controlled hemorrhage",
+      "category": "entities",
+      "sequence_metadata": {
+        "position": 0,
+        "confidence": 0.5,
+        "has_timestamp": false,
+        "sequence_score": 0.0
+      }
+    },
+    {
+      "type": "procedure",
+      "value": "needle decompression",
+      "time": "0935 hours",
+      "location": "right chest",
+      "provider": "Medic 1-2",
+      "indication": "suspected tension pneumothorax",
+      "category": "entities",
+      "sequence_metadata": {
+        "position": 1,
+        "confidence": 0.5,
+        "has_timestamp": false,
+        "sequence_score": 0.0
+      }
+    },
+    {
+      "type": "medication",
+      "value": "morphine",
+      "time": "0940 hours",
+      "dosage": "10mg",
+      "route": "IV",
+      "provider": "Medic 1-2",
+      "category": "entities",
+      "sequence_metadata": {
+        "position": 2,
+        "confidence": 0.5,
+        "has_timestamp": false,
+        "sequence_score": 0.0
+      }
+    },
+    {
+      "type": "medication",
+      "value": "ceftriaxone",
+      "time": "0940 hours",
+      "dosage": "1g",
+      "route": "IV",
+      "provider": "Medic 1-2",
+      "category": "entities",
+      "sequence_metadata": {
+        "position": 3,
+        "confidence": 0.5,
+        "has_timestamp": false,
+        "sequence_score": 0.0
+      }
+    },
+    {
+      "type": "procedure",
+      "value": "IV access",
+      "time": "before fluid administration",
+      "details": "two large-bore IVs",
+      "provider": "Medic 1-2",
+      "category": "entities",
+      "sequence_metadata": {
+        "position": 4,
+        "confidence": 0.5,
+        "has_timestamp": false,
+        "sequence_score": 0.0
+      }
+    },
+    {
+      "type": "medication",
+      "value": "Hextend",
+      "time": "after IV access",
+      "rate": "100ml/hour",
+      "route": "IV",
+      "provider": "Medic 1-2",
+      "category": "entities",
+      "sequence_metadata": {
+        "position": 5,
+        "confidence": 0.5,
+        "has_timestamp": false,
+        "sequence_score": 0.0
+      }
+    },
+    {
+      "type": "vital_sign",
+      "parameter": "blood_pressure",
+      "value": "100/60",
+      "time": "initial assessment",
+      "trend": "low",
+      "category": "entities",
+      "sequence_metadata": {
+        "position": 6,
+        "confidence": 0.5,
+        "has_timestamp": false,
+        "sequence_score": 0.0
+      }
+    },
+    {
+      "type": "vital_sign",
+      "parameter": "pulse",
+      "value": "120",
+      "time": "initial assessment",
+      "trend": "elevated",
+      "category": "entities",
+      "sequence_metadata": {
+        "position": 7,
+        "confidence": 0.5,
+        "has_timestamp": false,
+        "sequence_score": 0.0
+      }
+    },
+    {
+      "type": "vital_sign",
+      "parameter": "respiratory_rate",
+      "value": "24",
+      "time": "initial assessment",
+      "category": "entities",
+      "sequence_metadata": {
+        "position": 8,
+        "confidence": 0.5,
+        "has_timestamp": false,
+        "sequence_score": 0.0
+      }
+    },
+    {
+      "type": "vital_sign",
+      "parameter": "oxygen_saturation",
+      "value": "92%",
+      "time": "initial assessment",
+      "category": "entities",
+      "sequence_metadata": {
+        "position": 9,
+        "confidence": 0.5,
+        "has_timestamp": false,
+        "sequence_score": 0.0
+      }
+    },
+    {
+      "type": "vital_sign",
+      "parameter": "gcs",
+      "value": "14",
+      "time": "current",
+      "trend": "improving",
+      "previous": "12",
+      "category": "entities",
+      "sequence_metadata": {
+        "position": 10,
+        "confidence": 0.5,
+        "has_timestamp": false,
+        "sequence_score": 0.0
+      }
+    },
+    {
+      "type": "injury",
+      "body_part": "right leg",
+      "mechanism": "IED blast",
+      "severity": "severe",
+      "details": "significant bleeding from right thigh",
+      "category": "entities",
+      "sequence_metadata": {
+        "position": 11,
+        "confidence": 0.5,
+        "has_timestamp": false,
+        "sequence_score": 0.0
+      }
+    },
+    {
+      "type": "injury",
+      "body_part": "right chest",
+      "condition": "tension pneumothorax",
+      "status": "treated",
+      "treatment": "needle decompression",
+      "category": "entities",
+      "sequence_metadata": {
+        "position": 12,
+        "confidence": 0.5,
+        "has_timestamp": false,
+        "sequence_score": 0.0
+      }
+    },
+    {
+      "type": "diagnosis",
+      "condition": "hypovolemic shock",
+      "evidence": "low blood pressure, elevated heart rate",
+      "treatment": "fluid resuscitation",
+      "status": "improving",
+      "category": "entities",
+      "sequence_metadata": {
+        "position": 13,
+        "confidence": 0.5,
+        "has_timestamp": false,
+        "sequence_score": 0.0
+      }
+    },
+    {
+      "type": "procedure",
+      "value": "tourniquet application",
+      "time": "0930 hours",
+      "location": "right thigh",
+      "provider": "Medic 1-2",
+      "outcome": "controlled hemorrhage",
+      "category": "temporal",
+      "sequence_metadata": {
+        "position": 14,
+        "confidence": 0.5,
+        "has_timestamp": false,
+        "sequence_score": 0.0
+      }
+    },
+    {
+      "type": "procedure",
+      "value": "needle decompression",
+      "time": "0935 hours",
+      "location": "right chest",
+      "provider": "Medic 1-2",
+      "indication": "suspected tension pneumothorax",
+      "category": "temporal",
+      "sequence_metadata": {
+        "position": 15,
+        "confidence": 0.5,
+        "has_timestamp": false,
+        "sequence_score": 0.0
+      }
+    },
+    {
+      "type": "medication",
+      "value": "morphine",
+      "time": "0940 hours",
+      "dosage": "10mg",
+      "route": "IV",
+      "provider": "Medic 1-2",
+      "category": "temporal",
+      "sequence_metadata": {
+        "position": 16,
+        "confidence": 0.5,
+        "has_timestamp": false,
+        "sequence_score": 0.0
+      }
+    },
+    {
+      "type": "medication",
+      "value": "ceftriaxone",
+      "time": "0940 hours",
+      "dosage": "1g",
+      "route": "IV",
+      "provider": "Medic 1-2",
+      "category": "temporal",
+      "sequence_metadata": {
+        "position": 17,
+        "confidence": 0.5,
+        "has_timestamp": false,
+        "sequence_score": 0.0
+      }
+    },
+    {
+      "type": "procedure",
+      "value": "IV access",
+      "time": "before fluid administration",
+      "details": "two large-bore IVs",
+      "provider": "Medic 1-2",
+      "category": "temporal",
+      "sequence_metadata": {
+        "position": 18,
+        "confidence": 0.5,
+        "has_timestamp": false,
+        "sequence_score": 0.0
+      }
+    },
+    {
+      "type": "medication",
+      "value": "Hextend",
+      "time": "after IV access",
+      "rate": "100ml/hour",
+      "route": "IV",
+      "provider": "Medic 1-2",
+      "category": "temporal",
+      "sequence_metadata": {
+        "position": 19,
+        "confidence": 0.5,
+        "has_timestamp": false,
+        "sequence_score": 0.0
+      }
+    },
+    {
+      "type": "vital_sign",
+      "parameter": "blood_pressure",
+      "value": "100/60",
+      "time": "initial assessment",
+      "trend": "low",
+      "category": "temporal",
+      "sequence_metadata": {
+        "position": 20,
+        "confidence": 0.5,
+        "has_timestamp": false,
+        "sequence_score": 0.0
+      }
+    },
+    {
+      "type": "vital_sign",
+      "parameter": "pulse",
+      "value": "120",
+      "time": "initial assessment",
+      "trend": "elevated",
+      "category": "temporal",
+      "sequence_metadata": {
+        "position": 21,
+        "confidence": 0.5,
+        "has_timestamp": false,
+        "sequence_score": 0.0
+      }
+    },
+    {
+      "type": "vital_sign",
+      "parameter": "respiratory_rate",
+      "value": "24",
+      "time": "initial assessment",
+      "category": "temporal",
+      "sequence_metadata": {
+        "position": 22,
+        "confidence": 0.5,
+        "has_timestamp": false,
+        "sequence_score": 0.0
+      }
+    },
+    {
+      "type": "vital_sign",
+      "parameter": "oxygen_saturation",
+      "value": "92%",
+      "time": "initial assessment",
+      "category": "temporal",
+      "sequence_metadata": {
+        "position": 23,
+        "confidence": 0.5,
+        "has_timestamp": false,
+        "sequence_score": 0.0
+      }
+    },
+    {
+      "type": "vital_sign",
+      "parameter": "gcs",
+      "value": "14",
+      "time": "current",
+      "trend": "improving",
+      "previous": "12",
+      "category": "temporal",
+      "sequence_metadata": {
+        "position": 24,
+        "confidence": 0.5,
+        "has_timestamp": false,
+        "sequence_score": 0.0
+      }
+    },
+    {
+      "type": "injury",
+      "body_part": "right leg",
+      "mechanism": "IED blast",
+      "severity": "severe",
+      "details": "significant bleeding from right thigh",
+      "category": "temporal",
+      "sequence_metadata": {
+        "position": 25,
+        "confidence": 0.5,
+        "has_timestamp": false,
+        "sequence_score": 0.0
+      }
+    },
+    {
+      "type": "injury",
+      "body_part": "right chest",
+      "condition": "tension pneumothorax",
+      "status": "treated",
+      "treatment": "needle decompression",
+      "category": "temporal",
+      "sequence_metadata": {
+        "position": 26,
+        "confidence": 0.5,
+        "has_timestamp": false,
+        "sequence_score": 0.0
+      }
+    },
+    {
+      "type": "diagnosis",
+      "condition": "hypovolemic shock",
+      "evidence": "low blood pressure, elevated heart rate",
+      "treatment": "fluid resuscitation",
+      "status": "improving",
+      "category": "temporal",
+      "sequence_metadata": {
+        "position": 27,
+        "confidence": 0.5,
+        "has_timestamp": false,
+        "sequence_score": 0.0
+      }
+    },
+    {
+      "type": "procedure",
+      "value": "tourniquet application",
+      "time": "0930 hours",
+      "location": "right thigh",
+      "provider": "Medic 1-2",
+      "outcome": "controlled hemorrhage",
+      "category": "vitals",
+      "sequence_metadata": {
+        "position": 28,
+        "confidence": 0.5,
+        "has_timestamp": false,
+        "sequence_score": 0.0
+      }
+    },
+    {
+      "type": "procedure",
+      "value": "needle decompression",
+      "time": "0935 hours",
+      "location": "right chest",
+      "provider": "Medic 1-2",
+      "indication": "suspected tension pneumothorax",
+      "category": "vitals",
+      "sequence_metadata": {
+        "position": 29,
+        "confidence": 0.5,
+        "has_timestamp": false,
+        "sequence_score": 0.0
+      }
+    },
+    {
+      "type": "medication",
+      "value": "morphine",
+      "time": "0940 hours",
+      "dosage": "10mg",
+      "route": "IV",
+      "provider": "Medic 1-2",
+      "category": "vitals",
+      "sequence_metadata": {
+        "position": 30,
+        "confidence": 0.5,
+        "has_timestamp": false,
+        "sequence_score": 0.0
+      }
+    },
+    {
+      "type": "medication",
+      "value": "ceftriaxone",
+      "time": "0940 hours",
+      "dosage": "1g",
+      "route": "IV",
+      "provider": "Medic 1-2",
+      "category": "vitals",
+      "sequence_metadata": {
+        "position": 31,
+        "confidence": 0.5,
+        "has_timestamp": false,
+        "sequence_score": 0.0
+      }
+    },
+    {
+      "type": "procedure",
+      "value": "IV access",
+      "time": "before fluid administration",
+      "details": "two large-bore IVs",
+      "provider": "Medic 1-2",
+      "category": "vitals",
+      "sequence_metadata": {
+        "position": 32,
+        "confidence": 0.5,
+        "has_timestamp": false,
+        "sequence_score": 0.0
+      }
+    },
+    {
+      "type": "medication",
+      "value": "Hextend",
+      "time": "after IV access",
+      "rate": "100ml/hour",
+      "route": "IV",
+      "provider": "Medic 1-2",
+      "category": "vitals",
+      "sequence_metadata": {
+        "position": 33,
+        "confidence": 0.5,
+        "has_timestamp": false,
+        "sequence_score": 0.0
+      }
+    },
+    {
+      "type": "vital_sign",
+      "parameter": "blood_pressure",
+      "value": "100/60",
+      "time": "initial assessment",
+      "trend": "low",
+      "category": "vitals",
+      "sequence_metadata": {
+        "position": 34,
+        "confidence": 0.5,
+        "has_timestamp": false,
+        "sequence_score": 0.0
+      }
+    },
+    {
+      "type": "vital_sign",
+      "parameter": "pulse",
+      "value": "120",
+      "time": "initial assessment",
+      "trend": "elevated",
+      "category": "vitals",
+      "sequence_metadata": {
+        "position": 35,
+        "confidence": 0.5,
+        "has_timestamp": false,
+        "sequence_score": 0.0
+      }
+    },
+    {
+      "type": "vital_sign",
+      "parameter": "respiratory_rate",
+      "value": "24",
+      "time": "initial assessment",
+      "category": "vitals",
+      "sequence_metadata": {
+        "position": 36,
+        "confidence": 0.5,
+        "has_timestamp": false,
+        "sequence_score": 0.0
+      }
+    },
+    {
+      "type": "vital_sign",
+      "parameter": "oxygen_saturation",
+      "value": "92%",
+      "time": "initial assessment",
+      "category": "vitals",
+      "sequence_metadata": {
+        "position": 37,
+        "confidence": 0.5,
+        "has_timestamp": false,
+        "sequence_score": 0.0
+      }
+    },
+    {
+      "type": "vital_sign",
+      "parameter": "gcs",
+      "value": "14",
+      "time": "current",
+      "trend": "improving",
+      "previous": "12",
+      "category": "vitals",
+      "sequence_metadata": {
+        "position": 38,
+        "confidence": 0.5,
+        "has_timestamp": false,
+        "sequence_score": 0.0
+      }
+    },
+    {
+      "type": "injury",
+      "body_part": "right leg",
+      "mechanism": "IED blast",
+      "severity": "severe",
+      "details": "significant bleeding from right thigh",
+      "category": "vitals",
+      "sequence_metadata": {
+        "position": 39,
+        "confidence": 0.5,
+        "has_timestamp": false,
+        "sequence_score": 0.0
+      }
+    },
+    {
+      "type": "injury",
+      "body_part": "right chest",
+      "condition": "tension pneumothorax",
+      "status": "treated",
+      "treatment": "needle decompression",
+      "category": "vitals",
+      "sequence_metadata": {
+        "position": 40,
+        "confidence": 0.5,
+        "has_timestamp": false,
+        "sequence_score": 0.0
+      }
+    },
+    {
+      "type": "diagnosis",
+      "condition": "hypovolemic shock",
+      "evidence": "low blood pressure, elevated heart rate",
+      "treatment": "fluid resuscitation",
+      "status": "improving",
+      "category": "vitals",
+      "sequence_metadata": {
+        "position": 41,
+        "confidence": 0.5,
+        "has_timestamp": false,
+        "sequence_score": 0.0
+      }
+    },
+    {
+      "type": "procedure",
+      "value": "tourniquet application",
+      "time": "0930 hours",
+      "location": "right thigh",
+      "provider": "Medic 1-2",
+      "outcome": "controlled hemorrhage",
+      "category": "medications",
+      "sequence_metadata": {
+        "position": 42,
+        "confidence": 0.5,
+        "has_timestamp": false,
+        "sequence_score": 0.0
+      }
+    },
+    {
+      "type": "procedure",
+      "value": "needle decompression",
+      "time": "0935 hours",
+      "location": "right chest",
+      "provider": "Medic 1-2",
+      "indication": "suspected tension pneumothorax",
+      "category": "medications",
+      "sequence_metadata": {
+        "position": 43,
+        "confidence": 0.5,
+        "has_timestamp": false,
+        "sequence_score": 0.0
+      }
+    },
+    {
+      "type": "medication",
+      "value": "morphine",
+      "time": "0940 hours",
+      "dosage": "10mg",
+      "route": "IV",
+      "provider": "Medic 1-2",
+      "category": "medications",
+      "sequence_metadata": {
+        "position": 44,
+        "confidence": 0.5,
+        "has_timestamp": false,
+        "sequence_score": 0.0
+      }
+    },
+    {
+      "type": "medication",
+      "value": "ceftriaxone",
+      "time": "0940 hours",
+      "dosage": "1g",
+      "route": "IV",
+      "provider": "Medic 1-2",
+      "category": "medications",
+      "sequence_metadata": {
+        "position": 45,
+        "confidence": 0.5,
+        "has_timestamp": false,
+        "sequence_score": 0.0
+      }
+    },
+    {
+      "type": "procedure",
+      "value": "IV access",
+      "time": "before fluid administration",
+      "details": "two large-bore IVs",
+      "provider": "Medic 1-2",
+      "category": "medications",
+      "sequence_metadata": {
+        "position": 46,
+        "confidence": 0.5,
+        "has_timestamp": false,
+        "sequence_score": 0.0
+      }
+    },
+    {
+      "type": "medication",
+      "value": "Hextend",
+      "time": "after IV access",
+      "rate": "100ml/hour",
+      "route": "IV",
+      "provider": "Medic 1-2",
+      "category": "medications",
+      "sequence_metadata": {
+        "position": 47,
+        "confidence": 0.5,
+        "has_timestamp": false,
+        "sequence_score": 0.0
+      }
+    },
+    {
+      "type": "vital_sign",
+      "parameter": "blood_pressure",
+      "value": "100/60",
+      "time": "initial assessment",
+      "trend": "low",
+      "category": "medications",
+      "sequence_metadata": {
+        "position": 48,
+        "confidence": 0.5,
+        "has_timestamp": false,
+        "sequence_score": 0.0
+      }
+    },
+    {
+      "type": "vital_sign",
+      "parameter": "pulse",
+      "value": "120",
+      "time": "initial assessment",
+      "trend": "elevated",
+      "category": "medications",
+      "sequence_metadata": {
+        "position": 49,
+        "confidence": 0.5,
+        "has_timestamp": false,
+        "sequence_score": 0.0
+      }
+    },
+    {
+      "type": "vital_sign",
+      "parameter": "respiratory_rate",
+      "value": "24",
+      "time": "initial assessment",
+      "category": "medications",
+      "sequence_metadata": {
+        "position": 50,
+        "confidence": 0.5,
+        "has_timestamp": false,
+        "sequence_score": 0.0
+      }
+    },
+    {
+      "type": "vital_sign",
+      "parameter": "oxygen_saturation",
+      "value": "92%",
+      "time": "initial assessment",
+      "category": "medications",
+      "sequence_metadata": {
+        "position": 51,
+        "confidence": 0.5,
+        "has_timestamp": false,
+        "sequence_score": 0.0
+      }
+    },
+    {
+      "type": "vital_sign",
+      "parameter": "gcs",
+      "value": "14",
+      "time": "current",
+      "trend": "improving",
+      "previous": "12",
+      "category": "medications",
+      "sequence_metadata": {
+        "position": 52,
+        "confidence": 0.5,
+        "has_timestamp": false,
+        "sequence_score": 0.0
+      }
+    },
+    {
+      "type": "injury",
+      "body_part": "right leg",
+      "mechanism": "IED blast",
+      "severity": "severe",
+      "details": "significant bleeding from right thigh",
+      "category": "medications",
+      "sequence_metadata": {
+        "position": 53,
+        "confidence": 0.5,
+        "has_timestamp": false,
+        "sequence_score": 0.0
+      }
+    },
+    {
+      "type": "injury",
+      "body_part": "right chest",
+      "condition": "tension pneumothorax",
+      "status": "treated",
+      "treatment": "needle decompression",
+      "category": "medications",
+      "sequence_metadata": {
+        "position": 54,
+        "confidence": 0.5,
+        "has_timestamp": false,
+        "sequence_score": 0.0
+      }
+    },
+    {
+      "type": "diagnosis",
+      "condition": "hypovolemic shock",
+      "evidence": "low blood pressure, elevated heart rate",
+      "treatment": "fluid resuscitation",
+      "status": "improving",
+      "category": "medications",
+      "sequence_metadata": {
+        "position": 55,
+        "confidence": 0.5,
+        "has_timestamp": false,
+        "sequence_score": 0.0
+      }
+    },
+    {
+      "type": "procedure",
+      "value": "tourniquet application",
+      "time": "0930 hours",
+      "location": "right thigh",
+      "provider": "Medic 1-2",
+      "outcome": "controlled hemorrhage",
+      "category": "procedures",
+      "sequence_metadata": {
+        "position": 56,
+        "confidence": 0.5,
+        "has_timestamp": false,
+        "sequence_score": 0.0
+      }
+    },
+    {
+      "type": "procedure",
+      "value": "needle decompression",
+      "time": "0935 hours",
+      "location": "right chest",
+      "provider": "Medic 1-2",
+      "indication": "suspected tension pneumothorax",
+      "category": "procedures",
+      "sequence_metadata": {
+        "position": 57,
+        "confidence": 0.5,
+        "has_timestamp": false,
+        "sequence_score": 0.0
+      }
+    },
+    {
+      "type": "medication",
+      "value": "morphine",
+      "time": "0940 hours",
+      "dosage": "10mg",
+      "route": "IV",
+      "provider": "Medic 1-2",
+      "category": "procedures",
+      "sequence_metadata": {
+        "position": 58,
+        "confidence": 0.5,
+        "has_timestamp": false,
+        "sequence_score": 0.0
+      }
+    },
+    {
+      "type": "medication",
+      "value": "ceftriaxone",
+      "time": "0940 hours",
+      "dosage": "1g",
+      "route": "IV",
+      "provider": "Medic 1-2",
+      "category": "procedures",
+      "sequence_metadata": {
+        "position": 59,
+        "confidence": 0.5,
+        "has_timestamp": false,
+        "sequence_score": 0.0
+      }
+    },
+    {
+      "type": "procedure",
+      "value": "IV access",
+      "time": "before fluid administration",
+      "details": "two large-bore IVs",
+      "provider": "Medic 1-2",
+      "category": "procedures",
+      "sequence_metadata": {
+        "position": 60,
+        "confidence": 0.5,
+        "has_timestamp": false,
+        "sequence_score": 0.0
+      }
+    },
+    {
+      "type": "medication",
+      "value": "Hextend",
+      "time": "after IV access",
+      "rate": "100ml/hour",
+      "route": "IV",
+      "provider": "Medic 1-2",
+      "category": "procedures",
+      "sequence_metadata": {
+        "position": 61,
+        "confidence": 0.5,
+        "has_timestamp": false,
+        "sequence_score": 0.0
+      }
+    },
+    {
+      "type": "vital_sign",
+      "parameter": "blood_pressure",
+      "value": "100/60",
+      "time": "initial assessment",
+      "trend": "low",
+      "category": "procedures",
+      "sequence_metadata": {
+        "position": 62,
+        "confidence": 0.5,
+        "has_timestamp": false,
+        "sequence_score": 0.0
+      }
+    },
+    {
+      "type": "vital_sign",
+      "parameter": "pulse",
+      "value": "120",
+      "time": "initial assessment",
+      "trend": "elevated",
+      "category": "procedures",
+      "sequence_metadata": {
+        "position": 63,
+        "confidence": 0.5,
+        "has_timestamp": false,
+        "sequence_score": 0.0
+      }
+    },
+    {
+      "type": "vital_sign",
+      "parameter": "respiratory_rate",
+      "value": "24",
+      "time": "initial assessment",
+      "category": "procedures",
+      "sequence_metadata": {
+        "position": 64,
+        "confidence": 0.5,
+        "has_timestamp": false,
+        "sequence_score": 0.0
+      }
+    },
+    {
+      "type": "vital_sign",
+      "parameter": "oxygen_saturation",
+      "value": "92%",
+      "time": "initial assessment",
+      "category": "procedures",
+      "sequence_metadata": {
+        "position": 65,
+        "confidence": 0.5,
+        "has_timestamp": false,
+        "sequence_score": 0.0
+      }
+    },
+    {
+      "type": "vital_sign",
+      "parameter": "gcs",
+      "value": "14",
+      "time": "current",
+      "trend": "improving",
+      "previous": "12",
+      "category": "procedures",
+      "sequence_metadata": {
+        "position": 66,
+        "confidence": 0.5,
+        "has_timestamp": false,
+        "sequence_score": 0.0
+      }
+    },
+    {
+      "type": "injury",
+      "body_part": "right leg",
+      "mechanism": "IED blast",
+      "severity": "severe",
+      "details": "significant bleeding from right thigh",
+      "category": "procedures",
+      "sequence_metadata": {
+        "position": 67,
+        "confidence": 0.5,
+        "has_timestamp": false,
+        "sequence_score": 0.0
+      }
+    },
+    {
+      "type": "injury",
+      "body_part": "right chest",
+      "condition": "tension pneumothorax",
+      "status": "treated",
+      "treatment": "needle decompression",
+      "category": "procedures",
+      "sequence_metadata": {
+        "position": 68,
+        "confidence": 0.5,
+        "has_timestamp": false,
+        "sequence_score": 0.0
+      }
+    },
+    {
+      "type": "diagnosis",
+      "condition": "hypovolemic shock",
+      "evidence": "low blood pressure, elevated heart rate",
+      "treatment": "fluid resuscitation",
+      "status": "improving",
+      "category": "procedures",
+      "sequence_metadata": {
+        "position": 69,
+        "confidence": 0.5,
+        "has_timestamp": false,
+        "sequence_score": 0.0
+      }
+    }
+  ],
+  "report": {
+    "report_type": "tccc",
+    "content": "Deterministic response for this category",
+    "generated_at": "2025-03-09T11:27:03.002284",
+    "events_count": 70,
+    "model": {
+      "type": "primary",
+      "name": "phi-2",
+      "provider": "local"
+    }
+  },
+  "metrics": {
+    "elapsed_time": 3.039365291595459,
+    "entities_count": 70
+  }
+}

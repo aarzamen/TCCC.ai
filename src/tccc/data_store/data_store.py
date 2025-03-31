@@ -20,6 +20,7 @@ from contextlib import contextmanager
 
 from tccc.utils.logging import get_logger
 from tccc.utils.config import Config
+from tccc.processing_core.processing_core import ModuleState
 
 logger = get_logger(__name__)
 
@@ -1071,11 +1072,11 @@ class DataStore:
         Return current status of the data store.
         
         Returns:
-            Status dictionary
+            Status dictionary (using ModuleState enum for 'status')
         """
         if not self.initialized:
-            return {'status': 'not_initialized'}
-        
+            return {'status': ModuleState.UNINITIALIZED, 'initialized': False}
+
         try:
             # Get database stats
             db_stats = self.db_manager.get_database_stats()
@@ -1086,7 +1087,7 @@ class DataStore:
             
             # Build status info
             status = {
-                'status': 'active',
+                'status': ModuleState.ACTIVE, 
                 'initialized': self.initialized,
                 'database': {
                     'path': self.db_manager.db_path,
@@ -1116,7 +1117,10 @@ class DataStore:
             
         except Exception as e:
             logger.error(f"Failed to get status: {e}")
-            return {'status': 'error', 'error': str(e)}
+            return {
+                'status': ModuleState.ERROR, 
+                'error': str(e)
+            }
     
     def _cleanup_cache(self):
         """Clean up expired cache entries."""

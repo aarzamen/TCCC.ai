@@ -23,6 +23,9 @@ from tccc.utils.config import Config
 
 logger = get_logger(__name__)
 
+# Import ModuleState
+from tccc.processing_core.processing_core import ModuleState
+
 
 class AudioFormat(Enum):
     """Audio format enumeration."""
@@ -1480,6 +1483,11 @@ class AudioPipeline:
             if default_source and default_source in self.sources:
                 self.active_source = self.sources[default_source]
                 logger.info(f"Set default audio source: {default_source}")
+            # Fallback: If no default set and sources exist, use the first one
+            elif not self.active_source and self.sources:
+                first_source_name = list(self.sources.keys())[0]
+                self.active_source = self.sources[first_source_name]
+                logger.warning(f"No default audio source set, falling back to first available source: {first_source_name}")
             
             self.initialized = True
             logger.info("Audio Pipeline initialized successfully")
@@ -1505,7 +1513,7 @@ class AudioPipeline:
         
         try:
             # Create appropriate source based on type
-            if source_type == 'microphone':
+            if source_type == 'microphone' or source_type == 'pyaudio': # Treat pyaudio as microphone
                 source = MicrophoneSource(merged_config)
             elif source_type == 'network':
                 source = NetworkSource(merged_config)
@@ -1520,8 +1528,9 @@ class AudioPipeline:
             logger.info(f"Registered audio source: {source_name} ({source_type})")
             
         except Exception as e:
-            logger.error(f"Failed to create audio source {source_name}: {e}")
-    
+            # Log with exception traceback for detailed debugging
+            logger.exception(f"Failed to create audio source {source_name}: {e}")
+
     def start_capture(self, source_name: str = None) -> bool:
         """
         Start audio capture from specified or default source.
@@ -1547,8 +1556,9 @@ class AudioPipeline:
             
             # Ensure we have an active source
             if not self.active_source:
-                logger.error("No active audio source")
-                return False
+                logger.warning("No active audio source configured for AudioPipeline. Cannot capture audio.")
+                self.state = ModuleState.READY # Indicate it's ready but not capturing
+                return True
             
             # Start the source
             result = self.active_source.start(self._process_audio_callback)
@@ -1643,8 +1653,145 @@ class AudioPipeline:
             self.stats['processing_time'] += processing_time_ms
             self.stats['average_processing_ms'] = self.stats['processing_time'] / self.stats['chunks_processed']
             
+            # Create and emit event if speech detected
+            if is_speech:
+                self._emit_audio_segment_event(
+                    processed_audio, 
+                    self.audio_processor.sample_rate, 
+                    is_speech,
+                    processing_time_ms
+                )
+            
         except Exception as e:
             logger.error(f"Error processing audio: {e}")
+            
+            # Emit error event
+            try:
+                self._emit_error_event(
+                    "audio_processing_error",
+                    f"Error processing audio: {e}",
+                    "audio_processor",
+                    True  # Recoverable
+                )
+            except Exception:
+                # Just log if event emission fails
+                pass
+            
+    def _emit_audio_segment_event(
+        self, 
+        audio_data: np.ndarray, 
+        sample_rate: int, 
+        is_speech: bool,
+        processing_time_ms: float
+    ):
+        """
+        Emit an AudioSegmentEvent.
+        
+        Args:
+            audio_data: Processed audio data
+            sample_rate: Sample rate in Hz
+            is_speech: Whether speech was detected
+            processing_time_ms: Processing time in milliseconds
+        """
+        try:
+            # Import event schema items only when needed
+            from tccc.utils.event_schema import AudioSegmentEvent
+            
+            # Get event bus
+            event_bus = self._get_event_bus()
+            if not event_bus:
+                return
+            
+            # Get source info
+            source_name = self.active_source.name if self.active_source else "unknown"
+            
+            # Format information
+            if hasattr(audio_data, 'dtype'):
+                format_type = str(audio_data.dtype)
+            else:
+                format_type = 'PCM16'
+            
+            # Calculate duration in milliseconds
+            duration_ms = (len(audio_data) / sample_rate) * 1000
+            
+            # Create metadata
+            metadata = {
+                'source_device': source_name,
+                'processing_ms': processing_time_ms
+            }
+            
+            # Create event
+            event = AudioSegmentEvent(
+                source="audio_pipeline",
+                audio_data=audio_data,
+                sample_rate=sample_rate,
+                format_type=format_type,
+                channels=self.audio_processor.channels,
+                duration_ms=duration_ms,
+                is_speech=is_speech,
+                start_time=time.time() - (duration_ms / 1000),
+                metadata=metadata
+            )
+            
+            # Publish event
+            event_bus.publish(event)
+            
+        except ImportError:
+            logger.warning("Event schema not available, cannot emit audio segment event")
+        except Exception as e:
+            logger.error(f"Error emitting audio segment event: {e}")
+    
+    def _emit_error_event(
+        self, 
+        error_code: str, 
+        message: str, 
+        component: str,
+        recoverable: bool = False
+    ):
+        """
+        Emit an ErrorEvent.
+        
+        Args:
+            error_code: Error code identifier
+            message: Error message
+            component: Component that experienced the error
+            recoverable: Whether the error is recoverable
+        """
+        try:
+            # Import event schema items only when needed
+            from tccc.utils.event_schema import ErrorEvent, ErrorSeverity
+            
+            # Get event bus
+            event_bus = self._get_event_bus()
+            if not event_bus:
+                return
+            
+            # Create event
+            event = ErrorEvent(
+                source="audio_pipeline",
+                error_code=error_code,
+                message=message,
+                severity=ErrorSeverity.ERROR,
+                component=component,
+                recoverable=recoverable
+            )
+            
+            # Publish event
+            event_bus.publish(event)
+            
+        except ImportError:
+            logger.warning("Event schema not available, cannot emit error event")
+        except Exception as e:
+            logger.error(f"Error emitting error event: {e}")
+    
+    def _get_event_bus(self):
+        """Get the event bus instance, if available."""
+        try:
+            from tccc.utils.event_bus import get_event_bus
+            return get_event_bus()
+        except ImportError:
+            logger.warning("Event bus not available")
+            return None
     
     def _output_stream_handler(self):
         """Handle streaming of processed audio to output."""
@@ -1682,7 +1829,17 @@ class AudioPipeline:
             
         try:
             # Get the latest audio chunk from the buffer
-            audio_data = self.output_buffer.read(timeout_ms=timeout_ms)
+            # Simple streamBuffer in AudioPipeline doesn't accept timeout_ms
+            if isinstance(self.output_buffer, StreamBuffer):
+                # Use default read method from simple StreamBuffer
+                audio_data = self.output_buffer.read()
+            else:
+                # Try with enhanced StreamBuffer that accepts timeout_ms
+                try:
+                    audio_data = self.output_buffer.read(timeout_ms=timeout_ms)
+                except TypeError:
+                    # Fallback to basic call if timeout_ms not supported
+                    audio_data = self.output_buffer.read()
             return audio_data
         except Exception as e:
             logger.error(f"Error getting audio data: {e}")
@@ -1759,24 +1916,41 @@ class AudioPipeline:
         Get current status of the audio pipeline.
         
         Returns:
-            Status dictionary
+            Status dictionary (using ModuleState enum for 'status').
         """
-        status = {
-            'initialized': self.initialized,
-            'running': self.is_running,
-            'active_source': self.active_source.name if self.active_source else None,
-            'stats': {
-                'chunks_processed': self.stats['chunks_processed'],
-                'speech_chunks': self.stats['speech_chunks'],
-                'average_processing_ms': self.stats['average_processing_ms'],
-                'uptime_seconds': time.time() - self.stats['start_time'] if self.is_running else 0
-            },
-            'processor': {
-                'noise_reduction_enabled': self.audio_processor.nr_enabled if self.audio_processor else False,
-                'enhancement_enabled': self.audio_processor.enh_enabled if self.audio_processor else False,
-                'vad_enabled': self.audio_processor.vad_enabled if self.audio_processor else False
-            },
-            'sources': len(self.sources)
-        }
+        # Determine overall status based on initialized and running state
+        overall_status = ModuleState.UNINITIALIZED
+        if self.initialized:
+            overall_status = ModuleState.READY if not self.is_running else ModuleState.ACTIVE
         
-        return status
+        try:
+            status_details = {
+                'initialized': self.initialized,
+                'running': self.is_running,
+                'active_source': self.active_source.name if self.active_source else None,
+                'stats': {
+                    'chunks_processed': self.stats['chunks_processed'],
+                    'speech_chunks': self.stats['speech_chunks'],
+                    'average_processing_ms': self.stats['average_processing_ms'],
+                    'uptime_seconds': time.time() - self.stats['start_time'] if self.is_running else 0
+                },
+                'processor': {
+                    'noise_reduction_enabled': self.audio_processor.nr_enabled if self.audio_processor else False,
+                    'enhancement_enabled': self.audio_processor.enh_enabled if self.audio_processor else False,
+                    'vad_enabled': self.audio_processor.vad_enabled if self.audio_processor else False
+                },
+                'sources': len(self.sources)
+            }
+            
+            status = {"status": overall_status}
+            status.update(status_details)
+            return status
+            
+        except Exception as e:
+            logger.error(f"Error getting AudioPipeline status: {e}", exc_info=True)
+            return {
+                "status": ModuleState.ERROR,
+                "initialized": self.initialized,
+                "running": self.is_running, # Include running state even on error
+                "error": str(e)
+            }

@@ -1,0 +1,53 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<svg width="512" height="512" viewBox="0 0 512 512" xmlns="http://www.w3.org/2000/svg">
+  <defs>
+    <linearGradient id="bg-gradient" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#d32f2f" />
+      <stop offset="100%" stop-color="#b71c1c" />
+    </linearGradient>
+    <filter id="shadow" x="-20%" y="-20%" width="140%" height="140%">
+      <feGaussianBlur stdDeviation="6" result="blur" />
+      <feComposite in="SourceGraphic" in2="blur" operator="over" />
+    </filter>
+  </defs>
+  
+  <!-- Background -->
+  <rect x="0" y="0" width="512" height="512" rx="80" ry="80" fill="url(#bg-gradient)" />
+  
+  <!-- Hexagon Pattern -->
+  <g opacity="0.1" fill="#ffffff">
+    <path d="M55,100 L85,85 L115,100 L115,130 L85,145 L55,130 Z" />
+    <path d="M125,50 L155,35 L185,50 L185,80 L155,95 L125,80 Z" />
+    <path d="M195,100 L225,85 L255,100 L255,130 L225,145 L195,130 Z" />
+    <path d="M265,50 L295,35 L325,50 L325,80 L295,95 L265,80 Z" />
+    <path d="M335,100 L365,85 L395,100 L395,130 L365,145 L335,130 Z" />
+    <path d="M55,200 L85,185 L115,200 L115,230 L85,245 L55,230 Z" />
+    <path d="M335,200 L365,185 L395,200 L395,230 L365,245 L335,230 Z" />
+    <path d="M55,300 L85,285 L115,300 L115,330 L85,345 L55,330 Z" />
+    <path d="M335,300 L365,285 L395,300 L395,330 L365,345 L335,330 Z" />
+    <path d="M55,400 L85,385 L115,400 L115,430 L85,445 L55,430 Z" />
+    <path d="M125,350 L155,335 L185,350 L185,380 L155,395 L125,380 Z" />
+    <path d="M195,400 L225,385 L255,400 L255,430 L225,445 L195,430 Z" />
+    <path d="M265,350 L295,335 L325,350 L325,380 L295,395 L265,380 Z" />
+    <path d="M335,400 L365,385 L395,400 L395,430 L365,445 L335,430 Z" />
+  </g>
+  
+  <!-- Main Center Circle -->
+  <circle cx="256" cy="256" r="120" fill="#ffffff" />
+  
+  <!-- Medical Cross -->
+  <path d="M256,186 L256,326 M186,256 L326,256" stroke="#b71c1c" stroke-width="24" stroke-linecap="round" filter="url(#shadow)" />
+  
+  <!-- Database Symbol -->
+  <path d="M256,156 C306,156 346,141 346,126 L346,126 L346,386 C346,401 306,416 256,416 C206,416 166,401 166,386 L166,126 C166,141 206,156 256,156 Z" fill="#b71c1c" fill-opacity="0.2" stroke="#b71c1c" stroke-width="4" />
+  <path d="M166,126 C166,111 206,96 256,96 C306,96 346,111 346,126 C346,141 306,156 256,156 C206,156 166,141 166,126 Z" fill="#b71c1c" fill-opacity="0.2" stroke="#b71c1c" stroke-width="4" />
+  <path d="M166,196 C166,211 206,226 256,226 C306,226 346,211 346,196" fill="none" stroke="#b71c1c" stroke-width="4" stroke-opacity="0.6" />
+  <path d="M166,266 C166,281 206,296 256,296 C306,296 346,281 346,266" fill="none" stroke="#b71c1c" stroke-width="4" stroke-opacity="0.6" />
+  <path d="M166,336 C166,351 206,366 256,366 C306,366 346,351 346,336" fill="none" stroke="#b71c1c" stroke-width="4" stroke-opacity="0.6" />
+  
+  <!-- Pulse Line -->
+  <path d="M96,256 C116,256 126,200 146,200 C166,200 176,310 196,310 C216,310 226,230 246,230 C266,230 276,270 296,270 C316,270 326,200 346,200 C366,200 376,256 396,256 C416,256" fill="none" stroke="#ffffff" stroke-width="8" stroke-opacity="0.6" stroke-linecap="round" />
+  
+  <!-- Text -->
+  <text x="256" y="470" font-family="Arial, sans-serif" font-size="32" font-weight="bold" text-anchor="middle" fill="#ffffff">TCCC RAG</text>
+</svg>

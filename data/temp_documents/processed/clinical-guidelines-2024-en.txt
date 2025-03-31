@@ -1,0 +1,628 @@
+Tactical Combat Casualty Care (TCCC)
+Guidelines
+25 January 2024
+RED text indicates new text in this year’s update to the TCCC Guidelines; BLUE
+text indicates text that did not change but was relocated within the guidelines.
+Recent changes include airway management and traumatic brain injury
+management in tactical field care.
+Basic Management Plan for Care Under Fire/Threat
+1. Return fire and take cover.
+2. Direct or expect casualty to remain engaged as a combatant if appropriate.
+3. Direct casualty to move to cover and apply self-aid if able or when tactically feasible, move
+or drag casualty to cover.
+4. Try to keep the casualty from sustaining additional wounds.
+5. Casualties should be extracted from burning vehicles or buildings and moved to places of
+relative safety. Do what is necessary to stop the burning process.
+6. Stop life-threatening external hemorrhage if tactically feasible:
+a. Direct casualty to control hemorrhage by self-aid if able.
+b. Use a CoTCCC-recommended limb tourniquet for hemorrhage that is anatomically
+amenable to tourniquet use.
+c. Apply the limb tourniquet over the uniform clearly proximal to the bleeding site(s). If
+the site of the life-threatening bleeding is not readily apparent, place the tourniquet
+“high and tight” (as proximal as possible) on the injured limb and move the casualty
+to cover.
+7. Airway management is generally best deferred until the Tactical Field Care phase.
+1\nTCCC Guidelines 2024
+Basic Management Plan for Tactical Field Care
+1. Establish a security perimeter in accordance with unit tactical standard operating
+procedures and/or battle drills. Maintain tactical situational awareness.
+2. Triage casualties as required. Casualties with an altered mental status should have
+weapons and communications equipment taken away immediately.
+3. Massive Hemorrhage
+a. Assess for unrecognized hemorrhage and control all sources of bleeding. If not
+already done, use a CoTCCC-recommended limb tourniquet to control life-
+threatening external hemorrhage that is anatomically amenable to tourniquet use or
+for any traumatic amputation. Apply directly to the skin 2-3 inches above the
+bleeding site. If bleeding is not controlled with the first tourniquet, apply a second
+tourniquet side-by-side with the first.
+b. For compressible (external) hemorrhage not amenable to limb tourniquet use or as an
+adjunct to tourniquet removal, use Combat Gauze as the CoTCCC hemostatic
+dressing of choice.
+1. Alternative hemostatic adjuncts:
+ Celox Gauze or
+ ChitoGauze or
+ XStat (best for deep, narrow-tract junctional wounds)
+ iTClamp (may be used alone or in conjunction with hemostatic
+dressing or XStat)
+• Hemostatic dressings should be applied with at least 3 minutes of direct
+pressure (optional for XStat). Each dressing works differently, so if one fails
+to control bleeding, it may be removed and a fresh dressing of the same type
+or a different type applied. (Note: XStat is not to be removed in the field, but
+additional XStat, other hemostatic adjuncts, or trauma dressings may be
+applied over it.)
+• If the bleeding site is amenable to use of a junctional tourniquet, immediately
+apply a junctional tourniquet. Do not delay in the application of the junctional
+tourniquet once it is ready for use. Apply hemostatic dressings with direct
+pressure if a junctional tourniquet is not available or while the junctional
+tourniquet is being readied for use.
+c. For external hemorrhage of the head and neck where the wound edges can be easily
+re-approximated, the iTClamp may be used as a primary option for hemorrhage
+control. Wounds should be packed with a hemostatic dressing or XStat, if
+appropriate, prior to iTClamp application.
+1. The iTClamp does not require additional direct pressure, either when used
+alone or in combination with other hemostatic adjuncts.
+2. If the iTClamp is applied to the neck, perform frequent airway monitoring
+and evaluate for an expanding hematoma that may compromise the airway.\nTCCC Guidelines 2024
+Consider placing a definitive airway if there is evidence of an expanding
+hematoma.
+3. DO NOT APPLY on or near the eye or eyelid (within 1cm of the orbit).
+d. Perform initial assessment for hemorrhagic shock (altered mental status in the
+absence of brain injury and/or weak or absent radial pulse) and consider immediate
+initiation of shock resuscitation efforts.
+4. Airway Management
+a. Assess for unobstructed airway.
+b. If there is a traumatic airway obstruction or impending traumatic obstruction, prepare
+for possible direct airway intervention.
+c. Allow a conscious casualty to assume any position that best protects the airway, to
+include sitting up and/or leaning forward.
+d. Place unconscious casualty in the recovery position, head tilted back; chin away from
+chest.
+e. Use suction if available and appropriate.
+f. If the previous measures are unsuccessful, and the casualty’s airway obstruction (e.g.
+facial fractures, direct airway injury, blood, deformation or burns) is unmanageable,
+perform a surgical cricothyroidotomy using one of the following:
+1. Bougie-aided open surgical technique using a flanged and cuffed airway
+cannula of less than 10 mm outer diameter, 6-7 mm internal diameter, and 5-
+8 cm of intratracheal length.
+2. Standard open surgical technique using a flanged and cuffed airway cannula
+of less than 10mm outer diameter, 6-7 mm internal diameter, and 5-8 cm of
+intra-tracheal length.
+3. Verify placement with continuous EtCO2 capnography.
+4. Use lidocaine if the casualty is conscious.
+g. Frequently reassess SpO2, EtCO2, and airway patency as airway status may change
+over time.
+h. Cervical spine stabilization is not necessary for casualties who have sustained only
+penetrating trauma.
+5. Respiration/Breathing
+a. Assess for tension pneumothorax and treat, as necessary.
+1. Suspect a tension pneumothorax and treat when a casualty has significant
+torso trauma or primary blast injury and one or more of the following:
+− Severe or progressive respiratory distress
+− Severe or progressive tachypnea
+− Absent or markedly decreased breath sounds on one side of the chest
+− Hemoglobin oxygen saturation < 90% on pulse oximetry
+− Shock
+− Traumatic cardiac arrest without obviously fatal wounds\nTCCC Guidelines 2024
+ If not treated promptly, tension pneumothorax may progress from
+respiratory distress to shock and traumatic cardiac arrest.
+2. Initial treatment of suspected tension pneumothorax:
+− If the casualty has a chest seal in place, burp or remove the chest seal.
+− Establish pulse oximetry monitoring.
+− Place the casualty in the supine or recovery position unless he or she is
+conscious and needs to sit up to help keep the airway clear as a result
+of maxillofacial trauma.
+− Decompress the chest on the side of the injury with a 14-gauge or a
+10-gauge, 3.25-inch needle/catheter unit.
+ Either the 5th intercostal space (ICS) in the anterior axillary line
+(AAL) or the 2nd ICS in the mid-clavicular line (MCL) may be
+used for needle decompression (NDC). If the anterior (MCL)
+site is used, do not insert the needle medial to the nipple line.
+ The needle/catheter unit should be inserted at an angle
+perpendicular to the chest wall and just over the top of the
+lower rib at the insertion site. Insert the needle/catheter unit all
+the way to the hub and hold it in place for 5-10 seconds to
+allow decompression to occur.
+ After the NDC has been performed, remove the needle and
+leave the catheter in place.
+− If a casualty has significant torso trauma or primary blast injury and is
+in traumatic cardiac arrest (no pulse, no respirations, no response to
+painful stimuli, no other signs of life), decompress both sides of the
+chest before discontinuing treatment.
+3. The NDC should be considered successful if:
+− Respiratory distress improves, or
+− There is an obvious hissing sound as air escapes from the chest when
+NDC is performed (this may be difficult to appreciate in high-noise
+environments), or
+− Hemoglobin oxygen saturation increases to 90% or greater (note that
+this may take several minutes and may not happen at altitude), or
+− A casualty with no vital signs has return of consciousness and/or radial
+pulse.
+4. If the initial NDC fails to improve the casualty’s signs/symptoms from the
+suspected tension pneumothorax:
+− Perform a second NDC on the same side of the chest at whichever of
+the two recommended sites was not previously used. Use a new
+needle/catheter unit for the second attempt.
+− Consider, based on the mechanism of injury and physical findings
+whether decompression of the opposite side of the chest may be
+needed.
+− Continue to re-assess!
+5. If the initial NDC was successful, but symptoms later recur:\nTCCC Guidelines 2024
+− Perform another NDC at the same site that was used previously. Use a
+new needle/catheter unit for the repeat NDC
+− Continue to re-assess!
+6. If the second NDC is also not successful: continue on to the Circulation
+section of the TCCC Guidelines.
+b. All open and/or sucking chest wounds should be treated by immediately applying a
+vented chest seal to cover the defect. If a vented chest seal is not available, use a non-
+vented chest seal. Monitor the casualty for the potential development of a subsequent
+tension pneumothorax. If the casualty develops increasing hypoxia, respiratory
+distress, or hypotension and a tension pneumothorax is suspected, treat by burping or
+removing the dressing or by needle decompression.
+c. Initiate pulse oximetry. All individuals with moderate/severe TBI should be
+monitored with pulse oximetry. Readings may be misleading in the settings of shock
+or marked hypothermia.
+d. Casualties with moderate/severe TBI should be given supplemental oxygen when
+available to maintain an oxygen saturation > 90%.
+e. If the casualty has impaired ventilation and uncorrectable hypoxia with decreasing
+oxygen saturation below 90%, consider insertion of a properly sized Nasopharyngeal
+Airway, and ventilate using a 1000ml resuscitator Bag-Valve-Mask.
+f. Use continuous EtCO2 and SpO2 monitoring to help assess airway patency.
+6. Circulation
+a. Bleeding
+1. A pelvic binder should be applied for cases of suspected pelvic fracture:
+− Severe blunt force or blast injury with one or more of the following
+indications:
+ Pelvic pain
+ Any major lower limb amputation or near amputation
+ Physical exam findings suggestive of a pelvic fracture
+ Unconsciousness
+ Shock
+2. Reassess prior tourniquet application. Expose the wound and determine if a
+tourniquet is needed. If it is needed, replace any limb tourniquet placed over
+the uniform with one applied directly to the skin 2-3 inches above the
+bleeding site. Ensure that bleeding is stopped. If there is no traumatic
+amputation, a distal pulse should be checked. If bleeding persists or a distal
+pulse is still present, consider additional tightening of the tourniquet or the
+use of a second tourniquet side-by-side with the first to eliminate both
+bleeding and the distal pulse. If the reassessment determines that the prior
+tourniquet was not needed, then remove the tourniquet and note time of
+removal on the TCCC Casualty Card.
+3. Limb tourniquets and junctional tourniquets should be converted to
+hemostatic or pressure dressings as soon as possible if three criteria are met:
+the casualty is not in shock; it is possible to monitor the wound closely for\nTCCC Guidelines 2024
+bleeding; and the tourniquet is not being used to control bleeding from an
+amputated extremity. Every effort should be made to convert tourniquets in
+less than 2 hours if bleeding can be controlled with other means. Do not
+remove a tourniquet that has been in place more than 6 hours unless close
+monitoring and lab capability are available.
+4. Expose and clearly mark all tourniquets with the time of tourniquet
+application. Note tourniquets applied and time of application; time of re-
+application; time of conversion; and time of removal on the TCCC Casualty
+Card. Use a permanent marker to mark on the tourniquet and the casualty
+card.
+b. Assess for hemorrhagic shock (altered mental status in the absence of brain injury
+and/or weak or absent radial pulse).
+c. IV/IO Access
+1. Intravenous (IV) or intraosseous (IO) access is indicated if the casualty is in
+hemorrhagic shock or at significant risk of shock (and may therefore need
+fluid resuscitation), or if the casualty needs medications, but cannot take
+them by mouth.
+− An 18-gauge IV or saline lock is preferred.
+− If vascular access is needed but not quickly obtainable via the IV
+route, use the IO route.
+d. Tranexamic Acid (TXA)
+1. If a casualty will likely need a blood transfusion (for example: presents with
+hemorrhagic shock, one or more major amputations, penetrating torso
+trauma, or evidence of severe bleeding)
+OR
+2. If the casualty has signs or symptoms of significant TBI or has altered
+mental status associated with blast injury or blunt trauma:
+− Administer 2 gm of tranexamic acid via slow IV or IO push as soon as
+possible but NOT later than 3 hours after injury.
+e. Fluid Resuscitation
+1. Assess for hemorrhagic shock (altered mental status in the absence of brain
+injury and/or weak or absent radial pulse).
+2. The resuscitation fluids of choice for casualties in hemorrhagic shock, listed
+from most to least preferred, are:
+(1) Cold stored low titer O whole blood
+(2) Pre-screened low titer O fresh whole blood
+(3) Plasma, red blood cells (RBCs) and platelets in a 1:1:1 ratio
+(4) Plasma and RBCs in a 1:1 ratio
+(5) Plasma or RBCs alone
+ NOTE: Hypothermia prevention measures [Section 7] should be
+initiated while fluid resuscitation is being accomplished.\nTCCC Guidelines 2024
+3. If not in shock:
+− No IV fluids are immediately necessary.
+− Fluids by mouth are permissible if the casualty is conscious and can
+swallow.
+4. If in shock and blood products are available under an approved command or
+theater blood product administration protocol:
+− Resuscitate with cold stored low titer O whole blood, or, if not
+available
+− Pre-screened low titer O fresh whole blood, or, if not available
+− Plasma, RBCs, and platelets in a 1:1:1 ratio, or, if not available
+− Plasma and RBCs in a 1:1 ratio, or, if not available
+− Reconstituted dried plasma, liquid plasma or thawed plasma alone or
+RBCs alone
+− Reassess the casualty after each unit. Continue resuscitation until a
+palpable radial pulse, improved mental status or systolic BP of 100
+mmHg is present.
+− Discontinue fluid administration when one or more of the above end
+points has been achieved.
+− If blood products are transfused, administer one gram of calcium (30
+ml of 10% calcium gluconate or 10 ml of 10% calcium chloride) IV/IO
+after the first transfused product.
+5. Given increased risk for a potentially lethal hemolytic reaction, transfusion
+of unscreened group O fresh whole blood or type specific fresh whole blood
+should only be performed under appropriate medical direction by trained
+personnel.
+6. Transfusion should occur as soon as possible after life-threatening
+hemorrhage in order to keep the casualty alive. If Rh negative blood
+products are not immediately available, Rh positive blood products should
+be used in hemorrhagic shock.
+7. If a casualty with an altered mental status due to suspected TBI has a weak
+or absent radial pulse, resuscitate as necessary to restore and maintain a
+normal radial pulse. If BP monitoring is available, maintain a target systolic
+BP between 100-110 mmHg.
+8. Reassess the casualty frequently to check for recurrence of shock. If shock
+recurs, re-check all external hemorrhage control measures to ensure that
+they are still effective and repeat the fluid resuscitation as outlined above.
+f. Refractory Shock
+1. If a casualty in shock is not responding to fluid resuscitation, consider
+untreated tension pneumothorax as a possible cause of refractory shock.
+Thoracic trauma, persistent respiratory distress, absent breath sounds, and
+hemoglobin oxygen saturation < 90% support this diagnosis. Treat as
+indicated with repeated NDC or finger thoracostomy/chest tube insertion at\nTCCC Guidelines 2024
+the 5th ICS in the AAL, according to the skills, experience, and
+authorizations of the treating medical provider. Note that if finger
+thoracostomy is used, it may not remain patent and finger decompression
+through the incision may have to be repeated. Consider decompressing the
+opposite side of the chest if indicated based on the mechanism of injury and
+physical findings.
+7. Hypothermia Prevention
+a. Take early and aggressive steps to prevent further body heat loss and add external
+heat, when possible, for both trauma and severely burned casualties.
+b. Minimize casualty’s exposure to cold ground, wind and air temperatures. Place
+insulation material between the casualty and any cold surface as soon as possible.
+Keep protective gear on or with the casualty if feasible.
+c. Replace wet clothing with dry clothing, if possible, and protect from further heat loss.
+d. Place an active heating blanket on the casualty’s anterior torso and under the arms in
+the axillae (to prevent burns, do not place any active heating source directly on the
+skin or wrap around the torso).
+e. Enclose the casualty with the exterior impermeable enclosure bag.
+f. As soon as possible, upgrade hypothermia enclosure system to a well-insulated
+enclosure system using a hooded sleeping bag or other readily available insulation
+inside the enclosure bag/external vapor barrier shell.
+g. Pre-stage an insulated hypothermia enclosure system with external active heating for
+transition from the non-insulated hypothermia enclosure systems; seek to improve
+upon existing enclosure system when possible.
+h. Use a battery-powered warming device to deliver IV/IO resuscitation fluids, in
+accordance with current CoTCCC guidelines, at flow rate up to 150 ml/min with a
+38°C output temperature.
+i. Protect the casualty from exposure to wind and precipitation on any evacuation
+platform.
+8. Moderate or Severe Traumatic Brain Injury (unable to follow commands with either
+evidence of head trauma or a blunt/blast mechanism)
+a. Prevent hypoxemia (goal SpO2 >90-95%)
+1. If basic airway maneuvers fail to maintain SpO2 >90% or are not tactically
+feasible, ensure low oxygen saturations are not due to tension pneumothorax
+or hemorrhage.
+2. Consider definitive airway if unable to maintain SpO2 >90%.
+b. Prevent hypotension – maintain SBP 100-110 mmHg. Transfuse whole blood or
+plasma preferentially if casualty is in hemorrhagic shock. Otherwise use 1-2 L bolus
+of crystalloid if no evidence of hemorrhage or hemorrhagic shock.
+c. Identify and treat herniation (declining neurologic status with asymmetric or
+fixed/dilated pupil(s), or posturing):
+1. Interventions for signs of impending herniation should only be employed for
+up to 20 minutes, and if en route to surgical decompression.\nTCCC Guidelines 2024
+− Administer 250ml or 3% or 5% OR 30ml of 23.4% hypertonic saline
+SLOW IV/IO push over 10 minutes followed by a saline flush. Repeat
+in 20 minutes if no response (max 2 doses).
+− Monitor IV/IO site and discontinue if signs of extravasation.
+− Elevate head 30 degrees if casualty not in shock and tactically feasible.
+− Loosen cervical collar if present and keep head facing forward.
+− Hyperventilate using continuous capnography (goal EtCO2 32-38
+mmHg).
+9. Penetrating Eye Trauma
+• If a penetrating eye injury is noted or suspected:
+− Perform a rapid field test of visual acuity and document findings.
+− Cover the eye with a rigid eye shield (NOT a pressure patch).
+− Ensure that the 400 mg moxifloxacin tablet in the Combat Wound
+Medication Pack (CWMP) is taken if possible and that IV/IO/IM
+antibiotics are given as outlined below if oral moxifloxacin cannot be
+taken.
+10. Monitoring
+1. Initiate advanced electronic monitoring if indicated and if monitoring
+equipment is available.
+11. Analgesia
+a. TCCC non-medical first responders should provide analgesia on the battlefield
+achieved by using:
+1. Mild to Moderate Pain
+2. Casualty is still able to fight
+− TCCC Combat Wound Medication Pack (CWMP)
+ Acetaminophen – 500 mg tablet, 2 PO every 8 hours
+ Meloxicam – 15 mg PO once a day
+b. TCCC Medical Personnel:
+Option 1
+1. Mild to Moderate Pain
+2. Casualty is still able to fight
+− TCCC Combat Wound Medication Pack (CWMP)
+ Acetaminophen – 500 mg tablet, 2 PO every 8 hours
+ Meloxicam – 15 mg PO once a day
+Option 2
+3. Mild to Moderate Pain
+4. Casualty IS NOT in shock or respiratory distress AND Casualty IS NOT at
+significant risk of developing either condition.
+− Oral transmucosal fentanyl citrate (OTFC) 800 μg\nTCCC Guidelines 2024
+ May repeat once more after 15 minutes if pain uncontrolled by
+first
+TCCC Combat Paramedics or Providers:
+− Fentanyl 50 mcg IV/IO 0.5-1 mcg/kg
+ May repeat q 30 min
+− Fentanyl 100 mcg IN
+ May repeat q 30 min
+Option 3
+5. Moderate to Severe Pain
+6. Casualty IS in hemorrhagic shock or respiratory distress OR
+7. Casualty IS at significant risk of developing either condition:
+− Ketamine 20-30 mg (or 0.2 - 0.3 mg/kg) slow IV or IO push
+ Repeat doses q 20min prn for IV or IO
+ End points: Control of pain or development of nystagmus
+(rhythmic back-and-forth movement of the eyes).
+− Ketamine 50-100 mg (or 0.5-1 mg/kg) IM or IN
+ Repeat doses q20-30 min prn for IM or IN
+Option 4
+TCCC Combat Paramedics or Providers:
+• Sedation required: significant severe injuries requiring dissociation for
+casualty safety or mission success or when a casualty requires an invasive
+procedure; must be prepared to secure the airway:
+− Ketamine 1-2 mg/kg slow IV/IO push initial dose
+ Endpoints: procedural (dissociative) anesthesia
+− Ketamine 300 mg IM (or 2-3 mg/kg IM) initial dose
+ Endpoints: procedural (dissociative) anesthesia
+ If an emergence phenomenon occurs, consider giving 0.5-2 mg IV/IO
+midazolam.
+ If continued dissociation is required, move to the Prolonged Casualty
+Care (PCC) analgesia and sedation guidelines.
+• If longer duration analgesia is required:
+− Ketamine slow IV/IO infusion 0.3 mg/kg in 100 ml 0.9% sodium
+chloride over 5-15 minutes.
+ Repeat doses q45min prn for IV or IO
+ End points: Control of pain or development of nystagmus
+(rhythmic back-and-forth movement of the eyes).\nTCCC Guidelines 2024
+c. Analgesia and sedation notes:
+1. Casualties need to be disarmed after being given OTFC, IV/IO fentanyl,
+ketamine, or midazolam.
+2. The goal of analgesia is to reduce pain to a tolerable level while still
+protecting their airway and mentation.
+3. The goal of sedation is to stop awareness of painful procedures.
+4. Document a mental status exam using the AVPU method prior to
+administering opioids or ketamine.
+5. For all casualties given opioids, ketamine or benzodiazepines – monitor
+airway, breathing, and circulation closely.
+6. Directions for administering OTFC:
+− Place lozenge between the cheek and the gum.
+− Do not chew the lozenge.
+− Recommend taping lozenge-on-a-stick to casualty’s finger as an added
+safety measure OR utilizing a safety pin and rubber band to attach the
+lozenge (under tension) to the casualty’s uniform or plate carrier.
+− Reassess in 15 minutes.
+− Add second lozenge, in other cheek, as necessary to control severe
+pain.
+− Monitor for respiratory depression.
+7. Ketamine comes in different concentrations; the higher concentration
+option (100 mg/ml) is recommended when using IN dosing route to
+minimize the volume administered intranasally.
+8. Naloxone (0.4 mg IV/IO/IM/IN) should be available when using opioid
+analgesics.
+9. TBI and/or eye injury does not preclude the use of ketamine. However, use
+caution with OTFC, IV/IO fentanyl, ketamine, or midazolam in TBI
+casualties as this may make it difficult to perform a neurologic exam or
+determine if the casualty is decompensating.
+10. Ketamine may be a useful adjunct to reduce the amount of opioids required
+to provide effective pain relief. It is safe to give ketamine to a casualty who
+has previously received a narcotic. IV Ketamine should be given over 1
+minute.
+11. If respirations are reduced after using opioids or ketamine, reposition the
+casualty into a “sniffing position”. If that fails, provide ventilatory support
+with a bag-valve-mask or mouth-to-mask ventilations.
+12. Ondansetron, 4 mg Orally Dissolving Tablet (ODT)/IV/IO/IM, every 8
+hours as needed for nausea or vomiting. Each 8-hour dose can be repeated
+once after 15 minutes if nausea and vomiting are not improved. Do not give
+more than 8 mg in any 8-hour interval. Oral ondansetron is NOT an
+acceptable alternative to the ODT formulation.
+13. The use routine of benzodiazepines such as midazolam is NOT
+recommended for analgesia. When performing procedural sedation,
+benzodiazepines may also be considered to treat behavioral disturbances or
+unpleasant (emergence) reactions. Benzodiazepines should not be used\nTCCC Guidelines 2024
+prophylactically and are not commonly needed when the correct pain or
+sedation dose of ketamine is used.
+14. Polypharmacy is not recommended; benzodiazepines should NOT be used
+in conjunction with opioid analgesia.
+15. If a casualty appears to be partially dissociated, it is safer to administer
+more ketamine than to use a benzodiazepine.
+12. Antibiotics
+a. Antibiotics recommended for all open combat wounds.
+b. If able to take PO meds:
+1. Moxifloxacin (from the CWMP), 400 mg PO once a day.
+c. If unable to take PO meds (shock, unconsciousness):
+1. Ertapenem, 1 gm IV/IO/IM once a day.
+13. Inspect and dress known wounds.
+a. Inspect and dress known wounds.
+b. Abdominal evisceration – Control bleeding; rinse with clean (and warm if possible)
+fluid to reduce gross contamination. Hemorrhage control – apply combat gauze or
+CoTCCC recommended hemostatic dressing to uncontrolled bleeding. Cover exposed
+bowel with a moist, sterile dressing or sterile water-impermeable covering.
+1. Reduction: do not attempt if there is evidence of ruptured bowel
+(gastric/intestinal fluid or stool leakage) or active bleeding.
+2. If no evidence of bowel leakage and hemorrhage is visibly controlled, a
+single brief attempt (<60 seconds) may be made to replace/reduce the
+eviscerated abdominal contents.
+3. If unable to reduce; cover the eviscerated organs with water impermeable
+non-adhesive material (transparent preferred to allow ability to re-assess for
+ongoing bleeding); examples include a bowel bag, IV bag, clear food wrap,
+etc. and secure the impermeable dressing to the casualty using adhesive
+dressing (examples: ioban, chest seal).
+4. Do NOT FORCE contents back into abdomen or actively bleeding viscera.
+5. The casualty should remain NPO.
+14. Check for additional wounds.
+15. Burns.
+a. Assess and treat as a trauma casualty with burns and not burn casualty with injuries.
+b. Facial burns, especially those that occur in closed spaces, may be associated with
+inhalation injury. Aggressively monitor airway status and oxygen saturation in such
+casualties and consider early surgical airway for respiratory distress or oxygen
+desaturation.
+c. Estimate total body surface area (TBSA) burned to the nearest 10% using the Rule of
+Nines.\nTCCC Guidelines 2024
+d. Cover the burn area with dry, sterile dressings. For extensive burns (>20%), consider
+placing the casualty in the Heat-Reflective Shell or Blizzard Survival Blanket from
+the Hypothermia Prevention Kit in order to both cover the burned areas and prevent
+hypothermia.
+e. Fluid resuscitation (USAISR Rule of Ten):
+1. If burns are greater than 20% of TBSA, fluid resuscitation should be
+initiated as soon as IV/IO access is established. Resuscitation should be
+initiated with Lactated Ringer’s, normal saline, or Hextend. If Hextend is
+used, no more than 1000 ml should be given, followed by Lactated Ringer’s
+or normal saline as needed.
+2. Initial IV/IO fluid rate is calculated as %TBSA x 10 ml/hr for adults
+weighing 40- 80 kg.
+3. For every 10 kg ABOVE 80 kg, increase initial rate by 100 ml/hr.
+4. If hemorrhagic shock is also present, resuscitation for hemorrhagic shock
+takes precedence over resuscitation for burn shock. Administer IV/IO fluids
+per the TCCC Guidelines in Section (6).
+5. Consider oral fluids for burns up to 30% TBSA if casualty is conscious and
+able to swallow.
+f. Analgesia in accordance with the TCCC Guidelines in Section (10) may be
+administered to treat burn pain.
+g. Prehospital antibiotic therapy is not indicated solely for burns, but antibiotics should
+be given per the TCCC guidelines in Section (11) if indicated to prevent infection in
+penetrating wounds.
+h. All TCCC interventions can be performed on or through burned skin in a burn
+casualty.
+i. Burn casualties are particularly susceptible to hypothermia. Extra emphasis should be
+placed on barrier heat loss prevention methods.
+16. Splint fractures and re-check pulses.
+17. Cardiopulmonary resuscitation (CPR).
+a. Resuscitation on the battlefield for victims of blast or penetrating trauma who have no
+pulse, no ventilations, and no other signs of life will not be successful and should not
+be attempted.
+b. However, casualties with torso trauma or polytrauma who have no pulse or
+respirations during TFC should have bilateral needle decompression performed to
+ensure they do not have a tension pneumothorax prior to discontinuation of care. The
+procedure is the same as described in section (5a) above.
+18. Communication.
+a. Communicate with the casualty if possible. Encourage, reassure and explain care.
+b. Communicate with tactical leadership as soon as possible and throughout casualty
+treatment as needed. Provide leadership with casualty status and evacuation
+requirements to assist with coordination of evacuation assets.\nTCCC Guidelines 2024
+c. Communicate with the evacuation system (the Patient Evacuation Coordination Cell)
+to arrange for TACEVAC. Communicate with medical providers on the evacuation
+asset if possible and relay mechanism of injury, injuries sustained, signs/symptoms,
+and treatments rendered. Provide additional information as appropriate.
+19. Documentation of Care.
+a. Document clinical assessments, treatments rendered, and changes in the casualty’s
+status on a TCCC Card (DD Form 1380).
+b. Forward documentation with the casualty to the next level of care.
+20. Prepare for Evacuation.
+a. Complete and secure the TCCC Card (DD 1380) to the casualty.
+b. Secure all loose ends of bandages and wraps.
+c. Secure hypothermia prevention wraps/blankets/straps.
+d. Secure litter straps as required. Consider additional padding for long evacuations.
+e. Provide instructions to ambulatory casualties as needed.
+f. Stage casualties for evacuation in accordance with unit standard operating
+procedures.
+g. Maintain security at the evacuation point in accordance with unit standard operating
+procedures.\nTCCC Guidelines 2024
+Principles of Tactical Evacuation Care (TACEVAC)
+* The term “Tactical Evacuation” includes both Casualty Evacuation (CASEVAC) and Medical Evacuation
+(MEDEVAC) as defined in Joint Publication 4-02.
+Basic Management Plan for Tactical Evacuation Care
+1. Transition of Care
+a. Tactical force personnel should establish evacuation point security and stage
+casualties for evacuation.
+b. Tactical force personnel or the medic should communicate casualty information and
+status to TACEVAC personnel as clearly as possible. The minimum information
+communicated should include stable or unstable, injuries identified, and treatments
+rendered.
+c. TACEVAC personnel should stage casualties on evacuation platforms as required.
+d. Secure casualties in the evacuation platform in accordance with unit policies,
+platform configurations and safety requirements.
+e. TACEVAC medical personnel should re-assess casualties and re-evaluate all injuries
+and previous interventions.
+2. Massive Hemorrhage (same as Tactical Field Care)
+3. Airway Management
+Endotracheal intubation may be considered in lieu of cricothyroidotomy if trained.
+4. Respiration/Breathing
+Most combat casualties do not require supplemental oxygen, but administration of
+oxygen may be of benefit for the following types of casualties:
+• Low oxygen saturation by pulse oximetry
+• Injuries associated with impaired oxygenation
+• Unconscious casualty
+• Casualty with TBI (maintain oxygen saturation > 90%)
+• Casualty in shock
+• Casualty at altitude
+• Known or suspected smoke inhalation
+5. Circulation (same as Tactical Field Care)\nTCCC Guidelines 2024
+6. Moderate or Severe Traumatic Brain Injury (same as Tactical Field Care)
+7. Hypothermia Prevention (same as Tactical Field Care)
+8. Penetrating Eye Trauma (same as Tactical Field Care)
+9. Monitoring (same as Tactical Field Care)
+10. Analgesia (same as Tactical Field Care)
+11. Antibiotics (same as Tactical Field Care)
+12. Inspect and dress known wounds (same as Tactical Field Care)
+13. Check for additional wounds. (same as Tactical Field Care)
+14. Burns (same as Tactical Field Care)
+15. Splint fractures and re-check pulses (same as Tactical Field Care)
+16. Cardiopulmonary resuscitation (CPR) in TACEVAC
+a. Casualties with torso trauma or polytrauma who have no pulse or respirations during
+TACEVAC should have bilateral needle decompression performed to ensure they do
+not have a tension pneumothorax. The procedure is the same as described in Section
+(4a) above.
+b. CPR may be attempted during this phase of care if the casualty does not have
+obviously fatal wounds and will be arriving at a facility with a surgical capability
+within a short period of time. CPR should not be done at the expense of
+compromising the mission or denying lifesaving care to other casualties.
+17. Communication
+a. Communicate with the casualty if possible. Encourage, reassure and explain care.
+b. Communicate with medical providers at the next level of care as feasible and relay
+mechanism of injury, injuries sustained, signs/symptoms, and treatments rendered.
+Provide additional information as appropriate.
+18. Documentation of Care (same as Tactical Field Care)\nTCCC Guidelines 2024
+Committee on Tactical Combat Casualty Care (CoTCCC) in 2022-2023.
+CAPT Travis Deaton, MD - Chair
+CAPT Brendon Drew, DO – Chair (2019-2023)
+Mr Harold Montgomery – Vice Chair
+CMSgt Shawn Anderson LTC Ryan Knight, MD
+CAPT Sean Barbabella, DO CDR Joseph Kotora, MD
+HMC Kevin Baskin SrA Oliver Kreuzer
+HMCS Joshua Beard CAPT Lanny Littlejohn, MD
+SFC Hunter Black CPT John Maitha, PA
+HMCM Mark Boyle HMSC John Morey
+SGM Curt Conklin MSgt Billie Nored
+COL Lance Cordoni, MD Maj D. Marc Northern, MD
+CAPT Virginia Damin, RN Mr Keith O’Grady
+Col John Dorsch, MD (2022) LtCol Lorenzo Paladino, MD
+MAJ Andrew Fisher, MD SFC Justin Rapp
+SGM Matthew Garrison MSG Michael Remley
+LtCol Brian Gavitt, MD COL Jamie Riesberg, MD
+Mr William Gephart, PA, RN HMCM Tyler Scarborough
+MAJ Christopher Gonzales, PA Col Stacy Shackelford, MD
+COL Kirby Gross, MD CMSgt Travis Shaw
+COL Jennifer Gurney, MD CSM Timothy Sprunger
+COL Bonnie Hartstein, MD CAPT Matthew Tadlock, MD
+CDR Shane Jensen, MD COL Micheal Tarpey, MD
+COL Jay Johannigman, MD HMCM Jeremy Torrisi
+CDR Joseph Kaleiohi, PA MSG Kaleb Twilligear
+Mr Win Kerr MCPO Justin Wilson
+CoTCCC Staff
+Dr Frank Butler, MD
+Ms Danielle Davis
+Incoming Members 2024
+LTC Michael April, MD LCDR Eric Koch, MD
+LTC George Barbee, PA SCPO Richard Neading
+HMSC Antonio Boyd HM1 Jonathon Stringer
+MSG Cyril Clayton CDR Russell Wier, DO
+Mr Michael Eldred
+LtCol Christopher Hewitt
+HMCM Christopher Huse
+MSG Christopher Hutchison\n

@@ -1,0 +1,9 @@
+[Desktop Entry]
+Type=Application
+Name=TCCC Preload Models
+Comment=Preloads STT models to improve startup time
+Exec=/home/ama/tccc-project/scripts/system/preload_stt_models.sh
+Icon=/home/ama/tccc-project/images/blue_logo.png
+Terminal=false
+Categories=Utility;
+X-GNOME-Autostart-enabled=true

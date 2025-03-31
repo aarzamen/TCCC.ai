@@ -1,0 +1,10 @@
+[Desktop Entry]
+Version=1.0
+Type=Application
+Name=TCCC Enhanced Display
+Comment=Enhanced display demo for TCCC project with vital signs visualization
+Exec=bash -c "cd /home/ama/tccc-project && source venv/bin/activate && python tccc_display_demo.py --fullscreen"
+Icon=/home/ama/tccc-project/images/blue_logo.png
+Terminal=true
+Categories=Medical;Development;
+Keywords=TCCC;Medical;Display;Visualization;

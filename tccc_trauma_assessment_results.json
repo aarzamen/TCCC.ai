@@ -1,0 +1,21 @@
+{
+  "test_type": "trauma_assessment",
+  "prompt": "Please verbalize a TCCC trauma assessment for a casualty with multiple gunshot wounds, including vital signs assessment and interventions performed.",
+  "transcription": "Transcription failed",
+  "evaluation": {
+    "found_terms": {
+      "vital_signs": [],
+      "injuries": [],
+      "procedures": [],
+      "medications": [],
+      "assessments": [],
+      "evacuation": []
+    },
+    "total_found": 0,
+    "total_possible": 73,
+    "timing_precision": false,
+    "accuracy": 0.0,
+    "transcription": "Transcription failed"
+  },
+  "timestamp": "2025-03-21T00:43:05.079145"
+}

@@ -1,0 +1,9 @@
+[Desktop Entry]
+Name=TCCC Microphone Test
+Comment=Launch TCCC speech-to-text with display test
+Exec=/home/ama/tccc-project/launch_tccc_mic_test.sh
+Icon=/home/ama/tccc-project/images/blue_logo.png
+Terminal=false
+Type=Application
+Categories=Utility;
+StartupNotify=true

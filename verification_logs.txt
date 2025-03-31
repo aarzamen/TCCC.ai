@@ -1,0 +1,613 @@
+Starting Audio Pipeline verification...
+Loaded configuration from: /home/ama/tccc-project/config/audio_pipeline.yaml
+
+==============================
+======= Initialization =======
+==============================
+
+2025-03-31 09:22:26,801 - tccc.utils.vad_manager - INFO - VAD Manager initialized
+2025-03-31 09:22:26,805 - tccc.utils.vad_manager - INFO - Created new VAD Manager instance
+2025-03-31 09:22:26,805 - tccc.audio_pipeline.audio_pipeline - INFO - Using VAD Manager for speech detection
+2025-03-31 09:22:26,807 - tccc.utils.vad_manager - INFO - Set VAD mode to BATTLEFIELD
+2025-03-31 09:22:26,807 - tccc.audio_pipeline.audio_pipeline - INFO - Enabled battlefield mode for VAD
+2025-03-31 09:22:26,807 - tccc.audio_pipeline.audio_pipeline - INFO - Enhanced VAD initialized with VAD Manager
+2025-03-31 09:22:26,807 - tccc.audio_pipeline.audio_pipeline - INFO - Enhanced audio processor initialized for battlefield conditions
+ALSA lib confmisc.c:1369:(snd_func_refer) Unable to find definition 'cards.0.pcm.front.0:CARD=0'
+ALSA lib conf.c:5178:(_snd_config_evaluate) function snd_func_refer returned error: No such file or directory
+ALSA lib conf.c:5701:(snd_config_expand) Evaluate error: No such file or directory
+ALSA lib pcm.c:2664:(snd_pcm_open_noupdate) Unknown PCM front
+ALSA lib pcm.c:2664:(snd_pcm_open_noupdate) Unknown PCM cards.pcm.rear
+ALSA lib pcm.c:2664:(snd_pcm_open_noupdate) Unknown PCM cards.pcm.center_lfe
+ALSA lib pcm.c:2664:(snd_pcm_open_noupdate) Unknown PCM cards.pcm.side
+ALSA lib pcm.c:2664:(snd_pcm_open_noupdate) Unknown PCM cards.pcm.surround21
+ALSA lib pcm.c:2664:(snd_pcm_open_noupdate) Unknown PCM cards.pcm.surround21
+ALSA lib pcm.c:2664:(snd_pcm_open_noupdate) Unknown PCM cards.pcm.surround40
+ALSA lib pcm.c:2664:(snd_pcm_open_noupdate) Unknown PCM cards.pcm.surround41
+ALSA lib pcm.c:2664:(snd_pcm_open_noupdate) Unknown PCM cards.pcm.surround50
+ALSA lib pcm.c:2664:(snd_pcm_open_noupdate) Unknown PCM cards.pcm.surround51
+ALSA lib pcm.c:2664:(snd_pcm_open_noupdate) Unknown PCM cards.pcm.surround71
+ALSA lib pcm.c:2664:(snd_pcm_open_noupdate) Unknown PCM cards.pcm.iec958
+ALSA lib pcm.c:2664:(snd_pcm_open_noupdate) Unknown PCM cards.pcm.iec958
+ALSA lib pcm.c:2664:(snd_pcm_open_noupdate) Unknown PCM cards.pcm.iec958
+ALSA lib pcm.c:2664:(snd_pcm_open_noupdate) Unknown PCM cards.pcm.modem
+ALSA lib pcm.c:2664:(snd_pcm_open_noupdate) Unknown PCM cards.pcm.modem
+ALSA lib pcm.c:2664:(snd_pcm_open_noupdate) Unknown PCM cards.pcm.phoneline
+ALSA lib pcm.c:2664:(snd_pcm_open_noupdate) Unknown PCM cards.pcm.phoneline
+ALSA lib pcm_oss.c:397:(_snd_pcm_oss_open) Cannot open device /dev/dsp
+ALSA lib pcm_oss.c:397:(_snd_pcm_oss_open) Cannot open device /dev/dsp
+ALSA lib confmisc.c:160:(snd_config_get_card) Invalid field card
+ALSA lib pcm_usb_stream.c:482:(_snd_pcm_usb_stream_open) Invalid card 'card'
+ALSA lib confmisc.c:160:(snd_config_get_card) Invalid field card
+ALSA lib pcm_usb_stream.c:482:(_snd_pcm_usb_stream_open) Invalid card 'card'
+ALSA lib pcm_dmix.c:1005:(snd_pcm_dmix_open) The dmix plugin supports only playback stream
+ALSA lib confmisc.c:165:(snd_config_get_card) Cannot get card index for 0:
+ALSA lib confmisc.c:165:(snd_config_get_card) Cannot get card index for 0:
+ALSA lib pcm_direct.c:2054:(snd1_pcm_direct_parse_open_conf) Unknown field card
+ALSA lib pcm_direct.c:2054:(snd1_pcm_direct_parse_open_conf) Unknown field card
+ALSA lib pcm_dmix.c:1032:(snd_pcm_dmix_open) unable to open slave
+2025-03-31 09:22:27,124 - tccc.audio_pipeline.audio_pipeline - INFO - Initialized microphone source (device 0)
+2025-03-31 09:22:27,124 - tccc.audio_pipeline.audio_pipeline - INFO - Registered audio source: default_microphone (microphone)
+2025-03-31 09:22:27,125 - tccc.audio_pipeline.audio_pipeline - INFO - Initialized network audio source (sip://127.0.0.1:5060)
+2025-03-31 09:22:27,125 - tccc.audio_pipeline.audio_pipeline - INFO - Registered audio source: voip (network)
+2025-03-31 09:22:27,125 - tccc.audio_pipeline.audio_pipeline - INFO - Initialized file audio source: /home/ama/tccc-project/test_data/sample_call.wav
+2025-03-31 09:22:27,125 - tccc.audio_pipeline.audio_pipeline - INFO - Registered audio source: test_file (file)
+2025-03-31 09:22:27,126 - tccc.audio_pipeline.audio_pipeline - INFO - Set default audio source: default_microphone
+2025-03-31 09:22:27,126 - tccc.audio_pipeline.audio_pipeline - INFO - Audio Pipeline initialized successfully
+Initialization result: True
+
+==============================
+===== Available Sources ======
+==============================
+
+1. default_microphone (microphone): 16000Hz, 1 channels
+2. voip (network): 16000Hz, 1 channels
+3. test_file (file): 16000Hz, 1 channels
+
+==============================
+====== Starting Capture ======
+==============================
+
+2025-03-31 09:22:27,126 - tccc.audio_pipeline.audio_pipeline - INFO - Started audio source: test_file
+2025-03-31 09:22:27,127 - tccc.audio_pipeline.audio_pipeline - INFO - Playing audio file: /home/ama/tccc-project/test_data/sample_call.wav
+2025-03-31 09:22:27,127 - tccc.audio_pipeline.audio_pipeline - INFO - Output stream handler started
+2025-03-31 09:22:27,127 - tccc.audio_pipeline.audio_pipeline - INFO - Started audio capture from test_file
+2025-03-31 09:22:27,127 - tccc.audio_pipeline.audio_pipeline - INFO - File details: 16000Hz, 1 channels, 16 bits, 48000 frames
+Start capture result: True
+Got audio stream: buffer size=5
+
+==============================
+========= Processing =========
+==============================
+
+Processing audio for 5 seconds...
+2025-03-31 09:22:27,147 - tccc.utils.vad_manager - INFO - Created WebRTCVAD instance for audio_processor with sensitivity 3
+2025-03-31 09:22:27,202 - tccc.utils.event_bus - INFO - Event bus delivery thread started
+2025-03-31 09:22:27,205 - tccc.utils.event_bus - INFO - Created default event bus (async=True)
+Read 10 chunks of audio data
+Read 20 chunks of audio data
+Read 30 chunks of audio data
+Read 40 chunks of audio data
+2025-03-31 09:22:30,129 - tccc.audio_pipeline.audio_pipeline - INFO - Playing audio file: /home/ama/tccc-project/test_data/sample_call.wav
+2025-03-31 09:22:30,129 - tccc.audio_pipeline.audio_pipeline - INFO - File details: 16000Hz, 1 channels, 16 bits, 48000 frames
+Read 50 chunks of audio data
+Read 60 chunks of audio data
+Read 70 chunks of audio data
+Read 80 chunks of audio data
+
+==============================
+===== Quality Parameters =====
+==============================
+
+2025-03-31 09:22:32,192 - tccc.audio_pipeline.audio_pipeline - INFO - Updated audio quality parameters: {'noise_reduction': {'strength': 0.5}, 'enhancement': {'target_level_db': -12}}
+Set quality parameters result: True
+
+==============================
+=========== Status ===========
+==============================
+
+Pipeline status: running
+Active source: test_file
+Chunks processed: 80
+Speech chunks: 79
+Average processing time: 3.92ms
+
+==============================
+====== Stopping Capture ======
+==============================
+
+2025-03-31 09:22:32,242 - tccc.audio_pipeline.audio_pipeline - INFO - File playback stopped
+2025-03-31 09:22:32,242 - tccc.audio_pipeline.audio_pipeline - INFO - Stopped audio source: test_file
+2025-03-31 09:22:32,335 - tccc.audio_pipeline.audio_pipeline - INFO - Output stream handler stopped
+2025-03-31 09:22:32,336 - tccc.audio_pipeline.audio_pipeline - INFO - Audio capture stats: 80 chunks processed in 5.2s, 79 speech chunks detected
+2025-03-31 09:22:32,336 - tccc.audio_pipeline.audio_pipeline - INFO - Average processing time: 3.92ms per chunk
+Stop capture result: True
+
+Verification complete!
+
+A module that was compiled using NumPy 1.x cannot be run in
+NumPy 2.2.4 as it may crash. To support both 1.x and 2.x
+versions of NumPy, modules must be compiled with NumPy 2.0.
+Some module may need to rebuild instead e.g. with 'pybind11>=2.12'.
+
+If you are a user of the module, the easiest solution will be to
+downgrade to 'numpy<2' or try to upgrade the affected module.
+We expect that some modules will need time to support NumPy 2.
+
+Traceback (most recent call last):  File "/home/ama/tccc-project/verification_script_stt_engine.py", line 33, in <module>
+    from tccc.stt_engine import STTEngine, create_stt_engine
+  File "/home/ama/tccc-project/src/tccc/stt_engine/__init__.py", line 14, in <module>
+    from .stt_engine import TranscriptionResult, TranscriptionSegment, Word, TranscriptionConfig, STTEngine
+  File "/home/ama/tccc-project/src/tccc/stt_engine/stt_engine.py", line 22, in <module>
+    import torchaudio
+  File "/home/ama/tccc-project/venv/lib/python3.10/site-packages/torchaudio/__init__.py", line 1, in <module>
+    from torchaudio import (  # noqa: F401
+  File "/home/ama/tccc-project/venv/lib/python3.10/site-packages/torchaudio/compliance/__init__.py", line 1, in <module>
+    from . import kaldi
+  File "/home/ama/tccc-project/venv/lib/python3.10/site-packages/torchaudio/compliance/kaldi.py", line 22, in <module>
+    EPSILON = torch.tensor(torch.finfo(torch.float).eps)
+/home/ama/tccc-project/venv/lib/python3.10/site-packages/torchaudio/compliance/kaldi.py:22: UserWarning: Failed to initialize NumPy: _ARRAY_API not found (Triggered internally at /root/pytorch/torch/csrc/utils/tensor_numpy.cpp:84.)
+  EPSILON = torch.tensor(torch.finfo(torch.float).eps)
+Starting STT Engine verification...
+Loaded configuration from: /home/ama/tccc-project/config/stt_engine.yaml
+
+==============================
+======= Initialization =======
+==============================
+
+Creating STT engine with type: mock
+2025-03-31 09:22:58,442 - tccc.stt_engine - INFO - Using Mock STT Engine
+2025-03-31 09:22:58,445 - tccc.stt_engine.mock_stt - INFO - Initialized MockSTTEngine
+Initialization result: True
+
+==============================
+=========== Status ===========
+==============================
+
+Engine initialized: True
+Model type: mock_whisper
+Model size: tiny-en
+
+==============================
+===== Loading Test Audio =====
+==============================
+
+Loaded audio: 48000 samples, 16000Hz
+
+==============================
+======= Context Update =======
+==============================
+
+Context update result: True
+
+==============================
+======= Transcription ========
+==============================
+
+Transcription time: 0.10s
+Transcription result:
+  Text: The patient has a gunshot wound to the right leg with significant bleeding.
+  Segments: 1
+
+First segment:
+  Text: The patient has a gunshot wound to the right leg with significant bleeding.
+  Time: 0.00s - 3.00s
+  Confidence: 0.92
+
+Words in first segment (showing first 5):
+  1. 'The' (0.00s - 0.40s, conf: 0.92)
+  2. 'patient' (0.50s - 0.90s, conf: 0.92)
+  3. 'has' (1.00s - 1.40s, conf: 0.92)
+  4. 'a' (1.50s - 1.90s, conf: 0.92)
+  5. 'gunshot' (2.00s - 2.40s, conf: 0.92)
+  Language: en
+
+==============================
+======== Final Status ========
+==============================
+
+Metrics:
+  Total audio processed: 3.00s
+  Total processing time: 0.00s
+  Transcripts generated: 1
+  Errors: 0
+  Average confidence: 0.92
+  Average real-time factor: 0.25x
+
+Verification complete!
+
+A module that was compiled using NumPy 1.x cannot be run in
+NumPy 2.2.4 as it may crash. To support both 1.x and 2.x
+versions of NumPy, modules must be compiled with NumPy 2.0.
+Some module may need to rebuild instead e.g. with 'pybind11>=2.12'.
+
+If you are a user of the module, the easiest solution will be to
+downgrade to 'numpy<2' or try to upgrade the affected module.
+We expect that some modules will need time to support NumPy 2.
+
+Traceback (most recent call last):  File "/home/ama/tccc-project/verify_audio_stt_e2e.py", line 464, in <module>
+    sys.exit(main())
+  File "/home/ama/tccc-project/verify_audio_stt_e2e.py", line 56, in main
+    from tccc.stt_engine.stt_engine import STTEngine
+  File "/home/ama/tccc-project/src/tccc/stt_engine/__init__.py", line 14, in <module>
+    from .stt_engine import TranscriptionResult, TranscriptionSegment, Word, TranscriptionConfig, STTEngine
+  File "/home/ama/tccc-project/src/tccc/stt_engine/stt_engine.py", line 22, in <module>
+    import torchaudio
+  File "/home/ama/tccc-project/venv/lib/python3.10/site-packages/torchaudio/__init__.py", line 1, in <module>
+    from torchaudio import (  # noqa: F401
+  File "/home/ama/tccc-project/venv/lib/python3.10/site-packages/torchaudio/compliance/__init__.py", line 1, in <module>
+    from . import kaldi
+  File "/home/ama/tccc-project/venv/lib/python3.10/site-packages/torchaudio/compliance/kaldi.py", line 22, in <module>
+    EPSILON = torch.tensor(torch.finfo(torch.float).eps)
+/home/ama/tccc-project/venv/lib/python3.10/site-packages/torchaudio/compliance/kaldi.py:22: UserWarning: Failed to initialize NumPy: _ARRAY_API not found (Triggered internally at /root/pytorch/torch/csrc/utils/tensor_numpy.cpp:84.)
+  EPSILON = torch.tensor(torch.finfo(torch.float).eps)
+2025-03-31 09:23:26,966 - JetsonIntegration - INFO - Loaded configuration from /home/ama/tccc-project/config/jetson_optimizer.yaml
+2025-03-31 09:23:26,967 - JetsonOptimizer - ERROR - Failed to load config from /home/ama/tccc-project/config/jetson_optimizer.yaml: Expecting value: line 1 column 1 (char 0)
+2025-03-31 09:23:27,026 - JetsonOptimizer - INFO - Jetson Orin Nano platform detected
+2025-03-31 09:23:27,026 - JetsonIntegration - INFO - Jetson platform detected, optimizations enabled
+
+============================================================
+============ Audio STT End-to-End Verification =============
+============================================================
+
+Using real STT engine with model size: tiny.en
+2025-03-31 09:23:27,027 - tccc.stt_engine.model_cache_manager - INFO - Model cache configured for Jetson environment
+2025-03-31 09:23:27,027 - tccc.stt_engine.model_cache_manager - INFO - Model cache configured for Jetson environment
+2025-03-31 09:23:27,027 - tccc.stt_engine.model_cache_manager - INFO - Model cache configured for Jetson environment
+2025-03-31 09:23:27,031 - tccc.stt_engine.model_cache_manager - INFO - Model cache manager initialized
+2025-03-31 09:23:27,031 - tccc.stt_engine.model_cache_manager - INFO - Model cache manager initialized
+2025-03-31 09:23:27,031 - tccc.stt_engine.model_cache_manager - INFO - Model cache manager initialized
+2025-03-31 09:23:27,031 - tccc.stt_engine.model_cache_manager - INFO - Registered model factory for faster-whisper
+2025-03-31 09:23:27,031 - tccc.stt_engine.model_cache_manager - INFO - Registered model factory for faster-whisper
+2025-03-31 09:23:27,031 - tccc.stt_engine.model_cache_manager - INFO - Registered model factory for faster-whisper
+2025-03-31 09:23:27,032 - tccc.stt_engine.faster_whisper_stt - INFO - Registered WhisperModel factory with cache manager
+2025-03-31 09:23:27,032 - tccc.stt_engine.faster_whisper_stt - INFO - Registered WhisperModel factory with cache manager
+2025-03-31 09:23:27,032 - tccc.stt_engine.faster_whisper_stt - INFO - Registered WhisperModel factory with cache manager
+
+============================================================
+==================== Environment Setup =====================
+============================================================
+
+Virtual environment active: True
+
+============================================================
+================= Initializing Components ==================
+============================================================
+
+2025-03-31 09:23:27,035 - tccc.utils.vad_manager - INFO - VAD Manager initialized
+2025-03-31 09:23:27,035 - tccc.utils.vad_manager - INFO - VAD Manager initialized
+2025-03-31 09:23:27,036 - tccc.utils.vad_manager - INFO - Created new VAD Manager instance
+2025-03-31 09:23:27,036 - tccc.utils.vad_manager - INFO - Created new VAD Manager instance
+2025-03-31 09:23:27,036 - tccc.audio_pipeline.audio_pipeline - INFO - Using VAD Manager for speech detection
+2025-03-31 09:23:27,036 - tccc.audio_pipeline.audio_pipeline - INFO - Using VAD Manager for speech detection
+2025-03-31 09:23:27,036 - tccc.utils.vad_manager - INFO - Set VAD mode to BATTLEFIELD
+2025-03-31 09:23:27,036 - tccc.utils.vad_manager - INFO - Set VAD mode to BATTLEFIELD
+2025-03-31 09:23:27,036 - tccc.audio_pipeline.audio_pipeline - INFO - Enabled battlefield mode for VAD
+2025-03-31 09:23:27,036 - tccc.audio_pipeline.audio_pipeline - INFO - Enabled battlefield mode for VAD
+2025-03-31 09:23:27,037 - tccc.audio_pipeline.audio_pipeline - INFO - Enhanced VAD initialized with VAD Manager
+2025-03-31 09:23:27,037 - tccc.audio_pipeline.audio_pipeline - INFO - Enhanced VAD initialized with VAD Manager
+2025-03-31 09:23:27,037 - tccc.audio_pipeline.audio_pipeline - INFO - Enhanced audio processor initialized for battlefield conditions
+2025-03-31 09:23:27,037 - tccc.audio_pipeline.audio_pipeline - INFO - Enhanced audio processor initialized for battlefield conditions
+2025-03-31 09:23:27,037 - tccc.audio_pipeline.audio_pipeline - INFO - Initialized file audio source: /home/ama/tccc-project/test_data/test_speech.wav
+2025-03-31 09:23:27,037 - tccc.audio_pipeline.audio_pipeline - INFO - Initialized file audio source: /home/ama/tccc-project/test_data/test_speech.wav
+2025-03-31 09:23:27,037 - tccc.audio_pipeline.audio_pipeline - INFO - Registered audio source: test_file (file)
+2025-03-31 09:23:27,037 - tccc.audio_pipeline.audio_pipeline - INFO - Registered audio source: test_file (file)
+2025-03-31 09:23:27,038 - tccc.audio_pipeline.audio_pipeline - INFO - Set default audio source: test_file
+2025-03-31 09:23:27,038 - tccc.audio_pipeline.audio_pipeline - INFO - Set default audio source: test_file
+2025-03-31 09:23:27,038 - tccc.audio_pipeline.audio_pipeline - INFO - Audio Pipeline initialized successfully
+2025-03-31 09:23:27,038 - tccc.audio_pipeline.audio_pipeline - INFO - Audio Pipeline initialized successfully
+Audio Pipeline initialized: True
+2025-03-31 09:23:27,038 - tccc.stt_engine.stt_engine - INFO - Initializing STT model manager
+2025-03-31 09:23:27,038 - tccc.stt_engine.stt_engine - INFO - Initializing STT model manager
+2025-03-31 09:23:27,038 - tccc.stt_engine.stt_engine - INFO - Initializing STT model manager
+2025-03-31 09:23:27,042 - tccc.stt_engine.stt_engine - INFO - ONNX models not found at models/whisper-tiny.en-en/, attempting conversion
+2025-03-31 09:23:27,042 - tccc.stt_engine.stt_engine - INFO - ONNX models not found at models/whisper-tiny.en-en/, attempting conversion
+2025-03-31 09:23:27,042 - tccc.stt_engine.stt_engine - INFO - ONNX models not found at models/whisper-tiny.en-en/, attempting conversion
+2025-03-31 09:23:27,180 - tccc.stt_engine.stt_engine - ERROR - Failed to convert Whisper model to ONNX: Numba needs NumPy 2.1 or less. Got NumPy 2.2.
+2025-03-31 09:23:27,180 - tccc.stt_engine.stt_engine - ERROR - Failed to convert Whisper model to ONNX: Numba needs NumPy 2.1 or less. Got NumPy 2.2.
+2025-03-31 09:23:27,180 - tccc.stt_engine.stt_engine - ERROR - Failed to convert Whisper model to ONNX: Numba needs NumPy 2.1 or less. Got NumPy 2.2.
+/home/ama/tccc-project/venv/lib/python3.10/site-packages/onnxruntime/capi/onnxruntime_inference_collection.py:115: UserWarning: Specified provider 'TensorrtExecutionProvider' is not in available provider names.Available providers: 'AzureExecutionProvider, CPUExecutionProvider'
+  warnings.warn(
+/home/ama/tccc-project/venv/lib/python3.10/site-packages/onnxruntime/capi/onnxruntime_inference_collection.py:115: UserWarning: Specified provider 'CUDAExecutionProvider' is not in available provider names.Available providers: 'AzureExecutionProvider, CPUExecutionProvider'
+  warnings.warn(
+2025-03-31 09:23:27,186 - tccc.stt_engine.stt_engine - ERROR - Failed to initialize Whisper ONNX model: [ONNXRuntimeError] : 3 : NO_SUCHFILE : Load model from models/whisper-tiny.en-en/encoder.onnx failed:Load model models/whisper-tiny.en-en/encoder.onnx failed. File doesn't exist
+2025-03-31 09:23:27,186 - tccc.stt_engine.stt_engine - ERROR - Failed to initialize Whisper ONNX model: [ONNXRuntimeError] : 3 : NO_SUCHFILE : Load model from models/whisper-tiny.en-en/encoder.onnx failed:Load model models/whisper-tiny.en-en/encoder.onnx failed. File doesn't exist
+2025-03-31 09:23:27,186 - tccc.stt_engine.stt_engine - ERROR - Failed to initialize Whisper ONNX model: [ONNXRuntimeError] : 3 : NO_SUCHFILE : Load model from models/whisper-tiny.en-en/encoder.onnx failed:Load model models/whisper-tiny.en-en/encoder.onnx failed. File doesn't exist
+2025-03-31 09:23:27,187 - tccc.stt_engine.stt_engine - WARNING - Model manager initialization returned False
+2025-03-31 09:23:27,187 - tccc.stt_engine.stt_engine - WARNING - Model manager initialization returned False
+2025-03-31 09:23:27,187 - tccc.stt_engine.stt_engine - WARNING - Model manager initialization returned False
+2025-03-31 09:23:27,188 - tccc.stt_engine.stt_engine - INFO - Initializing speaker diarizer
+2025-03-31 09:23:27,188 - tccc.stt_engine.stt_engine - INFO - Initializing speaker diarizer
+2025-03-31 09:23:27,188 - tccc.stt_engine.stt_engine - INFO - Initializing speaker diarizer
+2025-03-31 09:23:35,210 - tccc.stt_engine.stt_engine - ERROR - Failed to initialize speaker diarization: module 'torch' has no attribute 'compiler'
+2025-03-31 09:23:35,210 - tccc.stt_engine.stt_engine - ERROR - Failed to initialize speaker diarization: module 'torch' has no attribute 'compiler'
+2025-03-31 09:23:35,210 - tccc.stt_engine.stt_engine - ERROR - Failed to initialize speaker diarization: module 'torch' has no attribute 'compiler'
+2025-03-31 09:23:35,212 - tccc.stt_engine.stt_engine - WARNING - Speaker diarization initialization failed
+2025-03-31 09:23:35,212 - tccc.stt_engine.stt_engine - WARNING - Speaker diarization initialization failed
+2025-03-31 09:23:35,212 - tccc.stt_engine.stt_engine - WARNING - Speaker diarization initialization failed
+2025-03-31 09:23:35,212 - tccc.stt_engine.stt_engine - INFO - Initializing medical term processor
+2025-03-31 09:23:35,212 - tccc.stt_engine.stt_engine - INFO - Initializing medical term processor
+2025-03-31 09:23:35,212 - tccc.stt_engine.stt_engine - INFO - Initializing medical term processor
+2025-03-31 09:23:35,220 - tccc.stt_engine.stt_engine - INFO - Loaded 72 medical terms and 43 abbreviations
+2025-03-31 09:23:35,220 - tccc.stt_engine.stt_engine - INFO - Loaded 72 medical terms and 43 abbreviations
+2025-03-31 09:23:35,220 - tccc.stt_engine.stt_engine - INFO - Loaded 72 medical terms and 43 abbreviations
+2025-03-31 09:23:35,220 - tccc.stt_engine.stt_engine - INFO - Medical term processor initialized successfully
+2025-03-31 09:23:35,220 - tccc.stt_engine.stt_engine - INFO - Medical term processor initialized successfully
+2025-03-31 09:23:35,220 - tccc.stt_engine.stt_engine - INFO - Medical term processor initialized successfully
+2025-03-31 09:23:35,221 - tccc.stt_engine.stt_engine - INFO - Streaming context max length: 60.0 seconds
+2025-03-31 09:23:35,221 - tccc.stt_engine.stt_engine - INFO - Streaming context max length: 60.0 seconds
+2025-03-31 09:23:35,221 - tccc.stt_engine.stt_engine - INFO - Streaming context max length: 60.0 seconds
+2025-03-31 09:23:35,221 - tccc.stt_engine.stt_engine - WARNING - STT Engine initialized with limited functionality - some components may not work properly
+2025-03-31 09:23:35,221 - tccc.stt_engine.stt_engine - WARNING - STT Engine initialized with limited functionality - some components may not work properly
+2025-03-31 09:23:35,221 - tccc.stt_engine.stt_engine - WARNING - STT Engine initialized with limited functionality - some components may not work properly
+2025-03-31 09:23:35,225 - tccc.utils.event_bus - INFO - Event bus delivery thread started
+2025-03-31 09:23:35,225 - tccc.utils.event_bus - INFO - Event bus delivery thread started
+2025-03-31 09:23:35,225 - tccc.utils.event_bus - INFO - Created default event bus (async=True)
+2025-03-31 09:23:35,225 - tccc.utils.event_bus - INFO - Created default event bus (async=True)
+2025-03-31 09:23:35,225 - tccc.utils.event_bus - INFO - Subscriber 'stt_engine' subscribed to event types: [<EventType.AUDIO_SEGMENT: 'audio_segment'>]
+2025-03-31 09:23:35,225 - tccc.utils.event_bus - INFO - Subscriber 'stt_engine' subscribed to event types: [<EventType.AUDIO_SEGMENT: 'audio_segment'>]
+2025-03-31 09:23:35,225 - tccc.stt_engine.stt_engine - INFO - STT Engine subscribed to audio events
+2025-03-31 09:23:35,225 - tccc.stt_engine.stt_engine - INFO - STT Engine subscribed to audio events
+2025-03-31 09:23:35,225 - tccc.stt_engine.stt_engine - INFO - STT Engine subscribed to audio events
+STT Engine initialized: True
+
+============================================================
+=================== Model Cache Testing ====================
+============================================================
+
+Model cache manager available: True
+Initial cache status: 0 models cached
+
+Creating second STT engine instance (should use cached model)...
+2025-03-31 09:23:35,226 - tccc.stt_engine.stt_engine - INFO - Initializing STT model manager
+2025-03-31 09:23:35,226 - tccc.stt_engine.stt_engine - INFO - Initializing STT model manager
+2025-03-31 09:23:35,226 - tccc.stt_engine.stt_engine - INFO - Initializing STT model manager
+2025-03-31 09:23:35,227 - tccc.stt_engine.stt_engine - INFO - ONNX models not found at models/whisper-tiny.en-en/, attempting conversion
+2025-03-31 09:23:35,227 - tccc.stt_engine.stt_engine - INFO - ONNX models not found at models/whisper-tiny.en-en/, attempting conversion
+2025-03-31 09:23:35,227 - tccc.stt_engine.stt_engine - INFO - ONNX models not found at models/whisper-tiny.en-en/, attempting conversion
+2025-03-31 09:23:35,230 - tccc.stt_engine.stt_engine - ERROR - Failed to convert Whisper model to ONNX: Numba needs NumPy 2.1 or less. Got NumPy 2.2.
+2025-03-31 09:23:35,230 - tccc.stt_engine.stt_engine - ERROR - Failed to convert Whisper model to ONNX: Numba needs NumPy 2.1 or less. Got NumPy 2.2.
+2025-03-31 09:23:35,230 - tccc.stt_engine.stt_engine - ERROR - Failed to convert Whisper model to ONNX: Numba needs NumPy 2.1 or less. Got NumPy 2.2.
+/home/ama/tccc-project/venv/lib/python3.10/site-packages/onnxruntime/capi/onnxruntime_inference_collection.py:115: UserWarning: Specified provider 'TensorrtExecutionProvider' is not in available provider names.Available providers: 'AzureExecutionProvider, CPUExecutionProvider'
+  warnings.warn(
+/home/ama/tccc-project/venv/lib/python3.10/site-packages/onnxruntime/capi/onnxruntime_inference_collection.py:115: UserWarning: Specified provider 'CUDAExecutionProvider' is not in available provider names.Available providers: 'AzureExecutionProvider, CPUExecutionProvider'
+  warnings.warn(
+2025-03-31 09:23:35,233 - tccc.stt_engine.stt_engine - ERROR - Failed to initialize Whisper ONNX model: [ONNXRuntimeError] : 3 : NO_SUCHFILE : Load model from models/whisper-tiny.en-en/encoder.onnx failed:Load model models/whisper-tiny.en-en/encoder.onnx failed. File doesn't exist
+2025-03-31 09:23:35,233 - tccc.stt_engine.stt_engine - ERROR - Failed to initialize Whisper ONNX model: [ONNXRuntimeError] : 3 : NO_SUCHFILE : Load model from models/whisper-tiny.en-en/encoder.onnx failed:Load model models/whisper-tiny.en-en/encoder.onnx failed. File doesn't exist
+2025-03-31 09:23:35,233 - tccc.stt_engine.stt_engine - ERROR - Failed to initialize Whisper ONNX model: [ONNXRuntimeError] : 3 : NO_SUCHFILE : Load model from models/whisper-tiny.en-en/encoder.onnx failed:Load model models/whisper-tiny.en-en/encoder.onnx failed. File doesn't exist
+2025-03-31 09:23:35,234 - tccc.stt_engine.stt_engine - WARNING - Model manager initialization returned False
+2025-03-31 09:23:35,234 - tccc.stt_engine.stt_engine - WARNING - Model manager initialization returned False
+2025-03-31 09:23:35,234 - tccc.stt_engine.stt_engine - WARNING - Model manager initialization returned False
+2025-03-31 09:23:35,234 - tccc.stt_engine.stt_engine - INFO - Initializing speaker diarizer
+2025-03-31 09:23:35,234 - tccc.stt_engine.stt_engine - INFO - Initializing speaker diarizer
+2025-03-31 09:23:35,234 - tccc.stt_engine.stt_engine - INFO - Initializing speaker diarizer
+2025-03-31 09:23:35,237 - tccc.stt_engine.stt_engine - ERROR - Failed to initialize speaker diarization: module 'torchaudio' has no attribute 'AudioMetaData'
+2025-03-31 09:23:35,237 - tccc.stt_engine.stt_engine - ERROR - Failed to initialize speaker diarization: module 'torchaudio' has no attribute 'AudioMetaData'
+2025-03-31 09:23:35,237 - tccc.stt_engine.stt_engine - ERROR - Failed to initialize speaker diarization: module 'torchaudio' has no attribute 'AudioMetaData'
+2025-03-31 09:23:35,238 - tccc.stt_engine.stt_engine - WARNING - Speaker diarization initialization failed
+2025-03-31 09:23:35,238 - tccc.stt_engine.stt_engine - WARNING - Speaker diarization initialization failed
+2025-03-31 09:23:35,238 - tccc.stt_engine.stt_engine - WARNING - Speaker diarization initialization failed
+2025-03-31 09:23:35,238 - tccc.stt_engine.stt_engine - INFO - Initializing medical term processor
+2025-03-31 09:23:35,238 - tccc.stt_engine.stt_engine - INFO - Initializing medical term processor
+2025-03-31 09:23:35,238 - tccc.stt_engine.stt_engine - INFO - Initializing medical term processor
+2025-03-31 09:23:35,239 - tccc.stt_engine.stt_engine - INFO - Loaded 72 medical terms and 43 abbreviations
+2025-03-31 09:23:35,239 - tccc.stt_engine.stt_engine - INFO - Loaded 72 medical terms and 43 abbreviations
+2025-03-31 09:23:35,239 - tccc.stt_engine.stt_engine - INFO - Loaded 72 medical terms and 43 abbreviations
+2025-03-31 09:23:35,239 - tccc.stt_engine.stt_engine - INFO - Medical term processor initialized successfully
+2025-03-31 09:23:35,239 - tccc.stt_engine.stt_engine - INFO - Medical term processor initialized successfully
+2025-03-31 09:23:35,239 - tccc.stt_engine.stt_engine - INFO - Medical term processor initialized successfully
+2025-03-31 09:23:35,240 - tccc.stt_engine.stt_engine - INFO - Streaming context max length: 60.0 seconds
+2025-03-31 09:23:35,240 - tccc.stt_engine.stt_engine - INFO - Streaming context max length: 60.0 seconds
+2025-03-31 09:23:35,240 - tccc.stt_engine.stt_engine - INFO - Streaming context max length: 60.0 seconds
+2025-03-31 09:23:35,240 - tccc.stt_engine.stt_engine - WARNING - STT Engine initialized with limited functionality - some components may not work properly
+2025-03-31 09:23:35,240 - tccc.stt_engine.stt_engine - WARNING - STT Engine initialized with limited functionality - some components may not work properly
+2025-03-31 09:23:35,240 - tccc.stt_engine.stt_engine - WARNING - STT Engine initialized with limited functionality - some components may not work properly
+2025-03-31 09:23:35,241 - tccc.utils.event_bus - INFO - Subscriber 'stt_engine' subscribed to event types: [<EventType.AUDIO_SEGMENT: 'audio_segment'>]
+2025-03-31 09:23:35,241 - tccc.utils.event_bus - INFO - Subscriber 'stt_engine' subscribed to event types: [<EventType.AUDIO_SEGMENT: 'audio_segment'>]
+2025-03-31 09:23:35,241 - tccc.stt_engine.stt_engine - INFO - STT Engine subscribed to audio events
+2025-03-31 09:23:35,241 - tccc.stt_engine.stt_engine - INFO - STT Engine subscribed to audio events
+2025-03-31 09:23:35,241 - tccc.stt_engine.stt_engine - INFO - STT Engine subscribed to audio events
+Second engine initialized in 0.01 seconds
+Updated cache status: 0 models cached
+✗ Model cache appears to be empty
+Error testing model cache: 'STTEngine' object has no attribute 'shutdown'
+
+============================================================
+==================== Audio Capture Test ====================
+============================================================
+
+2025-03-31 09:23:35,242 - tccc.audio_pipeline.audio_pipeline - INFO - Started audio source: test_file
+2025-03-31 09:23:35,242 - tccc.audio_pipeline.audio_pipeline - INFO - Playing audio file: /home/ama/tccc-project/test_data/test_speech.wav
+2025-03-31 09:23:35,242 - tccc.audio_pipeline.audio_pipeline - INFO - Started audio source: test_file
+2025-03-31 09:23:35,243 - tccc.audio_pipeline.audio_pipeline - INFO - Output stream handler started
+2025-03-31 09:23:35,243 - tccc.audio_pipeline.audio_pipeline - INFO - Started audio capture from test_file
+2025-03-31 09:23:35,242 - tccc.audio_pipeline.audio_pipeline - INFO - Playing audio file: /home/ama/tccc-project/test_data/test_speech.wav
+2025-03-31 09:23:35,243 - tccc.audio_pipeline.audio_pipeline - INFO - File details: 16000Hz, 1 channels, 16 bits, 48000 frames
+2025-03-31 09:23:35,243 - tccc.audio_pipeline.audio_pipeline - INFO - Output stream handler started
+2025-03-31 09:23:35,243 - tccc.audio_pipeline.audio_pipeline - INFO - Started audio capture from test_file
+2025-03-31 09:23:35,243 - tccc.audio_pipeline.audio_pipeline - INFO - File details: 16000Hz, 1 channels, 16 bits, 48000 frames
+Started audio capture
+2025-03-31 09:23:35,246 - tccc.utils.vad_manager - INFO - Created WebRTCVAD instance for audio_processor with sensitivity 3
+2025-03-31 09:23:35,246 - tccc.utils.vad_manager - INFO - Created WebRTCVAD instance for audio_processor with sensitivity 3
+2025-03-31 09:23:35,312 - tccc.stt_engine.stt_engine - ERROR - Model not initialized
+2025-03-31 09:23:35,312 - tccc.stt_engine.stt_engine - ERROR - Model not initialized
+2025-03-31 09:23:35,312 - tccc.stt_engine.stt_engine - ERROR - Model not initialized
+2025-03-31 09:23:35,313 - tccc.stt_engine.stt_engine - ERROR - Model not initialized
+2025-03-31 09:23:35,313 - tccc.stt_engine.stt_engine - ERROR - Model not initialized
+2025-03-31 09:23:35,313 - tccc.stt_engine.stt_engine - ERROR - Model not initialized
+2025-03-31 09:23:35,376 - tccc.stt_engine.stt_engine - ERROR - Model not initialized
+2025-03-31 09:23:35,376 - tccc.stt_engine.stt_engine - ERROR - Model not initialized
+2025-03-31 09:23:35,376 - tccc.stt_engine.stt_engine - ERROR - Model not initialized
+2025-03-31 09:23:35,377 - tccc.stt_engine.stt_engine - ERROR - Model not initialized
+2025-03-31 09:23:35,377 - tccc.stt_engine.stt_engine - ERROR - Model not initialized
+2025-03-31 09:23:35,377 - tccc.stt_engine.stt_engine - ERROR - Model not initialized
+2025-03-31 09:23:35,440 - tccc.stt_engine.stt_engine - ERROR - Model not initialized
+2025-03-31 09:23:35,440 - tccc.stt_engine.stt_engine - ERROR - Model not initialized
+2025-03-31 09:23:35,440 - tccc.stt_engine.stt_engine - ERROR - Model not initialized
+2025-03-31 09:23:35,441 - tccc.stt_engine.stt_engine - ERROR - Model not initialized
+2025-03-31 09:23:35,441 - tccc.stt_engine.stt_engine - ERROR - Model not initialized
+2025-03-31 09:23:35,441 - tccc.stt_engine.stt_engine - ERROR - Model not initialized
+2025-03-31 09:23:35,503 - tccc.stt_engine.stt_engine - ERROR - Model not initialized
+2025-03-31 09:23:35,503 - tccc.stt_engine.stt_engine - ERROR - Model not initialized
+2025-03-31 09:23:35,503 - tccc.stt_engine.stt_engine - ERROR - Model not initialized
+2025-03-31 09:23:35,504 - tccc.stt_engine.stt_engine - ERROR - Model not initialized
+2025-03-31 09:23:35,504 - tccc.stt_engine.stt_engine - ERROR - Model not initialized
+2025-03-31 09:23:35,504 - tccc.stt_engine.stt_engine - ERROR - Model not initialized
+2025-03-31 09:23:35,668 - tccc.stt_engine.stt_engine - ERROR - Model not initialized
+2025-03-31 09:23:35,668 - tccc.stt_engine.stt_engine - ERROR - Model not initialized
+2025-03-31 09:23:35,668 - tccc.stt_engine.stt_engine - ERROR - Model not initialized
+2025-03-31 09:23:35,672 - tccc.stt_engine.stt_engine - ERROR - Model not initialized
+2025-03-31 09:23:35,672 - tccc.stt_engine.stt_engine - ERROR - Model not initialized
+2025-03-31 09:23:35,672 - tccc.stt_engine.stt_engine - ERROR - Model not initialized
+2025-03-31 09:23:35,775 - tccc.stt_engine.stt_engine - ERROR - Model not initialized
+2025-03-31 09:23:35,775 - tccc.stt_engine.stt_engine - ERROR - Model not initialized
+2025-03-31 09:23:35,775 - tccc.stt_engine.stt_engine - ERROR - Model not initialized
+2025-03-31 09:23:35,778 - tccc.stt_engine.stt_engine - ERROR - Model not initialized
+2025-03-31 09:23:35,778 - tccc.stt_engine.stt_engine - ERROR - Model not initialized
+2025-03-31 09:23:35,778 - tccc.stt_engine.stt_engine - ERROR - Model not initialized
+2025-03-31 09:23:35,883 - tccc.stt_engine.stt_engine - ERROR - Model not initialized
+2025-03-31 09:23:35,883 - tccc.stt_engine.stt_engine - ERROR - Model not initialized
+2025-03-31 09:23:35,883 - tccc.stt_engine.stt_engine - ERROR - Model not initialized
+2025-03-31 09:23:35,885 - tccc.stt_engine.stt_engine - ERROR - Model not initialized
+2025-03-31 09:23:35,885 - tccc.stt_engine.stt_engine - ERROR - Model not initialized
+2025-03-31 09:23:35,885 - tccc.stt_engine.stt_engine - ERROR - Model not initialized
+2025-03-31 09:23:35,988 - tccc.stt_engine.stt_engine - ERROR - Model not initialized
+2025-03-31 09:23:35,988 - tccc.stt_engine.stt_engine - ERROR - Model not initialized
+2025-03-31 09:23:35,988 - tccc.stt_engine.stt_engine - ERROR - Model not initialized
+2025-03-31 09:23:35,991 - tccc.stt_engine.stt_engine - ERROR - Model not initialized
+2025-03-31 09:23:35,991 - tccc.stt_engine.stt_engine - ERROR - Model not initialized
+2025-03-31 09:23:35,991 - tccc.stt_engine.stt_engine - ERROR - Model not initialized
+2025-03-31 09:23:36,095 - tccc.stt_engine.stt_engine - ERROR - Model not initialized
+2025-03-31 09:23:36,095 - tccc.stt_engine.stt_engine - ERROR - Model not initialized
+2025-03-31 09:23:36,095 - tccc.stt_engine.stt_engine - ERROR - Model not initialized
+2025-03-31 09:23:36,098 - tccc.stt_engine.stt_engine - ERROR - Model not initialized
+2025-03-31 09:23:36,098 - tccc.stt_engine.stt_engine - ERROR - Model not initialized
+2025-03-31 09:23:36,098 - tccc.stt_engine.stt_engine - ERROR - Model not initialized
+2025-03-31 09:23:36,202 - tccc.stt_engine.stt_engine - ERROR - Model not initialized
+2025-03-31 09:23:36,202 - tccc.stt_engine.stt_engine - ERROR - Model not initialized
+2025-03-31 09:23:36,202 - tccc.stt_engine.stt_engine - ERROR - Model not initialized
+2025-03-31 09:23:36,205 - tccc.stt_engine.stt_engine - ERROR - Model not initialized
+2025-03-31 09:23:36,205 - tccc.stt_engine.stt_engine - ERROR - Model not initialized
+2025-03-31 09:23:36,205 - tccc.stt_engine.stt_engine - ERROR - Model not initialized
+2025-03-31 09:23:36,309 - tccc.stt_engine.stt_engine - ERROR - Model not initialized
+2025-03-31 09:23:36,309 - tccc.stt_engine.stt_engine - ERROR - Model not initialized
+2025-03-31 09:23:36,309 - tccc.stt_engine.stt_engine - ERROR - Model not initialized
+2025-03-31 09:23:36,312 - tccc.stt_engine.stt_engine - ERROR - Model not initialized
+2025-03-31 09:23:36,312 - tccc.stt_engine.stt_engine - ERROR - Model not initialized
+2025-03-31 09:23:36,312 - tccc.stt_engine.stt_engine - ERROR - Model not initialized
+2025-03-31 09:23:36,416 - tccc.stt_engine.stt_engine - ERROR - Model not initialized
+2025-03-31 09:23:36,416 - tccc.stt_engine.stt_engine - ERROR - Model not initialized
+2025-03-31 09:23:36,416 - tccc.stt_engine.stt_engine - ERROR - Model not initialized
+2025-03-31 09:23:36,418 - tccc.stt_engine.stt_engine - ERROR - Model not initialized
+2025-03-31 09:23:36,418 - tccc.stt_engine.stt_engine - ERROR - Model not initialized
+2025-03-31 09:23:36,418 - tccc.stt_engine.stt_engine - ERROR - Model not initialized
+2025-03-31 09:23:36,523 - tccc.stt_engine.stt_engine - ERROR - Model not initialized
+2025-03-31 09:23:36,523 - tccc.stt_engine.stt_engine - ERROR - Model not initialized
+2025-03-31 09:23:36,523 - tccc.stt_engine.stt_engine - ERROR - Model not initialized
+2025-03-31 09:23:36,525 - tccc.stt_engine.stt_engine - ERROR - Model not initialized
+2025-03-31 09:23:36,525 - tccc.stt_engine.stt_engine - ERROR - Model not initialized
+2025-03-31 09:23:36,525 - tccc.stt_engine.stt_engine - ERROR - Model not initialized
+2025-03-31 09:23:36,629 - tccc.stt_engine.stt_engine - ERROR - Model not initialized
+2025-03-31 09:23:36,629 - tccc.stt_engine.stt_engine - ERROR - Model not initialized
+2025-03-31 09:23:36,629 - tccc.stt_engine.stt_engine - ERROR - Model not initialized
+2025-03-31 09:23:36,632 - tccc.stt_engine.stt_engine - ERROR - Model not initialized
+2025-03-31 09:23:36,632 - tccc.stt_engine.stt_engine - ERROR - Model not initialized
+2025-03-31 09:23:36,632 - tccc.stt_engine.stt_engine - ERROR - Model not initialized
+2025-03-31 09:23:36,735 - tccc.stt_engine.stt_engine - ERROR - Model not initialized
+2025-03-31 09:23:36,735 - tccc.stt_engine.stt_engine - ERROR - Model not initialized
+2025-03-31 09:23:36,735 - tccc.stt_engine.stt_engine - ERROR - Model not initialized
+2025-03-31 09:23:36,738 - tccc.stt_engine.stt_engine - ERROR - Model not initialized
+2025-03-31 09:23:36,738 - tccc.stt_engine.stt_engine - ERROR - Model not initialized
+2025-03-31 09:23:36,738 - tccc.stt_engine.stt_engine - ERROR - Model not initialized
+2025-03-31 09:23:36,841 - tccc.stt_engine.stt_engine - ERROR - Model not initialized
+2025-03-31 09:23:36,841 - tccc.stt_engine.stt_engine - ERROR - Model not initialized
+2025-03-31 09:23:36,841 - tccc.stt_engine.stt_engine - ERROR - Model not initialized
+2025-03-31 09:23:36,844 - tccc.stt_engine.stt_engine - ERROR - Model not initialized
+2025-03-31 09:23:36,844 - tccc.stt_engine.stt_engine - ERROR - Model not initialized
+2025-03-31 09:23:36,844 - tccc.stt_engine.stt_engine - ERROR - Model not initialized
+2025-03-31 09:23:36,949 - tccc.stt_engine.stt_engine - ERROR - Model not initialized
+2025-03-31 09:23:36,949 - tccc.stt_engine.stt_engine - ERROR - Model not initialized
+2025-03-31 09:23:36,949 - tccc.stt_engine.stt_engine - ERROR - Model not initialized
+2025-03-31 09:23:36,951 - tccc.stt_engine.stt_engine - ERROR - Model not initialized
+2025-03-31 09:23:36,951 - tccc.stt_engine.stt_engine - ERROR - Model not initialized
+2025-03-31 09:23:36,951 - tccc.stt_engine.stt_engine - ERROR - Model not initialized
+2025-03-31 09:23:37,055 - tccc.stt_engine.stt_engine - ERROR - Model not initialized
+2025-03-31 09:23:37,055 - tccc.stt_engine.stt_engine - ERROR - Model not initialized
+2025-03-31 09:23:37,055 - tccc.stt_engine.stt_engine - ERROR - Model not initialized
+2025-03-31 09:23:37,061 - tccc.stt_engine.stt_engine - ERROR - Model not initialized
+2025-03-31 09:23:37,061 - tccc.stt_engine.stt_engine - ERROR - Model not initialized
+2025-03-31 09:23:37,061 - tccc.stt_engine.stt_engine - ERROR - Model not initialized
+2025-03-31 09:23:37,161 - tccc.stt_engine.stt_engine - ERROR - Model not initialized
+2025-03-31 09:23:37,161 - tccc.stt_engine.stt_engine - ERROR - Model not initialized
+2025-03-31 09:23:37,161 - tccc.stt_engine.stt_engine - ERROR - Model not initialized
+2025-03-31 09:23:37,164 - tccc.stt_engine.stt_engine - ERROR - Model not initialized
+2025-03-31 09:23:37,164 - tccc.stt_engine.stt_engine - ERROR - Model not initialized
+2025-03-31 09:23:37,164 - tccc.stt_engine.stt_engine - ERROR - Model not initialized
+2025-03-31 09:23:37,246 - tccc.audio_pipeline.audio_pipeline - ERROR - Error getting audio data: StreamBuffer.read() got an unexpected keyword argument 'timeout_ms'
+2025-03-31 09:23:37,246 - tccc.audio_pipeline.audio_pipeline - ERROR - Error getting audio data: StreamBuffer.read() got an unexpected keyword argument 'timeout_ms'
+✗ Failed to capture audio
+  Created fallback audio segment for testing
+2025-03-31 09:23:37,267 - tccc.stt_engine.stt_engine - ERROR - Model not initialized
+2025-03-31 09:23:37,267 - tccc.audio_pipeline.audio_pipeline - INFO - File playback stopped
+2025-03-31 09:23:37,267 - tccc.stt_engine.stt_engine - ERROR - Model not initialized
+2025-03-31 09:23:37,267 - tccc.audio_pipeline.audio_pipeline - INFO - File playback stopped
+2025-03-31 09:23:37,268 - tccc.audio_pipeline.audio_pipeline - INFO - Stopped audio source: test_file
+2025-03-31 09:23:37,267 - tccc.stt_engine.stt_engine - ERROR - Model not initialized
+2025-03-31 09:23:37,268 - tccc.stt_engine.stt_engine - ERROR - Model not initialized
+2025-03-31 09:23:37,268 - tccc.stt_engine.stt_engine - ERROR - Model not initialized
+2025-03-31 09:23:37,268 - tccc.audio_pipeline.audio_pipeline - INFO - Stopped audio source: test_file
+2025-03-31 09:23:37,268 - tccc.stt_engine.stt_engine - ERROR - Model not initialized
+2025-03-31 09:23:37,346 - tccc.audio_pipeline.audio_pipeline - INFO - Output stream handler stopped
+2025-03-31 09:23:37,346 - tccc.audio_pipeline.audio_pipeline - INFO - Output stream handler stopped
+2025-03-31 09:23:37,347 - tccc.audio_pipeline.audio_pipeline - INFO - Audio capture stats: 21 chunks processed in 2.1s, 20 speech chunks detected
+2025-03-31 09:23:37,347 - tccc.audio_pipeline.audio_pipeline - INFO - Audio capture stats: 21 chunks processed in 2.1s, 20 speech chunks detected
+2025-03-31 09:23:37,348 - tccc.audio_pipeline.audio_pipeline - INFO - Average processing time: 81.55ms per chunk
+2025-03-31 09:23:37,348 - tccc.audio_pipeline.audio_pipeline - INFO - Average processing time: 81.55ms per chunk
+Stopped audio capture
+
+============================================================
+==================== Transcription Test ====================
+============================================================
+
+Loaded test audio file: 48000 samples at 16kHz
+2025-03-31 09:23:37,350 - tccc.stt_engine.stt_engine - ERROR - Model not initialized
+2025-03-31 09:23:37,350 - tccc.stt_engine.stt_engine - ERROR - Model not initialized
+2025-03-31 09:23:37,350 - tccc.stt_engine.stt_engine - ERROR - Model not initialized
+✓ Successfully transcribed audio in 0.00 seconds
+  Transcription: ""
+
+============================================================
+==================== STT Engine Status =====================
+============================================================
+
+Model type: whisper
+Model size: tiny.en
+Performance metrics:
+  Transcripts: 21
+  Real-time factor: 0.01x
+
+============================================================
+================== Event Integration Test ==================
+============================================================
+
+Testing STT-Event system integration...
+Using basic event bus verification
+✓ Event bus is initialized with publish method
+✓ Event bus has subscribe method
+Event integration test complete
+
+============================================================
+========================= Shutdown =========================
+============================================================
+
+Traceback (most recent call last):
+  File "/home/ama/tccc-project/verify_audio_stt_e2e.py", line 464, in <module>
+    sys.exit(main())
+  File "/home/ama/tccc-project/verify_audio_stt_e2e.py", line 395, in main
+    stt_shutdown = stt_engine.shutdown()
+AttributeError: 'STTEngine' object has no attribute 'shutdown'
+2025-03-31 09:23:37,352 - tccc.stt_engine.model_cache_manager - INFO - Shutting down model cache manager
+2025-03-31 09:23:37,352 - tccc.stt_engine.model_cache_manager - INFO - Shutting down model cache manager
+2025-03-31 09:23:37,352 - tccc.stt_engine.model_cache_manager - INFO - Shutting down model cache manager
+2025-03-31 09:23:37,353 - tccc.stt_engine.model_cache_manager - INFO - Model cache manager shutdown complete
+2025-03-31 09:23:37,353 - tccc.stt_engine.model_cache_manager - INFO - Model cache manager shutdown complete
+2025-03-31 09:23:37,353 - tccc.stt_engine.model_cache_manager - INFO - Model cache manager shutdown complete

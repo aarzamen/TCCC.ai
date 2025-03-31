@@ -1,0 +1,108 @@
+# Compiled Transcripts from Voice Input Testing
+
+
+--------- transcript_20250318_015430.txt ---------
+=== Transcription Results ===
+
+
+--------- transcript_20250320_021030.txt ---------
+I don't know if you can see it, but there's a little bit of a gap here, but it's not too bad. It's just a little bit of a gap, but it's not too bad. It's just a little bit of a gap, but it's not too bad. It's just a little bit of a gap, but it's not too bad. It's just a little bit of a gap, but it's not too bad. It's just a little bit of a gap, but it's not too bad. It's just a little bit of a gap, but it's not too bad. It's just a little bit of a gap, but it's not too bad. It's just a little bit of a gap, but it's not too bad. It's just a little bit of a gap, but it's not too bad. It's just a little bit of a gap, but it's not too bad. It's just a little bit of a gap, but it's not too bad. It's just a little bit of a gap, but it's not too bad. It's just a little bit of a gap, but it's not too bad. It's just a little bit of a gap, but it's not too bad. It's just a little bit of a gap, but it's not too bad. It's just a little bit of a gap, but it's not too bad. It's just a little bit of a gap, but it's not too bad. It's just a little bit of a gap, but it's not too bad. It's just a little bit of a gap, but it's not too bad. It's just a little bit of a gap, but it's not too bad.
+
+--------- transcript_20250320_021311.txt ---------
+I don't know what to do with my life, I don't know what to do with my life, I don't know what to do with my life, I don't know what to do with my life, I don't know what to do with my life, I don't know what to do with my life, I don't know what to do with my life, I don't know what to do with my life, I don't know what to do with my life, I don't know what to do with my life, I don't know what to do with my life, I don't know what to do with my life, I don't know what to do with my life, I don't know what to do with my life, I don't know what to do with my life, I don't know what to do with my life, I don't know what to do with my life, I don't know what to do with my life, I don't know what to do with my life, I don't know what to do with my life, I don't
+
+--------- transcript_20250320_021343.txt ---------
+This is a test quad that I am speaking to normally with the Logitech headphone. I think whatever the script does, it should just go to whichever actual microphone exists. Let's see, I don't have that much to say. I just want to see this shit work. Ctrl-C to stop.
+
+--------- transcript_20250320_021352.txt ---------
+just go to whichever actual microphone exists. Let's see, I don't have that much to say. I just want to see this shit work. Control C to stop.
+
+--------- transcript_20250320_021429.txt ---------
+I... I... I... I... I... I... I... I... I... I... I... I... I... I... I... I... I... I... I... I... I... I... I... I... I... I... I... Output is cool.
+
+--------- transcript_20250320_021433.txt ---------
+Why are there two of these? There's three of them? What is going on here, dude? Output is cool, input should be- Motherfucker.
+
+--------- transcript_20250320_021508.txt ---------
+Hello, alright, here's our fucking microphone, let's do it. Hello, my name's
+
+--------- transcript_20250320_021513.txt ---------
+Hello, all right, here's our fucking microphone, let's do it. Hello, my name's Microsmendy. I'm trying to get Cloud Code to do some things.
+
+--------- transcript_20250320_021554.txt ---------
+Oh shit, tick fuck, cool. Learned voice. 
+
+--------- transcript_20250320_021634.txt ---------
+Simple things that are useful in the short term in the long term. It's amazing Why dude Query just like let it be anyone let it be the system default
+
+--------- transcript_20250320_021715.txt ---------
+Dammit. Hello. It doesn't.
+
+--------- transcript_20250320_021916.txt ---------
+Hello, recording starts in right now and the terminal closed. Damn it, dude.
+
+--------- transcript_20250320_022036.txt ---------
+You
+
+--------- transcript_20250320_022116.txt ---------
+to take microphone input and feed it directly into the console. I don't need to do any cutting or pasting or any other intermediary steps. He can use any method he wants. It needs to be tailored for a one-shot attempt and I don't want to fuck with this anymore.
+
+--------- transcript_20250320_022156.txt ---------
+Do those very specific details that you provided, as that can be helpful for that model. It's otherwise pretty capable, unless those are specific details that make it.
+
+--------- transcript_20250320_022236.txt ---------
+Oh my god, fucking Google.
+
+--------- transcript_20250320_022316.txt ---------
+Again.
+
+--------- transcript_20250320_022518.txt ---------
+Jesus. Jesus. 
+
+--------- transcript_20250320_022600.txt ---------
+One, two, three, four, five, six, seven, eight, nine, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20, 21, 22, 23, 24, 25, 26, 27, 28, 29, 30, 31, 32, 32, 33, 34, 34, 35, 36, 37, 38, 39, 40, 40, 41, 41, 42, 42, 43, 44, 44, 45, 46, 47, 48, 49, 50, 50, 51, 51, 51, 52, 52, 53, 53, 54, 54, 55, 55, 56, 56, 57, 57, 58, 58, 59, 59, 60, 60, 60, 61, 61, 62, 62, 63, 63, 62, 63, 63, 63, 63, 63, 63, 63, 63, 63, 63, 63, 63, 63, 63, 63, 63, 63, 63, 63, 63, 63, 63, 63, 63, 63,
+
+--------- transcript_20250320_022720.txt ---------
+I hear it. I hear it.
+
+--------- transcript_20250320_022841.txt ---------
+Okay, let's see what else we've got here. Let's see what else we've got here.
+
+--------- transcript_20250320_022922.txt ---------
+I'm on another computer with good pre-built, easy to use voice recognition.
+
+--------- transcript_20250320_023002.txt ---------
+Please close all of the other doors.
+
+--------- transcript_20250320_023042.txt ---------
+Can you hear me? Claude, please close all of the Whisperscripts that might still be running. I have another way of doing this. Uh, drop, oh. No more, uh, rushing about. Halfway.
+
+--------- transcript_20250320_023122.txt ---------
+This first script that used my API that still might be running in the background.
+
+--------- transcript_20250320_023325.txt ---------
+How do we achieve easiness of the mind?
+
+--------- transcript_20250320_023447.txt ---------
+I don't have a seat.
+
+--------- transcript_20250320_023526.txt ---------
+I don't know how to say it, fuck man. I don't know how to say it.
+
+--------- transcript_20250320_023647.txt ---------
+I see you, I see you, I see you, I see you, I see you, I see you, I see you, I see you,
+
+--------- transcript_20250320_024007.txt ---------
+So, that six-week plan is for, is that a six-week plan? Yes. 
+
+--------- transcript_20250320_024048.txt ---------
+Run that, speak to your microphone prompt, and after transcription, text a copy of your clipboard, paste it. Good work. 
+
+--------- transcript_20250320_024253.txt ---------
+Mm-hmm. Mm-hmm. Mm-hmm. Mm-hmm. Mm-hmm. Mm-hmm. Mm-hmm. Mm-hmm. Mm-hmm. Mm-hmm. Mm-hmm. Mm-hmm. Mm-hmm. Mm-hmm. Mm-hmm. Mm-hmm. Mm-hmm. Mm-hmm. Mm-hmm. Mm-hmm. Mm-hmm. Mm-hmm. Mm-hmm. Mm-hmm. Mm-hmm. Mm-hmm. Mm-hmm. Mm-hmm. Mm-hmm. Mm-hmm. Mm-hmm. 
+
+--------- transcript_20250320_024334.txt ---------
+wait smart what the fuck
+
+--------- transcript_20250320_024416.txt ---------
+Thank you, thank you, thank you, thank you, thank you, thank you, thank you, thank you, thank you, thank you, thank you.

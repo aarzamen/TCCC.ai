@@ -1,0 +1,25 @@
+# TCCC Audio Processing Configuration
+# Generated on: 2025-03-21 00:39:56
+
+audio_processing:
+  noise_gate_threshold: 0.011032
+  highpass_cutoff: 120
+  compression_ratio: 4.0
+  compression_threshold: -18
+  noise_reduction_amount: "high"
+
+microphone:
+  device: 0  # Razer Seiren V3 Mini
+  sample_rate: 16000
+  channels: 1
+  format: float32
+
+vad:
+  enabled: true
+  mode: 3  # 0-3, higher is more aggressive
+  frame_size: 480  # 30ms at 16kHz
+
+preprocessing:
+  remove_dc_offset: true
+  preemphasis: 0.97
+  normalization: true

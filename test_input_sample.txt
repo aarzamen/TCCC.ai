@@ -1,0 +1,14 @@
+Patient is a 28-year-old soldier with blast injuries from an IED explosion approximately 30 minutes ago. Initial assessment shows severe right leg trauma with arterial bleeding now controlled by tourniquet applied at 09:30. Patient also presented with tension pneumothorax which was relieved by needle decompression at 09:35.
+
+Current vital signs:
+- BP: 100/60 mmHg
+- HR: 115 bpm
+- RR: 24/min
+- SpO2: 92% on room air
+- GCS: 14 (E4V4M6)
+
+Patient was given 10mg morphine IV at 09:40 for pain management followed by 1g ceftriaxone IV for infection prophylaxis. Two large-bore IVs have been established with Hextend infusing at 100mL/hr.
+
+Patient is conscious but confused and reports chest pain and difficulty breathing. The right leg wound shows exposed bone and significant tissue damage. There is also shrapnel injury to right lateral chest wall.
+
+MEDEVAC has been requested for urgent surgical evacuation.

@@ -1,0 +1,9 @@
+[Desktop Entry]
+Type=Application
+Name=TCCC Battlefield Voice
+Comment=Run audio-to-text pipeline with battlefield enhancement
+Exec=gnome-terminal -- /home/ama/tccc-project/run_optimized_audio_stt.sh --battlefield --model tiny.en
+Icon=/home/ama/tccc-project/images/green_logo.png
+Terminal=false
+Categories=Utility;
+StartupNotify=true
