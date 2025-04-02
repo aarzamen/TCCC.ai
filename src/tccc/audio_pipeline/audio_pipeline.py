@@ -407,7 +407,7 @@ class FileSource(AudioSource):
             logger.info("File playback stopped")
             
         except Exception as e:
-            logger.error(f"Failed to start file playback: {e}")
+            logger.error(f"Failed to start file playback: {e}"
 
 
 class StreamBuffer:
@@ -1451,7 +1451,7 @@ class AudioPipeline:
     Main audio pipeline that coordinates capture, processing, and streaming.
     """
     
-    def __init__(self): 
+    def __init__(self, config: Optional[Dict[str, Any]] = None): 
         """Initialize the AudioPipeline instance."""
         print("DEBUG: ENTERED AudioPipeline.__init__")
         self.initialized = False
@@ -1460,12 +1460,16 @@ class AudioPipeline:
         # Add detailed logging within __init__
         logger.debug("AudioPipeline.__init__: Entering")
         try:
-            self.config = None
-            self.system = None
-            self.config = config or Config({}) 
-            logger.debug(f"AudioPipeline.__init__: Config loaded: {self.config.get_raw_config() if self.config else 'None'}")
+            # Ensure self.config is always a Config object
+            raw_config_dict = config or {}
+            self.config = Config(raw_config_dict) # Wrap the dict
+            self.system = None # Keep system placeholder
+            logger.debug(f"AudioPipeline.__init__: Config object created from: {raw_config_dict}")
+            logger.debug(f"AudioPipeline.__init__: Raw config check: {self.config.get_raw_config()}") # Now this should work
 
-            # Get sample rate from config
+            # Get sample rate from config object
+            # Assuming Config class allows accessing nested keys like this, or adjust if needed.
+            # Since TCCCSystem passes the 'audio_pipeline' sub-dict, simple key access should work.
             self.sample_rate = self.config.get('sample_rate', 16000)
             logger.debug(f"AudioPipeline.__init__: Sample rate set to {self.sample_rate}")
 

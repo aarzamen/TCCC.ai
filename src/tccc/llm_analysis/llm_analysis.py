@@ -1364,11 +1364,7 @@ TREATMENT: Tourniquet, needle decompression, medications, fluids
 EVACUATION: Urgent surgical case"""
             }
             
-            # Use appropriate mock report based on typeconctoinnctuioenn cuttooeni tdntieuobneu u gdet.e o
-            bt uodg e.db
-            eubgu.g
-            .
-            
+            # Use appropriate mock report based on type
             report_content = mock_reports.get(report_type, "No report available for this type")
             
             result = {
