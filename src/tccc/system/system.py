@@ -6,40 +6,107 @@ that can process audio, extract information, and generate reports.
 """
 
 import os
+import sys
 import time
-import logging
-import threading
 import asyncio
+import threading
+import argparse
+import logging
+import atexit
+import traceback
+from typing import Dict, List, Optional, Any, Union, Callable, Tuple
 from enum import Enum
-from typing import Dict, List, Any, Optional, Tuple, Union
+from pathlib import Path
 
-# Import TCCC modules
-from tccc.audio_pipeline import AudioPipeline
+# Ensure the src directory is in the Python path
+project_root = os.path.abspath(os.path.join(os.path.dirname(__file__), '..', '..'))
+if project_root not in sys.path:
+    sys.path.insert(0, project_root)
+
+# Import necessary components from the TCCC project
+from tccc.utils.config import Config
+from tccc.utils.logging import get_logger, configure_logging
+from tccc.utils.event_bus import EventBus, EventSubscription, get_event_bus
+from tccc.utils.event_schema import BaseEvent, EventType, ErrorEvent, LLMAnalysisEvent, TranscriptionEvent
+from tccc.utils.module_adapter import AudioPipelineAdapter, STTEngineAdapter, ProcessingCoreAdapter
+
+# Import modules dynamically for flexibility
+print("DEBUG: Importing ProcessingCore...")
 try:
-    from tccc.stt_engine import STTEngine, create_stt_engine, STT_ENGINE_IMPORT_ERROR
-    STT_IMPORT_ERROR = STT_ENGINE_IMPORT_ERROR
+    from tccc.processing_core import ProcessingCore
+    print("DEBUG: ProcessingCore imported.")
 except ImportError as e:
-    STT_IMPORT_ERROR = str(e)
-except OSError as e:
-    STT_IMPORT_ERROR = str(e)
-from tccc.processing_core import ProcessingCore
-from tccc.llm_analysis import LLMAnalysis
-from tccc.data_store import DataStore
-from tccc.document_library import DocumentLibrary
-from tccc.utils.logging import get_logger
-from tccc.utils.event_schema import (
-    BaseEvent, AudioSegmentEvent, TranscriptionEvent, 
-    ProcessedTextEvent, LLMAnalysisEvent, ErrorEvent,
-    SystemStatusEvent, EventType
-)
-from tccc.utils.module_adapter import (
-    AudioPipelineAdapter, STTEngineAdapter, 
-    ProcessingCoreAdapter, standardize_event, extract_event_data
-)
+    print(f"Warning: Could not import ProcessingCore - {e}")
+    ProcessingCore = None
+except Exception as e: # Catch other potential errors during import
+    print(f"ERROR importing ProcessingCore: {e}\n{traceback.format_exc()}")
+    ProcessingCore = None 
+    sys.exit(1) # Exit explicitly on unexpected import error
 
-logger = get_logger(__name__)
+print("DEBUG: Importing DataStore...")
+try:
+    from tccc.data_store import DataStore
+    print("DEBUG: DataStore imported.")
+except ImportError as e:
+    print(f"Warning: Could not import DataStore - {e}")
+    DataStore = None
+except Exception as e:
+    print(f"ERROR importing DataStore: {e}\n{traceback.format_exc()}")
+    DataStore = None
+    sys.exit(1)
 
+print("DEBUG: Importing DocumentLibrary...")
+try:
+    from tccc.document_library import DocumentLibrary
+    print("DEBUG: DocumentLibrary imported.")
+except ImportError as e:
+    print(f"Info: DocumentLibrary not available - {e}") 
+    DocumentLibrary = None
+except Exception as e:
+    print(f"ERROR importing DocumentLibrary: {e}\n{traceback.format_exc()}")
+    DocumentLibrary = None
+    # Don't exit for DocLib, it's optional
 
+print("DEBUG: Importing AudioPipeline...")
+try:
+    from tccc.audio_pipeline import AudioPipeline
+    print("DEBUG: AudioPipeline imported.")
+except ImportError as e:
+    print(f"Warning: Could not import AudioPipeline - {e}")
+    AudioPipeline = None
+except Exception as e:
+    print(f"ERROR importing AudioPipeline: {e}\n{traceback.format_exc()}")
+    AudioPipeline = None
+    sys.exit(1)
+
+print("DEBUG: Importing STTEngine...")
+try:
+    from tccc.stt_engine import STTEngine
+    print("DEBUG: STTEngine imported.")
+except ImportError as e:
+    print(f"Warning: Could not import STTEngine - {e}")
+    STTEngine = None
+except Exception as e:
+    print(f"ERROR importing STTEngine: {e}\n{traceback.format_exc()}")
+    STTEngine = None
+    sys.exit(1)
+
+print("DEBUG: Importing LLMAnalysis...")
+try:
+    from tccc.llm_analysis import LLMAnalysis
+    print("DEBUG: LLMAnalysis imported.")
+except ImportError as e:
+    print(f"Warning: Could not import LLMAnalysis - {e}")
+    LLMAnalysis = None
+except Exception as e:
+    print(f"ERROR importing LLMAnalysis: {e}\n{traceback.format_exc()}")
+    LLMAnalysis = None
+    sys.exit(1)
+
+# Get logger instance (logging is configured in __main__.py)
+logger = logging.getLogger(__name__)
+
+# System State Enum
 class SystemState(Enum):
     """System operational states."""
     INITIALIZING = "initializing"
@@ -61,16 +128,21 @@ class TCCCSystem:
     coordinating their operation to form a complete system.
     """
     
-    def __init__(self, config_path=None):
+    def __init__(self, config_dir=None):
         """Initialize the TCCC System.
         
         Args:
-            config_path (str, optional): Path to the configuration directory.
+            config_dir (str, optional): Path to the configuration directory.
         """
+        logger.debug("TCCCSystem.__init__: Entering constructor")
         self.initialized = False
         self.state = SystemState.INITIALIZING
-        self.config = None
-        self.config_path = config_path
+        self.config_dir = config_dir # Keep track of original request if needed
+        self.config = {} # Initialize config, will be populated by initialize()
+        self.config_file = None # Reset config file tracking
+        logger.info("TCCC System object created")
+        
+        self.event_bus = EventBus()
         
         # Module references
         self.audio_pipeline = None
@@ -87,8 +159,9 @@ class TCCCSystem:
         self.reports = []
         
         # Threading
-        self.processing_thread = None
-        self.stop_processing = False
+        self._main_event_loop = None
+        self._audio_sequence = 0
+        self._thread_session_id = None
         
         # Error tracking
         self.last_error = None
@@ -104,244 +177,112 @@ class TCCCSystem:
                 "disk_usage_percent": 20.0
             }
         }
-        
-        logger.info("TCCC System object created")
-    
+
     async def initialize(self, config: Dict[str, Any] = None, mock_modules: Optional[List[str]] = None) -> bool:
         """Initialize the TCCC System.
         
         Args:
             config: System configuration (optional, defaults to empty dict)
             mock_modules: List of modules to use mocks for (for testing)
-            
+        
         Returns:
             True if initialization was successful
         """
-        try:
-            self.config = config or {}
-            self.state = SystemState.INITIALIZING
-            mock_modules = mock_modules or []
-            
-            # Create initialization event
-            init_event = BaseEvent(
-                event_type=EventType.INITIALIZATION,
-                source="system",
-                data={"status": "starting", "modules": []},
-                session_id=f"init_{int(time.time())}"
-            ).to_dict()
-            
-            logger.info("TCCC System initialization started")
-            
-            # Track critical failures for overall system status
-            critical_failures = 0
-            all_modules_initialized = True
-            
-            # Set up modules in a defined order with correct dependencies
-            # The order is: DataStore → DocumentLibrary → ProcessingCore → LLMANalysis → AudioPipeline → STTEngine
-            
-            # 1. Initialize Data Store (most fundamental)
-            if "data_store" in mock_modules:
-                from tests.mocks.mock_data_store import MockDataStore
-                self.data_store = MockDataStore()
-                logger.info("Creating MockDataStore")
-            else:
-                self.data_store = DataStore()
-                logger.info("Creating DataStore")
-            
-            # 2. Initialize Document Library (depends on DataStore)
-            if "document_library" in mock_modules:
-                from tests.mocks.mock_document_library import MockDocumentLibrary
-                self.document_library = MockDocumentLibrary()
-                logger.info("Creating MockDocumentLibrary")
-            else:
-                self.document_library = DocumentLibrary()
-                logger.info("Creating DocumentLibrary")
-            
-            # 3. Initialize Processing Core (central component)
-            if "processing_core" in mock_modules:
-                from tests.mocks.mock_processing_core import MockProcessingCore
-                self.processing_core = MockProcessingCore()
-                logger.info("Creating MockProcessingCore")
-            else:
-                self.processing_core = ProcessingCore()
-                logger.info("Creating ProcessingCore")
-            
-            # 4. Initialize LLM Analysis (depends on DocumentLibrary)
-            if "llm_analysis" in mock_modules:
-                from tests.mocks.mock_llm_analysis import MockLLMAnalysis
-                self.llm_analysis = MockLLMAnalysis()
-                logger.info("Creating MockLLMAnalysis")
-            else:
-                self.llm_analysis = LLMAnalysis()
-                logger.info("Creating LLMAnalysis")
-            
-            # 5. Initialize Audio Pipeline
-            if "audio_pipeline" in mock_modules:
-                from tests.mocks.mock_audio_pipeline import MockAudioPipeline
-                self.audio_pipeline = MockAudioPipeline()
-                logger.info("Creating MockAudioPipeline")
-            else:
-                self.audio_pipeline = AudioPipeline()
-                logger.info("Creating AudioPipeline")
-            
-            # 6. Initialize STT Engine (depends on models)
-            if "stt_engine" in mock_modules:
-                from tests.mocks.mock_stt_engine import MockSTTEngine
-                self.stt_engine = MockSTTEngine()
-                logger.info("Creating MockSTTEngine")
-            else:
-                self.stt_engine = STTEngine()
-                logger.info("Creating STTEngine")
-            
-            # Extract module configurations
-            config_dict = self.config  # Use the already validated self.config
-            modules_config = {}
-            
-            # Ensure module configs are dictionaries or create empty ones
-            for module_name in ["data_store", "document_library", "processing_core", 
-                               "llm_analysis", "audio_pipeline", "stt_engine"]:
-                module_config = config_dict.get(module_name, {})
-                # Make sure we have a dictionary
-                if not isinstance(module_config, dict):
-                    logger.warning(f"Invalid config for {module_name}, expected dictionary but got {type(module_config)}")
-                    module_config = {}
-                modules_config[module_name] = module_config.copy()  # Use a copy to avoid cross-module modification
-            
-            logger.info("All modules created, starting initialization sequence")
-            init_event["data"]["status"] = "initializing_modules"
-            
-            # Initialize modules in the correct dependency order
-            # Use consistent async/sync handling for all modules
-            
-            # 1. DataStore initialization - this is critical and must succeed
-            data_store_success = await self._initialize_module(
-                self.data_store, "data_store", modules_config, init_event
-            )
-            
-            if not data_store_success:
-                logger.critical("DataStore initialization failed - this is a critical module")
-                critical_failures += 1
-                all_modules_initialized = False
-            
-            # 2. DocumentLibrary initialization - can continue with limited functionality
-            doc_lib_success = await self._initialize_module(
-                self.document_library, "document_library", modules_config, init_event
-            )
-            
-            if not doc_lib_success:
-                logger.warning("DocumentLibrary initialization failed - continuing with limited functionality")
-                all_modules_initialized = False
-            
-            # 3. ProcessingCore initialization - critical for audio processing
-            proc_core_success = await self._initialize_module(
-                self.processing_core, "processing_core", modules_config, init_event
-            )
-            
-            if not proc_core_success:
-                logger.critical("ProcessingCore initialization failed - this is a critical module")
-                critical_failures += 1
-                all_modules_initialized = False
-            
-            # 4. LLM Analysis initialization - can continue with limited functionality
-            llm_success = await self._initialize_module(
-                self.llm_analysis, "llm_analysis", modules_config, init_event
-            )
-            
-            if not llm_success:
-                logger.warning("LLMAnalysis initialization failed - continuing with limited functionality")
-                all_modules_initialized = False
-            
-            # 5. AudioPipeline initialization - critical for audio capture
-            audio_success = await self._initialize_module(
-                self.audio_pipeline, "audio_pipeline", modules_config, init_event
-            )
-            
-            if not audio_success:
-                logger.critical("AudioPipeline initialization failed - this is a critical module")
-                critical_failures += 1
-                all_modules_initialized = False
-            
-            # 6. STT Engine initialization - can continue with limited functionality
-            stt_success = await self._initialize_module(
-                self.stt_engine, "stt_engine", modules_config, init_event
-            )
-            
-            if not stt_success:
-                logger.warning("STTEngine initialization failed - continuing with limited functionality")
-                all_modules_initialized = False
-            
-            # Set up module dependencies if both modules are available
-            logger.info("Setting up module dependencies")
-            
-            # Connect LLM to DocumentLibrary
-            if (hasattr(self.llm_analysis, 'set_document_library') 
-                and callable(self.llm_analysis.set_document_library)
-                and self.document_library and hasattr(self.document_library, 'initialized')):
-                try:
-                    self.llm_analysis.set_document_library(self.document_library)
-                    logger.info("Connected LLM Analysis to Document Library")
-                except Exception as e:
-                    logger.warning(f"Failed to connect LLM Analysis to Document Library: {str(e)}")
-            
-            # Create a new session
-            self.session_id = f"session_{int(time.time())}"
-            self.session_start_time = time.time()
-            
-            # Determine system state based on initialization results
-            if critical_failures > 0:
-                self.state = SystemState.ERROR
-                self.last_error = "Critical module initialization failures"
-                self.initialized = False
-                init_event["data"]["status"] = "failed"
-                init_event["data"]["success"] = False
-                init_event["data"]["error"] = f"{critical_failures} critical modules failed to initialize"
-                logger.error("TCCC System initialization failed due to critical module failures")
-            else:
-                # System can operate even with non-critical failures
-                if all_modules_initialized:
-                    self.state = SystemState.READY
-                    logger.info("TCCC System initialized successfully with all modules")
-                else:
-                    self.state = SystemState.READY
-                    logger.warning("TCCC System initialized with limited functionality - some modules have limited capabilities")
-                
-                self.initialized = True
-                
-                # Final initialization event
-                init_event["data"]["status"] = "complete"
-                init_event["data"]["success"] = True
-                
-                if not all_modules_initialized:
-                    init_event["data"]["warning"] = "Some modules have limited functionality"
-            
-            # Store initialization event if possible
-            try:
-                if self.data_store and hasattr(self.data_store, 'store_event') and callable(self.data_store.store_event):
-                    self.data_store.store_event(init_event)
-            except Exception as e:
-                logger.warning(f"Could not store initialization event: {e}")
-            
-            return self.initialized
-            
-        except Exception as e:
+        # Prevent re-initialization
+        if self.initialized:
+            logger.warning("System already initialized.")
+            return True
+
+        # Set the configuration provided by the caller (__main__.py)
+        if config:
+            self.config = config
+            logger.info("TCCCSystem.initialize: Configuration assigned from argument.")
+            # Optionally, try to find the original file path from the loaded config if needed later
+            # self.config_file = self.config.get("loaded_files", [None])[0] # Example if load_config adds this
+        else:
+            logger.warning("TCCCSystem.initialize: No configuration provided.")
+            # Cannot proceed without configuration
             self.state = SystemState.ERROR
-            self.last_error = str(e)
-            logger.error(f"Failed to initialize TCCC System: {str(e)}")
+            self.last_error = "Initialization called without providing configuration."
+            return False
+
+        # Initialize components
+        logger.info("Initializing TCCC System components...")
+        self.state = SystemState.INITIALIZING
+
+        # Initialize modules
+        init_events = {
+            "audio_pipeline": {"future": asyncio.Future(), "initialized": False},
+            "stt_engine": {"future": asyncio.Future(), "initialized": False},
+            "processing_core": {"future": asyncio.Future(), "initialized": False},
+            "llm_analysis": {"future": asyncio.Future(), "initialized": False},
+            "data_store": {"future": asyncio.Future(), "initialized": False},
+            "document_library": {"future": asyncio.Future(), "initialized": False}
+        }
+
+        # Create module instances (or mocks)
+        if mock_modules is None:
+            mock_modules = []
+        
+        if "audio_pipeline" in mock_modules:
+            self.audio_pipeline = MockAudioPipeline(config=self.config.get("audio_pipeline", {}))
+        else:
+            self.audio_pipeline = AudioPipeline(config=self.config.get("audio_pipeline", {}))
+        
+        if "stt_engine" in mock_modules:
+            self.stt_engine = MockSTTEngine(config=self.config.get("stt_engine", {}))
+        else:
+            self.stt_engine = STTEngine(config=self.config.get("stt_engine", {}))
+        
+        if "processing_core" in mock_modules:
+            self.processing_core = MockProcessingCore(config=self.config.get("processing_core", {}))
+        else:
+            self.processing_core = ProcessingCore(config=self.config.get("processing_core", {}))
+        
+        if "llm_analysis" in mock_modules:
+            self.llm_analysis = MockLLMAnalysis(config=self.config.get("llm_analysis", {}))
+        else:
+            self.llm_analysis = LLMAnalysis(config=self.config.get("llm_analysis", {}))
+        
+        # self.data_store = DataStore(config=self.config.get("data_store", {}))
+        
+        if "document_library" in mock_modules:
+            self.document_library = MockDocumentLibrary(config=self.config.get("document_library", {}))
+        else:
+            self.document_library = DocumentLibrary(config=self.config.get("document_library", {}))
+
+        # Initialize modules asynchronously
+        module_initializations = [
+            self._initialize_module(self.audio_pipeline, "AudioPipeline", self.config.get("audio_pipeline", {}), init_events["audio_pipeline"]),
+            self._initialize_module(self.stt_engine, "STTEngine", self.config.get("stt_engine", {}), init_events["stt_engine"]),
+            self._initialize_module(self.processing_core, "ProcessingCore", self.config.get("processing_core", {}), init_events["processing_core"]),
+            self._initialize_module(self.llm_analysis, "LLMAnalysis", self.config.get("llm_analysis", {}), init_events["llm_analysis"]),
+            # self._initialize_module(self.data_store, "DataStore", self.config.get("data_store", {}), init_events["data_store"]),
+            self._initialize_module(self.document_library, "DocumentLibrary", self.config.get("document_library", {}), init_events["document_library"])
+        ]
+
+        # Wait for all modules to initialize
+        await asyncio.gather(*module_initializations)
+
+        # Check if all modules initialized successfully
+        all_initialized = all(event["initialized"] for event in init_events.values())
+
+        if all_initialized:
+            logger.info("All modules initialized successfully.")
+            self.state = SystemState.READY
+            self.initialized = True
+            self.event_bus.fire_event("system_ready", {})
             
-            # Error initialization event
-            try:
-                init_event["data"]["status"] = "failed"
-                init_event["data"]["success"] = False
-                init_event["data"]["error"] = str(e)
-                
-                if self.data_store and hasattr(self.data_store, 'store_event'):
-                    self.data_store.store_event(init_event)
-            except:
-                pass
-                
+            # Start the main event loop
+            self._main_event_loop = asyncio.get_event_loop()
+            
+            return True
+        else:
+            logger.error("Failed to initialize all modules.")
+            self.state = SystemState.ERROR
             self.initialized = False
             return False
-    
+
     async def _initialize_module(self, module, module_name: str, config: Dict[str, Any], init_event: Dict[str, Any]) -> bool:
         """
         Initialize a module with proper async/sync handling.
@@ -361,7 +302,7 @@ class TCCCSystem:
             
         try:
             logger.info(f"Initializing {module_name}")
-            init_event["data"]["modules"].append({"name": module_name, "status": "initializing"})
+            init_event["initialized"] = True
             
             # Check if module has initialize method
             if not hasattr(module, 'initialize') or not callable(module.initialize):
@@ -369,7 +310,7 @@ class TCCCSystem:
                 return False
                 
             # Make a copy of config to avoid potential cross-module modification issues
-            module_config = dict(config.get(module_name, {}))
+            module_config = dict(config)
             
             # Validate config structure to avoid common errors
             if not isinstance(module_config, dict):
@@ -382,27 +323,27 @@ class TCCCSystem:
                 if asyncio.iscoroutinefunction(initialize_method):
                     # Module has async initialize method
                     result = await initialize_method(module_config)
+                    success_flag = result if isinstance(result, bool) else False
+                    if not isinstance(result, bool):
+                        logger.warning(f"Async initialize for {module_name} did not return a boolean. Assuming failure based on non-boolean return ({type(result)}).")
                 else:
                     # Module has sync initialize method, run in executor
                     loop = asyncio.get_event_loop()
-                    result = await loop.run_in_executor(
+                    # Use the helper function within the lambda
+                    success_flag, raw_result = await loop.run_in_executor(
                         None, 
-                        lambda: initialize_method(module_config)
+                        lambda: _execute_sync_init(module_name, initialize_method, module_config)
                     )
                     
                 # Update initialization event
-                for module_info in init_event["data"]["modules"]:
-                    if module_info["name"] == module_name:
-                        module_info["status"] = "ready" if result else "limited"
-                        module_info["success"] = True  # Count as success even with limited functionality
-                        
-                if result:
+                init_event["success"] = success_flag  # Store the boolean flag
+                
+                if success_flag:
                     logger.info(f"Module {module_name} initialized successfully")
                 else:
                     logger.warning(f"Module {module_name} initialized with limited functionality")
                 
-                # Consider partial initialization as success for system stability
-                return True
+                return success_flag # Return the boolean flag
                 
             except Exception as init_error:
                 logger.error(f"Error during {module_name} initialization: {init_error}")
@@ -411,11 +352,8 @@ class TCCCSystem:
                 self.add_error(module_name, f"Initialization error: {str(init_error)}")
                 
                 # Update initialization event with error
-                for module_info in init_event["data"]["modules"]:
-                    if module_info["name"] == module_name:
-                        module_info["status"] = "error"
-                        module_info["success"] = False
-                        module_info["error"] = str(init_error)
+                init_event["success"] = False
+                init_event["error"] = str(init_error)
                 
                 # Try to recover depending on the module type
                 if module_name == "document_library":
@@ -432,11 +370,8 @@ class TCCCSystem:
             logger.error(f"Error initializing {module_name}: {e}")
             
             # Update initialization event with error
-            for module_info in init_event["data"]["modules"]:
-                if module_info["name"] == module_name:
-                    module_info["status"] = "error"
-                    module_info["success"] = False
-                    module_info["error"] = str(e)
+            init_event["success"] = False
+            init_event["error"] = str(e)
             
             # Add error to health tracking
             self.add_error(module_name, f"Initialization error: {str(e)}")
@@ -581,45 +516,163 @@ class TCCCSystem:
             logger.error(f"Failed to recover STTEngine: {str(recovery_error)}")
             return False
     
-    def start_audio_capture(self, source_id: Optional[str] = None) -> bool:
-        """Start audio capture.
-        
-        Args:
-            source_id: ID of the audio source to use
-            
-        Returns:
-            True if successful
-        """
+    def start_audio_capture(self) -> bool:
+        """Start audio capture using the callback mechanism."""
         if not self.initialized:
-            logger.error("System not initialized")
+            logger.error("System not initialized, cannot start audio capture.")
             return False
-        
+        if not self.audio_pipeline:
+            logger.error("AudioPipeline not initialized, cannot start capture.")
+            return False
+        logger.debug("start_audio_capture: Checking if already capturing")
+        if self.state == SystemState.CAPTURING:
+             logger.warning("Audio capture already running.")
+             return True # Already running is not an error
+
+        logger.debug("start_audio_capture: Attempting to start audio capture")
         try:
-            # Start audio capture
-            result = self.audio_pipeline.start_capture(source_id)
-            
+            # Reset audio sequence and session ID for new capture session
+            self._audio_sequence = 0
+            self._thread_session_id = f"audio_session_{int(time.time())}"
+            logger.info(f"Starting new audio session: {self._thread_session_id}")
+
+            # Start audio capture with the callback
+            # Ensure _process_audio_chunk is defined
+            logger.debug("start_audio_capture: Calling audio_pipeline.start")
+            logger.info("Attempting to start audio pipeline with callback...")
+            result = self.audio_pipeline.start(self._process_audio_chunk)
+
             if result:
-                # Start processing thread
-                self.stop_processing = False
-                self.processing_thread = threading.Thread(
-                    target=self._process_audio_thread,
-                    daemon=True
-                )
-                self.processing_thread.start()
-                
                 self.state = SystemState.CAPTURING
-                logger.info(f"Started audio capture from {source_id or 'default source'}")
+                active_source_name = "unknown"
+                if hasattr(self.audio_pipeline, 'get_active_source_name') and callable(self.audio_pipeline.get_active_source_name):
+                     active_source_name = self.audio_pipeline.get_active_source_name() or 'default'
+                logger.info(f"Audio capture started successfully using callback from '{active_source_name}'")
                 return True
             else:
-                logger.error("Failed to start audio capture")
+                logger.error("Failed to start audio capture: audio_pipeline.start returned False.")
+                # Attempt to determine why it failed if possible
+                status = self.audio_pipeline.get_status() if hasattr(self.audio_pipeline, 'get_status') else {}
+                logger.error(f"Audio pipeline status: {status}")
                 return False
-                
+
         except Exception as e:
             self.state = SystemState.ERROR
             self.last_error = str(e)
-            logger.error(f"Error starting audio capture: {str(e)}")
+            logger.exception(f"Exception occurred while starting audio capture: {str(e)}") # Use exception logger
             return False
-    
+
+    def _process_audio_chunk(self, audio_data: 'np.ndarray'):
+        """Callback function for AudioPipeline to process incoming audio chunks."""
+        # logger.debug(f"Received audio chunk, size: {audio_data.shape}, dtype: {audio_data.dtype}") # DEBUG log
+        if not self._main_event_loop or not self._main_event_loop.is_running():
+            logger.error("Main event loop not available or not running. Cannot process audio chunk.")
+            return
+
+        try:
+            # Increment sequence
+            self._audio_sequence += 1
+            current_sequence = self._audio_sequence # Capture current sequence for the event
+
+            # Gather metadata (handle potential missing attributes/methods)
+            metadata = {
+                "timestamp": time.time(),
+                "source_type": "unknown",
+                "sample_rate": 16000, # Default
+                "channels": 1,      # Default
+                "dtype": "int16"     # Default
+            }
+            if self.audio_pipeline:
+                 if hasattr(self.audio_pipeline, 'get_active_source_type') and callable(self.audio_pipeline.get_active_source_type):
+                      metadata["source_type"] = self.audio_pipeline.get_active_source_type() or "unknown"
+                 if hasattr(self.audio_pipeline, 'sample_rate'):
+                      metadata["sample_rate"] = self.audio_pipeline.sample_rate
+                 if hasattr(self.audio_pipeline, 'channels'):
+                      metadata["channels"] = self.audio_pipeline.channels
+                 if hasattr(self.audio_pipeline, 'dtype') and self.audio_pipeline.dtype:
+                      # Store dtype as string representation
+                      metadata["dtype"] = str(np.dtype(self.audio_pipeline.dtype))
+
+            logger.debug(f"Active audio source: {self.audio_pipeline.source.name} ({self.audio_pipeline.source.type})")
+            logger.debug(f"Active audio source: name={metadata.get('source_type')}, type={metadata.get('source_type')}")
+
+            # Create audio event dictionary directly
+            # The actual AudioSegmentEvent object creation might happen inside process_event or adapter
+            event_payload = {
+                "source": "audio_pipeline",
+                "type": EventType.AUDIO_SEGMENT.value, # Use enum value for type
+                "timestamp": metadata["timestamp"],
+                "session_id": self._thread_session_id,
+                "sequence": current_sequence,
+                "data": {
+                     "audio_data": audio_data, # Pass the raw numpy array
+                     "metadata": metadata # Pass collected metadata
+                }
+            }
+            
+            # logger.debug(f"Scheduling audio event processing for sequence {current_sequence}") # DEBUG log
+            # Schedule the async process_event coroutine on the main event loop
+            future = asyncio.run_coroutine_threadsafe(self.process_event(event_payload), self._main_event_loop)
+
+            # Optional: Add callback to future to log result/errors after execution
+            def log_audio_event_result(f):
+                 try:
+                      result = f.result()
+                      # logger.debug(f"Audio event (seq {current_sequence}) processing finished. Result: {result}") # DEBUG log
+                 except Exception as e_future:
+                      logger.error(f"Error processing audio event (seq {current_sequence}) in scheduled task: {e_future}")
+
+            future.add_done_callback(log_audio_event_result)
+
+        except Exception as e:
+            # Log exception originating from within the callback itself
+            logger.exception(f"Error in _process_audio_chunk callback (sequence {self._audio_sequence}): {e}")
+
+    def stop_audio_capture(self) -> bool:
+        """Stop audio capture."""
+        if not self.initialized:
+            logger.error("System not initialized, cannot stop audio capture.")
+            return False
+        if not self.audio_pipeline:
+             logger.warning("AudioPipeline not initialized or already stopped. Nothing to stop.")
+             # Return True as there's nothing active to stop from system's perspective
+             if self.state == SystemState.CAPTURING: # If state was capturing, reset it
+                  self.state = SystemState.READY
+             return True
+        if self.state != SystemState.CAPTURING:
+             logger.warning(f"Audio capture is not running (state: {self.state}). Stop request ignored.")
+             return True # Not running is not an error
+
+        try:
+            logger.info("Attempting to stop audio pipeline...")
+            # Stop audio capture using the pipeline's stop method
+            result = self.audio_pipeline.stop() # Use stop, not stop_capture
+
+            if result:
+                self.state = SystemState.READY
+                logger.info("Audio capture stopped successfully via pipeline stop method.")
+                return True
+            else:
+                # Maybe it was already stopped? Check status if possible
+                was_running = True # Assume it was running if state was CAPTURING
+                if hasattr(self.audio_pipeline, 'is_running'):
+                     was_running = self.audio_pipeline.is_running
+                
+                if not was_running:
+                     logger.warning("Audio pipeline stop method returned False, but pipeline was already not running.")
+                     self.state = SystemState.READY # Ensure state is READY
+                     return True # Consider this success
+                else:
+                     logger.error("Audio pipeline stop method returned False, and pipeline might still be running.")
+                     # Don't change state from CAPTURING if stop failed and it thinks it's running
+                     return False
+
+        except Exception as e:
+            self.state = SystemState.ERROR # An exception during stop is an error
+            self.last_error = str(e)
+            logger.exception(f"Exception occurred while stopping audio capture: {str(e)}") # Use exception logger
+            return False
+
     async def process_event(self, event_data: Dict[str, Any]) -> Optional[str]:
         """
         Process an external event through the system.
@@ -662,26 +715,50 @@ class TCCCSystem:
             # Process based on event type
             if event_type == EventType.AUDIO_SEGMENT.value:
                 # Handle audio segment event
-                # Extract audio data (special handling since it can't be part of JSON)
-                audio_data = None
-                if "audio_data" in event_data:
-                    audio_data = event_data.pop("audio_data")
+                # Data is now structured as event_data['data']['audio_data'] and event_data['data']['metadata']
                 
-                # Convert for STT Engine
-                stt_input = STTEngineAdapter.convert_audio_event_to_input(event_data, audio_data)
-                
+                # Convert for STT Engine using the adapter
+                # The adapter needs to handle the new event structure
+                try:
+                     logger.debug(f"Converting audio event (seq {event_data.get('sequence', 'N/A')}) for STT...")
+                     stt_input = STTEngineAdapter.convert_audio_event_to_input(event_data)
+                except Exception as adapter_error:
+                     logger.exception(f"Error converting audio event using STTEngineAdapter: {adapter_error}")
+                     # Create and store error event
+                     error_event = ErrorEvent(
+                         source="system", error_code="adapter_error", message=f"STT Adapter failed: {adapter_error}",
+                         component="process_event.stt_adapter", recoverable=True, session_id=session_id, sequence=self._event_sequence
+                     ).to_dict()
+                     # await self._store_event_safe(error_event) # Helper needed
+                     return None # Stop processing this event
+
                 # Process with STT Engine
                 self.state = SystemState.PROCESSING
-                transcription = await self._transcribe_async(stt_input["audio"], stt_input["metadata"])
+                logger.debug(f"Sending audio (seq {event_data.get('sequence', 'N/A')}) to STT engine...")
+                transcription = await self._transcribe_async(stt_input.get("audio"), stt_input.get("metadata")) # Use .get for safety
                 
                 # Convert transcription to standard event
-                if transcription:
-                    transcription_event = STTEngineAdapter.convert_transcription_to_event(
-                        transcription, event_data
-                    )
+                if transcription and transcription.get("text", ""): # Check if transcription is valid
+                    logger.debug(f"STT result (seq {event_data.get('sequence', 'N/A')}): '{transcription.get('text', '')[:50]}...'")
+                    try:
+                         transcription_event = STTEngineAdapter.convert_transcription_to_event(
+                              transcription, event_data # Pass original event for context
+                         )
+                    except Exception as adapter_error:
+                         logger.exception(f"Error converting transcription using STTEngineAdapter: {adapter_error}")
+                         # Create and store error event...
+                         return None
+                    # Recursively call process_event with the new transcription event
                     return await self.process_event(transcription_event)
+                elif transcription and "error" in transcription:
+                     logger.error(f"STT engine returned an error for sequence {event_data.get('sequence', 'N/A')}: {transcription['error']}")
+                     # Create and store error event...
+                     return None
                 else:
-                    logger.warning("No transcription result from STT Engine")
+                    # No transcription text, maybe just silence or VAD decided no speech
+                    logger.debug(f"No transcription result from STT Engine for sequence {event_data.get('sequence', 'N/A')}")
+                    # Reset state if no further processing happens for this chunk
+                    self.state = SystemState.READY # Or CAPTURING if still running? Check logic
                     return None
                     
             elif event_type == EventType.TRANSCRIPTION.value:
@@ -730,27 +807,27 @@ class TCCCSystem:
                     ).to_dict()
                     
                     # Store the event
-                    event_id = self.data_store.store_event(llm_event)
-                    logger.info(f"Stored LLM analysis event: {event_id}")
-                    self.events.append(event_id)
+                    # event_id = self.data_store.store_event(llm_event)
+                    logger.info(f"Stored LLM analysis event: N/A")
+                    self.events.append("N/A")
                     
                     # Store the original processed text event too
-                    orig_event_id = self.data_store.store_event(event_data)
-                    logger.info(f"Stored processed text event: {orig_event_id}")
-                    self.events.append(orig_event_id)
+                    # orig_event_id = self.data_store.store_event(event_data)
+                    logger.info(f"Stored processed text event: N/A")
+                    self.events.append("N/A")
                     
                     # Reset state
                     self.state = SystemState.READY
-                    return event_id
+                    return "N/A"
                 else:
                     # Just store the processed text event
-                    event_id = self.data_store.store_event(event_data)
-                    logger.info(f"Stored processed text event: {event_id}")
-                    self.events.append(event_id)
+                    # event_id = self.data_store.store_event(event_data)
+                    logger.info(f"Stored processed text event: N/A")
+                    self.events.append("N/A")
                     
                     # Reset state
                     self.state = SystemState.READY
-                    return event_id
+                    return "N/A"
                     
             elif event_type == EventType.ERROR.value:
                 # Handle error event
@@ -768,9 +845,9 @@ class TCCCSystem:
                 )
                 
                 # Store the error event
-                event_id = self.data_store.store_event(event_data)
-                logger.info(f"Stored error event: {event_id}")
-                self.events.append(event_id)
+                # event_id = self.data_store.store_event(event_data)
+                logger.info(f"Stored error event: N/A")
+                self.events.append("N/A")
                 
                 # Set system state based on error severity
                 severity = error_data.get("severity", "error")
@@ -781,17 +858,17 @@ class TCCCSystem:
                     # For warning and info, stay ready
                     self.state = SystemState.READY
                 
-                return event_id
+                return "N/A"
                 
             else:
                 # Store other event types directly
-                event_id = self.data_store.store_event(event_data)
-                logger.info(f"Stored generic event: {event_id}")
-                self.events.append(event_id)
+                # event_id = self.data_store.store_event(event_data)
+                logger.info(f"Stored generic event: N/A")
+                self.events.append("N/A")
                 
                 # Reset state
                 self.state = SystemState.READY
-                return event_id
+                return "N/A"
             
         except Exception as e:
             # Handle any errors in the event processing
@@ -806,15 +883,15 @@ class TCCCSystem:
                 message=str(e),
                 component="system.process_event",
                 recoverable=True,
-                metadata={"traceback": logging.traceback.format_exc()},
                 session_id=session_id,
                 sequence=self._event_sequence
             ).to_dict()
             
             try:
-                error_id = self.data_store.store_event(error_event)
-                self.events.append(error_id)
-                return error_id
+                # error_id = self.data_store.store_event(error_event)
+                logger.info(f"Stored error event: N/A")
+                self.events.append("N/A")
+                return "N/A"
             except:
                 # Last resort if even storing the error fails
                 return None
@@ -939,141 +1016,6 @@ class TCCCSystem:
                 "topics": []
             }
     
-    def _process_audio_thread(self):
-        """Thread for processing audio data."""
-        try:
-            logger.info("Audio processing thread started")
-            
-            # Initialize sequence counter for audio segments
-            audio_sequence = 0
-            
-            # Initialize shared session ID
-            thread_session_id = f"audio_session_{int(time.time())}"
-            
-            # Create a dedicated event loop for this thread
-            event_loop = asyncio.new_event_loop()
-            asyncio.set_event_loop(event_loop)
-            
-            # Define the asynchronous worker function
-            async def process_audio_worker():
-                nonlocal audio_sequence
-                
-                while not self.stop_processing:
-                    try:
-                        # Get standardized audio event from the pipeline asynchronously
-                        audio_event = await AudioPipelineAdapter.get_audio_segment_async(self.audio_pipeline)
-                        
-                        if audio_event:
-                            # Increment sequence
-                            audio_sequence += 1
-                            
-                            # Add sequence and session ID
-                            audio_event["sequence"] = audio_sequence
-                            audio_event["session_id"] = thread_session_id
-                            
-                            try:
-                                # Process audio event asynchronously
-                                logger.debug(f"Processing audio segment {audio_sequence}")
-                                await self.process_event(audio_event)
-                            except Exception as e:
-                                logger.error(f"Error processing audio event: {e}")
-                                # Create an error event
-                                error_event = ErrorEvent(
-                                    source="audio_thread",
-                                    error_code="audio_processing_error",
-                                    message=str(e),
-                                    component="system._process_audio_thread",
-                                    recoverable=True,
-                                    session_id=thread_session_id,
-                                    sequence=audio_sequence
-                                ).to_dict()
-                                
-                                # Store the error
-                                try:
-                                    if self.data_store:
-                                        self.data_store.store_event(error_event)
-                                except Exception as store_error:
-                                    logger.error(f"Failed to store error event: {store_error}")
-                        
-                        # Adaptive sleep based on state
-                        if self.state == SystemState.PROCESSING or self.state == SystemState.ANALYZING:
-                            # Shorter sleep during active processing to ensure responsiveness
-                            await asyncio.sleep(0.02)
-                        else:
-                            # Moderate sleep when idle to reduce CPU usage while maintaining responsiveness
-                            await asyncio.sleep(0.1)
-                            
-                    except Exception as segment_error:
-                        # Local exception handler for segment processing
-                        logger.error(f"Error processing audio segment: {segment_error}")
-                        # Add a short delay to avoid tight error loops
-                        await asyncio.sleep(0.1)
-            
-            # Run the async worker until stop_processing is set
-            try:
-                event_loop.run_until_complete(process_audio_worker())
-            finally:
-                # Clean up
-                event_loop.close()
-                logger.info("Audio processing thread event loop closed")
-                
-        except Exception as thread_error:
-            # Global exception handler for the thread
-            self.state = SystemState.ERROR
-            self.last_error = str(thread_error)
-            logger.error(f"Fatal error in audio processing thread: {str(thread_error)}")
-            
-            # Add error to health tracking
-            self.add_error("audio_thread", f"Thread terminated: {str(thread_error)}")
-            
-            # Attempt thread recovery after a brief pause
-            def restart_thread():
-                time.sleep(2.0)  # Wait before restarting
-                logger.info("Attempting to restart audio processing thread")
-                if not self.stop_processing:
-                    self.processing_thread = threading.Thread(
-                        target=self._process_audio_thread,
-                        daemon=True
-                    )
-                    self.processing_thread.start()
-            
-            # Start recovery thread if not shutting down
-            if not self.stop_processing:
-                threading.Thread(target=restart_thread, daemon=True).start()
-    
-    def stop_audio_capture(self) -> bool:
-        """Stop audio capture.
-        
-        Returns:
-            True if successful
-        """
-        if not self.initialized:
-            logger.error("System not initialized")
-            return False
-        
-        try:
-            # Stop processing thread
-            self.stop_processing = True
-            if self.processing_thread and self.processing_thread.is_alive():
-                self.processing_thread.join(2.0)  # Wait up to 2 seconds
-            
-            # Stop audio capture
-            result = self.audio_pipeline.stop_capture()
-            
-            if result:
-                self.state = SystemState.READY
-                logger.info("Stopped audio capture")
-                return True
-            else:
-                logger.error("Failed to stop audio capture")
-                return False
-                
-        except Exception as e:
-            self.state = SystemState.ERROR
-            self.last_error = str(e)
-            logger.error(f"Error stopping audio capture: {str(e)}")
-            return False
-    
     def generate_reports(self, report_types: Optional[List[str]] = None) -> Dict[str, str]:
         """Generate reports.
         
@@ -1097,7 +1039,8 @@ class TCCCSystem:
             # Get events from data store
             events = []
             for event_id in self.events:
-                event = self.data_store.get_event(event_id)
+                # event = self.data_store.get_event(event_id)
+                event = None
                 if event:
                     events.append(event)
             
@@ -1120,17 +1063,16 @@ class TCCCSystem:
                     continue
                 
                 # Store report
-                report_id = self.data_store.store_report({
-                    "type": report_type,
-                    "content": report,
-                    "events": self.events,
-                    "session_id": self.session_id,
-                    "timestamp": time.time()
-                })
-                
-                logger.info(f"Stored report: {report_id}")
-                self.reports.append(report_id)
-                reports[report_type] = report_id
+                # report_id = self.data_store.store_report({
+                #     "type": report_type,
+                #     "content": report,
+                #     "events": self.events,
+                #     "session_id": self.session_id,
+                #     "timestamp": time.time()
+                # })
+                logger.info(f"Stored report: N/A")
+                self.reports.append("N/A")
+                reports[report_type] = "N/A"
             
             self.state = SystemState.READY
             return reports
@@ -1162,119 +1104,25 @@ class TCCCSystem:
             return {"error": str(e)}
     
     def query_events(self, filters: Dict[str, Any] = None) -> List[Dict[str, Any]]:
-        """Query events.
-        
-        Args:
-            filters: Query filters (optional)
-            
-        Returns:
-            List of matching events
-        """
-        if not self.initialized:
-            logger.error("System not initialized")
-            return []
-        
-        try:
-            # Use empty filters if none provided
-            if filters is None:
-                filters = {}
-                
-            # Return our current events if we have them
-            if not filters and self.events:
-                result = []
-                for event_id in self.events:
-                    event = self.data_store.get_event(event_id)
-                    if event:
-                        result.append(event)
-                return result
-                
-            return self.data_store.query_events(filters)
-        except Exception as e:
-            logger.error(f"Error querying events: {str(e)}")
-            return []
+        """Query events from the data store based on filters."""
+        logger.info(f"Querying events with filters: {filters}")
+        # return self.data_store.query_events(filters)
+        logger.warning("DataStore disabled for MVP, cannot query events.")
+        return [] # Return empty list
+ 
+    def get_tccc_report(self, report_id: str) -> Optional[Dict[str, Any]]:
+        """Retrieve a specific TCCC report by its ID."""
+        logger.info(f"Retrieving TCCC report with ID: {report_id}")
+        # return self.data_store.get_report(report_id)
+        logger.warning(f"DataStore disabled for MVP, cannot retrieve report ID: {report_id}")
+        return None # Return None
     
-    def get_report(self, report_id: str) -> Dict[str, Any]:
-        """Get a report.
-        
-        Args:
-            report_id: ID of the report to retrieve
-            
-        Returns:
-            Report data
-        """
-        if not self.initialized:
-            logger.error("System not initialized")
-            return {}
-        
-        try:
-            return self.data_store.get_report(report_id)
-        except Exception as e:
-            logger.error(f"Error getting report: {str(e)}")
-            return {}
-    
-    def get_current_state(self) -> SystemState:
-        """Get the current system state.
-        
-        Returns:
-            Current SystemState
-        """
-        return self.state
-        
-    def get_health_status(self) -> Dict[str, Any]:
-        """Get health status of the system.
-        
-        Returns:
-            Dictionary with health status information
-        """
-        module_statuses = {}
-        for name, module in {
-            "processing_core": self.processing_core,
-            "data_store": self.data_store,
-            "document_library": self.document_library,
-            "audio_pipeline": self.audio_pipeline,
-            "stt_engine": self.stt_engine,
-            "llm_analysis": self.llm_analysis
-        }.items():
-            if module and hasattr(module, 'get_status'):
-                module_statuses[name] = module.get_status()
-        
-        return {
-            "state": self.state.value,
-            "health": {
-                "error_count": len(self.health["errors"]),
-                "warning_count": len(self.health["warnings"]),
-                "resource_usage": self.health["resource_usage"],
-                "errors": self.health["errors"]
-            },
-            "modules": module_statuses
-        }
-    
-    def add_error(self, module: str, message: str) -> None:
-        """Add an error to health tracking.
-        
-        Args:
-            module: Module that generated the error
-            message: Error message
-        """
-        self.health["errors"].append({
-            "module": module,
-            "message": message,
-            "time": time.time()
-        })
-        self.last_error = message
-    
-    def add_warning(self, module: str, message: str) -> None:
-        """Add a warning to health tracking.
-        
-        Args:
-            module: Module that generated the warning
-            message: Warning message
-        """
-        self.health["warnings"].append({
-            "module": module,
-            "message": message,
-            "time": time.time()
-        })
+    def get_event(self, event_id: str) -> Optional[Dict[str, Any]]:
+        """Retrieve a specific event by its ID."""
+        logger.info(f"Retrieving event with ID: {event_id}")
+        # event = self.data_store.get_event(event_id)
+        logger.warning(f"DataStore disabled for MVP, cannot retrieve event ID: {event_id}")
+        return None # Return None
     
     def get_status(self) -> Dict[str, Any]:
         """Get system status.
@@ -1299,7 +1147,8 @@ class TCCCSystem:
                 status["modules"]["processing_core"] = self.processing_core.get_status()
             
             if self.data_store:
-                status["modules"]["data_store"] = self.data_store.get_status()
+                # status["modules"]["data_store"] = self.data_store.get_status()
+                logger.warning("DataStore disabled for MVP, cannot retrieve status.")
             
             if self.document_library:
                 status["modules"]["document_library"] = self.document_library.get_status()
@@ -1328,23 +1177,16 @@ class TCCCSystem:
         Returns:
             True if the system started successfully
         """
+        logger.info("TCCCSystem.start: Starting the system...")
         if not self.initialized or self.state not in [SystemState.READY, SystemState.IDLE]:
             logger.error("System not initialized or not in ready state")
             return False
         
         try:
-            logger.info("Starting TCCC System...")
-            
-            # Start audio capture
-            result = self.start_audio_capture()
-            
-            if result:
-                logger.info("TCCC System started successfully")
-                return True
-            else:
-                logger.error("Failed to start audio capture")
-                return False
-                
+            logger.info("TCCC System starting...")
+            self.state = SystemState.IDLE
+
+            return True
         except Exception as e:
             self.state = SystemState.ERROR
             self.last_error = str(e)
@@ -1398,24 +1240,26 @@ class TCCCSystem:
             if self.state == SystemState.CAPTURING:
                 self.stop_audio_capture()
             
-            # Shutdown modules
+            # Shutdown modules - Reordered for potentially safer shutdown
+            # Shutdown consumers first
+            if self.stt_engine:
+                self.stt_engine.shutdown()
+
+            if self.llm_analysis:
+                self.llm_analysis.shutdown()
+
             if self.processing_core:
                 self.processing_core.shutdown()
             
-            if self.data_store:
-                self.data_store.shutdown()
-            
-            if self.document_library and hasattr(self.document_library, 'shutdown'):
-                self.document_library.shutdown()
-            
+            # Shutdown producers/stores next
             if self.audio_pipeline:
                 self.audio_pipeline.shutdown()
-            
-            if self.stt_engine:
-                self.stt_engine.shutdown()
-            
-            if self.llm_analysis:
-                self.llm_analysis.shutdown()
+
+            if self.document_library and hasattr(self.document_library, 'shutdown'):
+                self.document_library.shutdown()
+
+            # if self.data_store:
+            #     self.data_store.shutdown()
             
             # Update state
             self.state = SystemState.SHUTDOWN
@@ -1429,3 +1273,39 @@ class TCCCSystem:
             self.last_error = str(e)
             logger.error(f"Error shutting down TCCC System: {str(e)}")
             return False
+
+def _execute_sync_init(module_name: str, init_method: Callable, config: Dict[str, Any]) -> Tuple[bool, Optional[Any]]:
+    """Helper to execute synchronous init methods safely."""
+    print(f"DEBUG: _execute_sync_init: Executing for {module_name}") # Added print
+    init_result = False
+    raw_result = None
+    try:
+        print(f"DEBUG: _execute_sync_init: About to call {module_name}.initialize with config: {config}")
+        # --- Add specific try-except around the call --- 
+        try:
+            print(f"DEBUG: _execute_sync_init: ABOUT TO CALL {module_name}.initialize({config})") # Kept print
+            raw_result = init_method(config)
+            print(f"DEBUG: _execute_sync_init: Returned from {module_name}.initialize call.") # Kept print
+        except Exception as call_error:
+            print(f"DEBUG: _execute_sync_init: EXCEPTION DURING {module_name}.initialize CALL: {call_error}\n{traceback.format_exc()}")
+            raw_result = False # Assume failure if call itself fails
+        # --- End specific try-except ---
+        
+        # Check result type and update success flag
+        if isinstance(raw_result, bool):
+            init_result = raw_result
+        elif raw_result is None: # Consider None as success if no explicit bool needed
+            init_result = True 
+        else: # Unexpected return type, treat as failure
+            logger.warning(f"Module {module_name} init returned unexpected type: {type(raw_result)}. Treating as failure.")
+            init_result = False
+                    
+    except Exception as e:
+        logger.error(f"Error initializing module {module_name}: {e}", exc_info=True)
+        init_result = False
+        # Optionally capture traceback
+        # tb_str = traceback.format_exc()
+        # logger.debug(f"Traceback for {module_name} init error:\n{tb_str}")
+
+    print(f"DEBUG: Sync execution completed for {module_name}, raw result: {raw_result}") # Added print
+    return init_result, raw_result

@@ -90,6 +90,7 @@ class DocumentLibrary:
                     }
                 }
             
+            logger.debug("DocumentLibrary: Loading config")
             self.config = config
             
             # Validate essential config keys
@@ -114,6 +115,7 @@ class DocumentLibrary:
                     else:
                         config[section] = {}
             
+            logger.debug("DocumentLibrary: Validating config keys")
             # Ensure required storage paths with defaults
             storage_paths = {
                 "base_dir": "data/documents",
@@ -126,6 +128,7 @@ class DocumentLibrary:
                     logger.warning(f"Missing storage path '{path_key}', using default: {default_path}")
                     config["storage"][path_key] = default_path
             
+            logger.debug("DocumentLibrary: Ensuring storage paths")
             # Create required directories with proper error handling
             for path_key, path_name in [
                 ("base_dir", "Document Storage"),
@@ -140,6 +143,7 @@ class DocumentLibrary:
                     logger.error(f"Failed to create {path_name.lower()} directory: {str(dir_error)}")
                     # Continue with initialization, as we might still be able to function
             
+            logger.debug("DocumentLibrary: Ensuring embedding cache directory exists")
             # Ensure embedding cache directory exists
             try:
                 if "cache_dir" not in config["embedding"]:
@@ -152,6 +156,7 @@ class DocumentLibrary:
                 logger.error(f"Failed to create embedding cache directory: {str(dir_error)}")
                 # Continue with initialization
             
+            logger.debug("DocumentLibrary: Initializing document processor")
             # Initialize document processor
             try:
                 self.document_processor = DocumentProcessor(config)
@@ -161,6 +166,7 @@ class DocumentLibrary:
                 self.document_processor = None
                 # Continue with initialization
             
+            logger.debug("DocumentLibrary: Initializing cache manager")
             # Initialize cache manager
             try:
                 self.cache_manager = CacheManager(config)
@@ -170,6 +176,7 @@ class DocumentLibrary:
                 self.cache_manager = None
                 # Continue with initialization
             
+            logger.debug("DocumentLibrary: Adding default indexing configuration")
             # Add default indexing configuration if missing
             if "indexing" not in config:
                 logger.warning("Missing 'indexing' configuration section, using defaults")
@@ -178,6 +185,7 @@ class DocumentLibrary:
                     "chunk_overlap": 200
                 }
                 
+            logger.debug("DocumentLibrary: Importing components")
             # Import components (done here to avoid circular imports)
             try:
                 from tccc.document_library.vector_store import VectorStore
@@ -188,6 +196,7 @@ class DocumentLibrary:
                 logger.error(f"Failed to import required components: {str(import_error)}")
                 return False
             
+            logger.debug("DocumentLibrary: Initializing vector store")
             # Initialize vector store with improved error handling
             self.vector_store = None
             self.model = None
@@ -251,6 +260,7 @@ class DocumentLibrary:
                 except Exception as err:
                     logger.error(f"Failed to create minimal vector store: {err}")
             
+            logger.debug("DocumentLibrary: Initializing medical vocabulary")
             # Initialize medical vocabulary with improved error handling
             try:
                 self.medical_vocabulary = MedicalVocabularyManager(config)
@@ -260,6 +270,7 @@ class DocumentLibrary:
                 logger.warning(f"Medical vocabulary initialization failed: {str(vocab_error)}")
                 self.medical_vocabulary = None
             
+            logger.debug("DocumentLibrary: Initializing query engine")
             # Initialize query engine with fallback
             try:
                 if self.vector_store:
@@ -272,6 +283,7 @@ class DocumentLibrary:
                 logger.warning(f"Query engine initialization failed: {str(qe_error)}")
                 self.query_engine = None
             
+            logger.debug("DocumentLibrary: Initializing response generator")
             # Initialize response generator with fallback
             try:
                 if self.query_engine:
@@ -284,6 +296,7 @@ class DocumentLibrary:
                 logger.warning(f"Response generator initialization failed: {str(rg_error)}")
                 self.response_generator = None
             
+            logger.debug("DocumentLibrary: Loading existing documents")
             # Load existing documents if available
             try:
                 self._load_documents()
@@ -294,6 +307,7 @@ class DocumentLibrary:
                 self.chunks = {}
                 self.chunk_to_doc = {}
             
+            logger.debug("DocumentLibrary: Marking as initialized")
             # Mark as initialized with limited functionality if needed
             self.initialized = True
             
