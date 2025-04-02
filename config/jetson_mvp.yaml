@@ -3,13 +3,22 @@
 
 # System settings
 system:
-  log_level: INFO
+  log_level: DEBUG
   cache_dir: "data/cache"
   tmp_dir: "data/tmp"
 
 # Audio settings for Jetson
 audio_pipeline:
-  sample_rate: 16000
+  sample_rate: 16000 # Revert back to 16000 Hz
+  # Input/Output Configuration
+  io:
+    input_sources:
+      # Default microphone input using PyAudio
+      - name: "default_mic"
+        type: "pyaudio" # Corrected type
+        device_index: null # Use system default device
+        # Add other sounddevice options if needed (e.g., blocksize)
+    default_input: "default_mic"
   channels: 1
   bit_depth: 16
   chunk_size: 2048
@@ -30,21 +39,12 @@ stt_engine:
 
 # LLM settings
 llm_analysis:
-  model: "phi-2"
-  model_path: "models/llm/phi-2"
-  quantization: "int8"
+  model: "phi-2-gguf"
+  model_path: "models/phi-2-gguf"
+  model_file: "phi-2.Q4_K_M.gguf"
   max_tokens: 256
   temperature: 0.3
   device: "cuda"
-
-# Document library settings
-document_library:
-  embedding_model: "all-MiniLM-L6-v2"
-  embedding_model_path: "models/embeddings/all-MiniLM-L6-v2"
-  documents_path: "data/documents"
-  vector_db_path: "data/document_index/document_index.faiss"
-  cache_enabled: true
-  cache_path: "data/query_cache"
 
 # Power and resource management
 power_management:

@@ -1,0 +1,51 @@
+# Commands to activate venv and install requirements inside it
+# Copy this entire block and paste it into your Jetson terminal.
+
+cd /home/ama/tccc-project && \
+source venv/bin/activate && \
+cd test_demos && \
+pip install -r requirements.txt && \
+echo "\n--- Requirements installed successfully in venv. You can now try the desktop shortcut. ---" && \
+deactivate
+
+# Note: The final 'deactivate' is included for completeness,
+# but you can leave the environment active if you plan to run
+# more commands in it immediately.
+
+
+
+
+results
+ama@ama-desktop:~$ cd /home/ama/tccc-project && \
+> source venv/bin/activate && \
+> cd test_demos && \
+> pip install -r requirements.txt && \
+> echo "\n--- Requirements installed successfully in venv. You can now try the desktop shortcut. ---" && \
+> deactivate
+Collecting inquirerpy>=0.3.4 (from -r requirements.txt (line 1))
+  Using cached InquirerPy-0.3.4-py3-none-any.whl.metadata (8.1 kB)
+Collecting pfzy<0.4.0,>=0.3.1 (from inquirerpy>=0.3.4->-r requirements.txt (line 1))
+  Using cached pfzy-0.3.4-py3-none-any.whl.metadata (4.9 kB)
+Collecting prompt-toolkit<4.0.0,>=3.0.1 (from inquirerpy>=0.3.4->-r requirements.txt (line 1))
+  Using cached prompt_toolkit-3.0.50-py3-none-any.whl.metadata (6.6 kB)
+Collecting wcwidth (from prompt-toolkit<4.0.0,>=3.0.1->inquirerpy>=0.3.4->-r requirements.txt (line 1))
+  Using cached wcwidth-0.2.13-py2.py3-none-any.whl.metadata (14 kB)
+Using cached InquirerPy-0.3.4-py3-none-any.whl (67 kB)
+Using cached pfzy-0.3.4-py3-none-any.whl (8.5 kB)
+Using cached prompt_toolkit-3.0.50-py3-none-any.whl (387 kB)
+Using cached wcwidth-0.2.13-py2.py3-none-any.whl (34 kB)
+Installing collected packages: wcwidth, prompt-toolkit, pfzy, inquirerpy
+Successfully installed inquirerpy-0.3.4 pfzy-0.3.4 prompt-toolkit-3.0.50 wcwidth-0.2.13
+\n--- Requirements installed successfully in venv. You can now try the desktop shortcut. ---
+ama@ama-desktop:~/tccc-project/test_demos$ 
+
+desktop link results after install:
+Traceback (most recent call last):
+  File "/home/ama/tccc-project/test_demos/demo_launcher.py", line 42, in <module>
+    from inquirerpy import inquirer
+ModuleNotFoundError: No module named 'inquirerpy'
+\nScript finished or encountered an error. Press Enter to close terminal.
+
+
+
+

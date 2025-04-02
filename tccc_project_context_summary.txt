@@ -1,0 +1,54 @@
+TCCC.ai Project Context Summary (April 1, 2025, ~20:48 PST)
+
+**Overall Project Goal:**
+Develop the TCCC.ai system, a tactical communication C4ISR system involving advanced audio processing (noise reduction, battlefield filtering, VAD, voice isolation), Speech-to-Text (STT), Large Language Model (LLM) analysis, and potentially other sensor integration for tactical environments. The system is intended to run on platforms like the Nvidia Jetson.
+
+**Recent Focus (Demo Launcher Utility - `test_demos/`):**
+1.  **Creation & Debugging:**
+    *   A Python script `test_demos/demo_launcher.py` was created to provide a TUI (using `inquirerpy`) for selecting and running various Python demo scripts located in the `test_demos` directory.
+    *   Significant effort was spent resolving a `ModuleNotFoundError` for `inquirerpy`. The root cause was identified as the package installing its directory as `InquirerPy` (capitalized) on Linux, while standard Python imports expect lowercase `inquirerpy`.
+    *   **Workaround:** The import statement in `demo_launcher.py` was changed to `from InquirerPy import ...`.
+2.  **Portability for Jetson:**
+    *   The wrapper script `test_demos/run_launcher.sh` was modified to be portable. It now calculates the project root and virtual environment paths relative to its own location, assuming it resides in `test_demos` and the `venv` is one level up.
+    *   The `.desktop` file (`tccc-demo-launcher.desktop`) was modified for portability, but requires the `Path=` directive to be manually edited with the absolute path to `test_demos` on the target system (e.g., the Jetson) after copying. The original file was deleted by the user.
+3.  **Jetson Dependencies:**
+    *   Logs from running the launcher on the Jetson (via `looking for these droids.txt`) revealed that while the *launcher* ran, the *demo scripts* failed due to missing dependencies in the Jetson's virtual environment (`/home/ama/tccc-project/venv`).
+    *   Required installs identified for the Jetson venv: `pip install numpy pygame` and `pip install -e .` (from the project root `/home/ama/tccc-project`) to install the core `tccc` package.
+
+**Side Project (Paused): Demo Launcher Utility (`test_demos/`)**
+*   **Goal:** Create a user-friendly TUI launcher for demo scripts to improve organization, discoverability, and ease of use, especially on the Jetson.
+*   **Components Created:**
+    *   `test_demos/demo_launcher.py`: Python script using `InquirerPy` for the TUI.
+    *   `test_demos/requirements.txt`: Specifies `inquirerpy` dependency.
+    *   `test_demos/README.md`: Explains the launcher.
+    *   `test_demos/run_launcher.sh`: Wrapper script to handle venv activation.
+    *   `/home/ama/Desktop/tccc-demo-launcher.desktop`: Shortcut file for Jetson desktop (currently needs `Path=` fixed).
+*   **Findings/Issues:**
+    *   **`InquirerPy` Capitalization:** The `inquirerpy` package installs as `InquirerPy` on Linux, requiring `from InquirerPy import ...` in Python code. This is a potential packaging bug.
+    *   **Desktop Shortcut Debugging:** Encountered issues running the TUI via the `.desktop` shortcut; debugging revealed import errors and issues with the execution path/environment in the shortcut file (work paused before resolution).
+*   **Convention:** Established a convention to add metadata (Creator, Date, Project, Task, Origin) to the docstrings of all demo/utility scripts.
+*   **Status:** This side project is currently paused to refocus on core architecture review.
+
+**Current Focus (Core System Refinement - `src/tccc/`):**
+*   Attention has shifted back from the demo utility to refining the core TCCC system code within the `src/tccc` directory.
+*   The current activity involves tracing the program flow for the audio processing pipeline.
+
+**Current State (Audio Pipeline Trace):**
+1.  **Configuration:** The pipeline is configured via `config/audio_pipeline.yaml`. This file specifies input sources (microphone ID 31 preferred), audio formats (16kHz, mono, int16), chunk sizes, buffer sizes, and enables various processing steps (noise reduction, enhancement, VAD, battlefield filtering, voice isolation, hardware acceleration).
+2.  **Loading Config:** Configuration is likely loaded by a central utility, possibly `src/tccc/utils/config_manager.py` (based on usage in demo scripts).
+3.  **Audio Input:** The `src/tccc/audio_pipeline/audio_pipeline.py:MicrophoneSource` class initializes PyAudio and uses the configuration (`sample_rate`, `channels`, `device_id`, `chunk_size`) to open an input stream in its `_capture_loop` method.
+4.  **Processing Entry:** Captured audio chunks (as NumPy arrays) are passed from `_capture_loop` to a `self.data_callback`. This callback is presumed to lead to the `AudioProcessor` class within the same file.
+5.  **AudioProcessor Investigation:** We are currently examining the `src/tccc/audio_pipeline/audio_pipeline.py:AudioProcessor` class to understand how it uses the loaded configuration to apply the enabled processing steps. We have viewed the `__init__` method, which parses the configuration for various modules (noise reduction, VAD, etc.).
+
+**Next Immediate Step:**
+*   Identify and analyze the primary method within the `AudioProcessor` class that takes an incoming audio chunk and applies the configured processing steps (e.g., a method like `process` or `apply_filters`).
+
+**Key Files/Classes Involved (Core):**
+*   `config/audio_pipeline.yaml`: Defines audio pipeline settings.
+*   `src/tccc/audio_pipeline/audio_pipeline.py`: Contains `AudioSource` (base class), `MicrophoneSource` (captures audio), `AudioProcessor` (applies filters/processing).
+*   `src/tccc/utils/config_manager.py`: Likely used for loading YAML configurations. (Existence/exact implementation needs confirmation within main flow).
+
+**Known Issues & Workarounds:**
+*   The `inquirerpy` package requires importing as `InquirerPy` in `demo_launcher.py` due to installation directory capitalization.
+*   The Jetson virtual environment requires manual installation of `numpy`, `pygame`, and the `tccc` package (`pip install -e .`).
+*   Porting the `.desktop` launcher requires manual path editing on the target system.

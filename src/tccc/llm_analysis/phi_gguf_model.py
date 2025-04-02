@@ -1,3 +1,4 @@
+
 """
 Phi-2 GGUF model implementation for TCCC.ai system.
 
@@ -106,7 +107,7 @@ class PhiGGUFModel:
             # Load model with llama-cpp-python
             self.model = Llama(
                 model_path=str(self.model_path),
-                n_ctx=2048,  # Context window size
+                n_ctx=2048,  # Reverted Context window size
                 n_parts=1,  # Number of parts to split the model into
                 n_gpu_layers=n_gpu_layers,
                 n_threads=self.num_threads,
@@ -133,7 +134,7 @@ class PhiGGUFModel:
         formatted_prompt = f"""<|system|>
 You are an AI medical assistant for military medics, specializing in Tactical Combat Casualty Care.
 Analyze the following transcript and extract the requested information accurately.
-<|user|>
+        
 {prompt}
 <|assistant|>"""
         

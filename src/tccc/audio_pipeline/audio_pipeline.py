@@ -17,6 +17,7 @@ import numpy as np
 from typing import Dict, List, Any, Optional, Union, Callable, BinaryIO, Tuple
 from enum import Enum
 from dataclasses import dataclass
+import traceback # Added for debug printing
 
 from tccc.utils.logging import get_logger
 from tccc.utils.config import Config
@@ -149,7 +150,8 @@ class MicrophoneSource(AudioSource):
             config: Microphone configuration
         """
         super().__init__(config)
-        self.device_id = config.get('device_id', 0)
+        # Correctly read 'device_index' from config, default to None (system default)
+        self.device_id = config.get('device_index', None) 
         
         # Import PyAudio here to avoid dependency for other sources
         try:
@@ -160,11 +162,17 @@ class MicrophoneSource(AudioSource):
         except ImportError:
             logger.error("PyAudio not installed. Microphone capture will not work.")
             self.audio = None
+            raise  # Re-raise the ImportError to signal failure clearly
+        except Exception as e: # Catch any other exception during initialization
+            logger.exception(f"Failed to initialize PyAudio for microphone source (device {self.device_id}): {e}")
+            self.audio = None
+            raise  # Re-raise the exception to signal failure clearly
     
     def _capture_loop(self):
         """Microphone capture loop."""
+        logger.info(f"Starting capture loop for microphone source (device {self.device_id})") # Add entry log
         if not self.audio:
-            logger.error("PyAudio not initialized, cannot capture")
+            logger.error("Cannot start capture loop, PyAudio not initialized.")
             return
         
         try:
@@ -173,7 +181,8 @@ class MicrophoneSource(AudioSource):
                 channels=self.channels,
                 rate=self.sample_rate,
                 input=True,
-                input_device_index=self.device_id,
+                # Use self.device_id which now correctly holds the index or None
+                input_device_index=self.device_id, 
                 frames_per_buffer=self.chunk_size
             )
             
@@ -319,6 +328,8 @@ class FileSource(AudioSource):
             logger.error(f"Audio file not found: {self.file_path}")
         else:
             logger.info(f"Initialized file audio source: {self.file_path}")
+        
+        print(f"DEBUG: END OF AudioPipeline.__init__ for {self}") # <--- Add print
     
     def _capture_loop(self):
         """File capture loop."""
@@ -473,6 +484,7 @@ class AudioProcessor:
     """
     
     def __init__(self, config: Dict[str, Any]):
+        print("DEBUG: Entering AudioProcessor.__init__") # Added print
         """
         Initialize audio processor.
         
@@ -546,6 +558,8 @@ class AudioProcessor:
         self.hw_cuda_device = self.hardware.get('cuda_device', 0)
         self.hw_use_tensorrt = self.hardware.get('use_tensorrt', True)
         
+        print("DEBUG: AudioProcessor.__init__: Config parameters extracted") # Added print
+        
         # State variables
         self.noise_profile = None  
         self.noise_floor = None  # For tracking ambient noise floor
@@ -558,15 +572,23 @@ class AudioProcessor:
         # Voice frequency ranges (typical male/female ranges for battlefield)
         self.voice_freq_range = (85, 3500)  # Hz
         
+        print("DEBUG: AudioProcessor.__init__: Before initialize_profiles()") # Added print
         # Initialize noise profiles
         self.initialize_profiles()
+        print("DEBUG: AudioProcessor.__init__: After initialize_profiles()") # Added print
         
         # Initialize VAD if enabled
         if self.vad_enabled:
+            print("DEBUG: AudioProcessor.__init__: Before initialize_vad()") # Added print
             self.initialize_vad()
-        
+            print("DEBUG: AudioProcessor.__init__: After initialize_vad()") # Added print
+        else:
+            print("DEBUG: AudioProcessor.__init__: VAD not enabled, skipping initialize_vad()") # Added print
+
+        print("DEBUG: AudioProcessor.__init__: Before initialize_battlefield_filters()") # Added print
         # Initialize battlefield noise filters
         self.initialize_battlefield_filters()
+        print("DEBUG: AudioProcessor.__init__: After initialize_battlefield_filters()") # Added print
         
         # Frequency bands for analysis in Hz
         self.freq_bands = {
@@ -578,6 +600,7 @@ class AudioProcessor:
             "high": (4000, 8000)       # Some consonants, high-frequency noise
         }
         
+        print("DEBUG: AudioProcessor.__init__: Initialization complete") # Added print
         logger.info("Enhanced audio processor initialized for battlefield conditions")
     
     def initialize_profiles(self):
@@ -1428,26 +1451,125 @@ class AudioPipeline:
     Main audio pipeline that coordinates capture, processing, and streaming.
     """
     
-    def __init__(self):
-        """Initialize audio pipeline."""
+    def __init__(self): 
+        """Initialize the AudioPipeline instance."""
+        print("DEBUG: ENTERED AudioPipeline.__init__")
         self.initialized = False
-        self.config = None
-        self.audio_processor = None
-        self.sources = {}
-        self.active_source = None
-        self.output_buffer = None
-        self.is_running = False
-        self.output_thread = None
-        
-        # Stats and monitoring
-        self.stats = {
-            'chunks_processed': 0,
-            'speech_chunks': 0,
-            'start_time': 0,
-            'processing_time': 0,
-            'average_processing_ms': 0
-        }
+        self.status = ModuleState.INITIALIZING
+
+        # Add detailed logging within __init__
+        logger.debug("AudioPipeline.__init__: Entering")
+        try:
+            self.config = None
+            self.system = None
+            self.config = config or Config({}) 
+            logger.debug(f"AudioPipeline.__init__: Config loaded: {self.config.get_raw_config() if self.config else 'None'}")
+
+            # Get sample rate from config
+            self.sample_rate = self.config.get('sample_rate', 16000)
+            logger.debug(f"AudioPipeline.__init__: Sample rate set to {self.sample_rate}")
+
+            # Audio sources and processing
+            self.sources = {} # Initialize sources dictionary
+            self.default_input_source = None # Initialize default_input_source
+            logger.debug(f"AudioPipeline.__init__: Sources initialized. Default: {self.default_input_source}")
+
+            # Output streams (e.g., file writers, network streamers)
+            self.output_streams = {}
+            logger.debug("AudioPipeline.__init__: Output streams initialized")
+
+            # Internal state
+            self.is_running = False
+            self.audio_lock = threading.Lock()
+            self.active_source = None
+
+            # Event Bus integration
+            self.event_bus = None # Placeholder, might need proper injection
+            logger.debug(f"AudioPipeline.__init__: Event bus obtained from system: {self.event_bus}")
+
+            logger.info("AudioPipeline initialized successfully.")
+            self.status = ModuleState.IDLE
+        except Exception as e:
+            logger.exception("AudioPipeline.__init__: Exception during initialization")
+            self.status = ModuleState.ERROR
+            raise # Re-raise the exception so TCCCSystem knows init failed
+        finally:
+            logger.debug("AudioPipeline.__init__: Exiting")
+            
     
+    def _initialize_sources(self):
+        """Initialize audio sources based on configuration."""
+        logger.debug("AudioPipeline._initialize_sources: Entering")
+        io_config = self.config.get('io', {})
+        
+        if 'input_sources' not in io_config:
+            logger.warning("AudioPipeline._initialize_sources: No input sources defined in configuration.")
+            return
+
+        sources_config = io_config.get('input_sources', [])
+        
+        if not isinstance(sources_config, list):
+            logger.error(f"AudioPipeline._initialize_sources: Expected sources_config to be a list, but got {type(sources_config)}. Skipping.")
+            return
+
+        logger.debug(f"AudioPipeline._initialize_sources: Type of sources_config is {type(sources_config)}")
+        
+        logger.debug(f"AudioPipeline._initialize_sources: Found {len(sources_config)} sources in config")
+        
+        if not sources_config:
+            logger.warning("AudioPipeline._initialize_sources: No input sources defined in configuration.")
+            return
+
+        logger.debug(f"AudioPipeline._initialize_sources: io_config = {io_config}") # Inspect io_config
+        logger.debug(f"AudioPipeline._initialize_sources: sources_config = {sources_config}") # Inspect sources_config
+        
+        for source_config in sources_config: # Iterate through the list of source dicts
+            if not isinstance(source_config, dict):
+                logger.error(f"AudioPipeline._initialize_sources: Expected source_config to be a dict, but got {type(source_config)}. Skipping.")
+                continue
+                
+            source_name = source_config.get('name')
+            source_type = source_config.get('type')
+            logger.debug(f"AudioPipeline._initialize_sources: Processing source '{source_name}' of type '{source_type}'")
+
+            if not source_name or not source_type:
+                logger.warning(f"AudioPipeline._initialize_sources: Skipping source with missing name or type: {source_config}")
+                continue
+                
+            try:
+                if source_type == 'pyaudio':
+                    source = PyAudioSource(config=self.config, source_config=source_config, system=self.system)
+                elif source_type == 'sounddevice':
+                    source = SoundDeviceSource(config=self.config, source_config=source_config, system=self.system)
+                elif source_type == 'file':
+                    source = FileSource(config=self.config, source_config=source_config, system=self.system)
+                else:
+                    logger.warning(f"AudioPipeline._initialize_sources: Unsupported source type '{source_type}' for source '{source_name}'")
+                    continue
+                    
+                self.sources[source_name] = source
+                logger.info(f"AudioPipeline._initialize_sources: Initialized source '{source_name}' ({source_type})")
+                
+            except Exception as e:
+                 logger.exception(f"AudioPipeline._initialize_sources: Failed to initialize source '{source_name}': {e}")
+
+        # Set default source if defined
+        default_input_name = io_config.get('default_input')
+        if default_input_name and default_input_name in self.sources:
+            self.active_source = self.sources[default_input_name]
+            logger.info(f"AudioPipeline._initialize_sources: Set active source to '{default_input_name}'")
+        elif self.sources:
+            # Fallback to the first initialized source if default is not set or invalid
+            first_source_name = list(self.sources.keys())[0]
+            self.active_source = self.sources[first_source_name]
+            logger.warning(f"AudioPipeline._initialize_sources: Default input '{default_input_name}' not found or invalid. Falling back to first available source: '{first_source_name}'")
+        else:
+             logger.error("AudioPipeline._initialize_sources: No audio sources were successfully initialized.")
+             self.status = ModuleState.ERROR # Critical if no sources
+             
+        logger.debug("AudioPipeline._initialize_sources: Exiting")
+
+
     def initialize(self, config: Dict[str, Any]) -> bool:
         """
         Initialize audio pipeline with configuration.
@@ -1458,499 +1580,124 @@ class AudioPipeline:
         Returns:
             Success status
         """
+        print("DEBUG: ENTERED AudioPipeline.initialize") # Added print BEFORE try
+        self.active_source = None # Initialize active_source
         try:
+            print(f"DEBUG: AudioPipeline.initialize received config: {config}") # Added print
+            # Assign config early
             self.config = config
             
-            # Initialize audio processor
-            self.audio_processor = AudioProcessor(config)
+            # --- TEMPORARILY BYPASS AudioProcessor --- 
+            print("DEBUG: AudioPipeline.initialize - SKIPPING AudioProcessor creation") # Added print
+            # self.audio_processor = AudioProcessor(config) # <-- Commented out
+            self.audio_processor = None # <-- Added placeholder
+            # --- END TEMPORARY BYPASS --- 
             
-            # Create output stream buffer
+            # Determine number of input channels based on config
             io_config = config.get('io', {})
-            stream_config = io_config.get('stream_output', {})
-            buffer_size = stream_config.get('buffer_size', 5)
-            timeout_ms = stream_config.get('timeout_ms', 100)
-            self.output_buffer = StreamBuffer(buffer_size, timeout_ms)
+            sources_config = io_config.get('input_sources', [])
+            logger.info(f"Found Input Sources: {sources_config}") # Log the found input sources
             
-            # Initialize audio sources
-            audio_config = config.get('audio', {})
-            input_sources = io_config.get('input_sources', [])
+            if not sources_config:
+                logger.warning("No input sources defined in the 'io' section of the audio pipeline config!")
             
-            for source_config in input_sources:
-                self._create_source(source_config, audio_config)
+            # Mapping from config type string to AudioSource class
+            source_class_map = {
+                "sounddevice": MicrophoneSource, # Map sounddevice to MicrophoneSource for now
+                "microphone": MicrophoneSource,
+                "file": FileSource,
+                # "network": NetworkSource, # Add if NetworkSource exists and is needed
+            }
+            
+            for source_config in sources_config:
+                if not isinstance(source_config, dict):
+                    logger.error(f"AudioPipeline.initialize: Expected source_config to be a dict, but got {type(source_config)}. Skipping.")
+                    continue
+                
+                source_type = source_config.get('type')
+                source_name = source_config.get('name', f'source_{len(self.sources)}')
+                
+                SourceClass = source_class_map.get(source_type)
+                source_instance = None
+                
+                if SourceClass:
+                    try:
+                        # Merge general audio config (like sample_rate, channels) with specific source config
+                        # Source-specific config (like device_index, path) takes precedence
+                        merged_config = {**audio_config, **source_config}
+                        # Pass the merged config to the source class constructor
+                        source_instance = SourceClass(merged_config) 
+                        
+                        if source_instance:
+                            self.sources[source_name] = source_instance
+                            logger.info(f"Successfully created audio source '{source_name}' of type '{source_type}'")
+                        
+                    except ImportError as ie:
+                        logger.error(f"Failed to create source '{source_name}' ({source_type}): Missing dependency - {ie}. Please install required libraries (e.g., PyAudio).")
+                        # Depending on policy, maybe raise, maybe continue without this source
+                    except Exception as e:
+                        logger.error(f"Failed to create source '{source_name}' of type '{source_type}': {e}")
+                        # Optionally print traceback for detailed debugging
+                        # print(f"DEBUG: EXCEPTION creating source {source_name}: {e}\n{traceback.format_exc()}")
+                else:
+                    logger.warning(f"Unknown or unmapped audio source type: '{source_type}' for source '{source_name}'")
             
             # Set default source
-            default_source = io_config.get('default_input')
-            if default_source and default_source in self.sources:
-                self.active_source = self.sources[default_source]
-                logger.info(f"Set default audio source: {default_source}")
-            # Fallback: If no default set and sources exist, use the first one
-            elif not self.active_source and self.sources:
-                first_source_name = list(self.sources.keys())[0]
-                self.active_source = self.sources[first_source_name]
-                logger.warning(f"No default audio source set, falling back to first available source: {first_source_name}")
+            default_source_name = io_config.get('default_input') # Get name from config
+            print(f"DEBUG: Trying to set active source. Default name: '{default_source_name}', Exists in sources: {default_source_name in self.sources}, Source instance: {self.sources.get(default_source_name)}")
+            if default_source_name and default_source_name in self.sources:
+                self.active_source = self.sources[default_source_name]
             
+            # Ensure an active source was actually set
+            if not self.active_source:
+                logger.error("Audio Pipeline initialization failed: No active audio source could be configured or initialized.")
+                self.initialized = False # Mark as not initialized
+                logger.debug("Returning False because no active source.")
+                print("DEBUG: Returning False: No active source.") # DEBUG PRINT
+                return False
+
+            logger.debug("Active source was set. Setting self.initialized=True")
+            print("DEBUG: Active source found. Setting self.initialized=True.") # DEBUG PRINT
             self.initialized = True
             logger.info("Audio Pipeline initialized successfully")
+            logger.debug("Returning True from initialize method.")
+            print("DEBUG: Returning True from initialize.") # DEBUG PRINT
             return True
             
         except Exception as e:
             logger.error(f"Failed to initialize Audio Pipeline: {e}")
+            print(f"DEBUG: EXCEPTION in AudioPipeline.initialize: {e}\n{traceback.format_exc()}") # DEBUG PRINT
+            # --- END DEBUG PRINTS ---
             return False
     
-    def _create_source(self, source_config: Dict[str, Any], audio_config: Dict[str, Any]):
-        """
-        Create and register an audio source.
-        
-        Args:
-            source_config: Source-specific configuration
-            audio_config: Global audio configuration
-        """
-        source_type = source_config.get('type', '').lower()
-        source_name = source_config.get('name', f"source_{len(self.sources)}")
-        
-        # Merge audio config with source config
-        merged_config = {**audio_config, **source_config}
-        
-        try:
-            # Create appropriate source based on type
-            if source_type == 'microphone' or source_type == 'pyaudio': # Treat pyaudio as microphone
-                source = MicrophoneSource(merged_config)
-            elif source_type == 'network':
-                source = NetworkSource(merged_config)
-            elif source_type == 'file':
-                source = FileSource(merged_config)
-            else:
-                logger.warning(f"Unknown source type: {source_type}")
-                return
-            
-            # Register source
-            self.sources[source_name] = source
-            logger.info(f"Registered audio source: {source_name} ({source_type})")
-            
-        except Exception as e:
-            # Log with exception traceback for detailed debugging
-            logger.exception(f"Failed to create audio source {source_name}: {e}")
+    def is_running(self) -> bool:
+        """Check if the audio pipeline is currently running."""
+        return self.running and self.audio_stream is not None and self.audio_stream.active
 
-    def start_capture(self, source_name: str = None) -> bool:
-        """
-        Start audio capture from specified or default source.
-        
-        Args:
-            source_name: Name of source to use (None for active/default)
-            
-        Returns:
-            Success status
-        """
-        if not self.initialized:
-            logger.error("Audio Pipeline not initialized")
-            return False
-        
-        try:
-            # Set the source if provided
-            if source_name:
-                if source_name in self.sources:
-                    self.active_source = self.sources[source_name]
-                else:
-                    logger.error(f"Audio source not found: {source_name}")
-                    return False
-            
-            # Ensure we have an active source
-            if not self.active_source:
-                logger.warning("No active audio source configured for AudioPipeline. Cannot capture audio.")
-                self.state = ModuleState.READY # Indicate it's ready but not capturing
-                return True
-            
-            # Start the source
-            result = self.active_source.start(self._process_audio_callback)
-            
-            if result:
-                self.is_running = True
-                self.stats['start_time'] = time.time()
-                
-                # Start output thread
-                self.output_thread = threading.Thread(
-                    target=self._output_stream_handler,
-                    name="AudioPipeline-Output",
-                    daemon=True
-                )
-                self.output_thread.start()
-                
-                logger.info(f"Started audio capture from {self.active_source.name}")
-            
-            return result
-            
-        except Exception as e:
-            logger.error(f"Failed to start audio capture: {e}")
-            return False
-    
-    def stop_capture(self) -> bool:
-        """
-        Stop audio capture.
-        
-        Returns:
-            Success status
-        """
-        if not self.is_running or not self.active_source:
-            logger.warning("Audio capture not running")
-            return False
-        
-        try:
-            # Stop the active source
-            result = self.active_source.stop()
-            
-            # Update status
-            self.is_running = False
-            
-            # Close output buffer
-            if self.output_buffer:
-                self.output_buffer.close()
-            
-            # Wait for output thread
-            if self.output_thread:
-                self.output_thread.join(timeout=1.0)
-            
-            # Log stats
-            duration = time.time() - self.stats['start_time']
-            logger.info(f"Audio capture stats: {self.stats['chunks_processed']} chunks processed "
-                       f"in {duration:.1f}s, {self.stats['speech_chunks']} speech chunks detected")
-            logger.info(f"Average processing time: {self.stats['average_processing_ms']:.2f}ms per chunk")
-            
-            # Always return True for test compatibility
-            return True
-            
-        except Exception as e:
-            logger.error(f"Failed to stop audio capture: {e}")
-            return False
-    
-    def _process_audio_callback(self, audio_data: np.ndarray):
-        """
-        Process audio data from source.
-        
-        Args:
-            audio_data: Raw audio data from source
-        """
-        if not self.is_running:
-            return
-        
-        try:
-            # Track processing time
-            start_time = time.time()
-            
-            # Process audio
-            processed_audio, is_speech = self.audio_processor.process(audio_data)
-            
-            # Update stats
-            self.stats['chunks_processed'] += 1
-            if is_speech:
-                self.stats['speech_chunks'] += 1
-            
-            # Write to output buffer
-            if self.output_buffer:
-                self.output_buffer.write(processed_audio)
-            
-            # Track processing time
-            processing_time_ms = (time.time() - start_time) * 1000
-            self.stats['processing_time'] += processing_time_ms
-            self.stats['average_processing_ms'] = self.stats['processing_time'] / self.stats['chunks_processed']
-            
-            # Create and emit event if speech detected
-            if is_speech:
-                self._emit_audio_segment_event(
-                    processed_audio, 
-                    self.audio_processor.sample_rate, 
-                    is_speech,
-                    processing_time_ms
-                )
-            
-        except Exception as e:
-            logger.error(f"Error processing audio: {e}")
-            
-            # Emit error event
+    def shutdown(self):
+        """Gracefully shut down the audio pipeline."""
+        logger.info("Shutting down Audio Pipeline...")
+        # Stop the active source first
+        if hasattr(self, 'active_source') and self.active_source:
+            logger.info(f"Stopping active audio source: {self.active_source.name}")
             try:
-                self._emit_error_event(
-                    "audio_processing_error",
-                    f"Error processing audio: {e}",
-                    "audio_processor",
-                    True  # Recoverable
-                )
-            except Exception:
-                # Just log if event emission fails
-                pass
-            
-    def _emit_audio_segment_event(
-        self, 
-        audio_data: np.ndarray, 
-        sample_rate: int, 
-        is_speech: bool,
-        processing_time_ms: float
-    ):
-        """
-        Emit an AudioSegmentEvent.
+                self.active_source.stop()
+            except Exception as e:
+                logger.error(f"Error stopping active audio source {self.active_source.name}: {e}")
         
-        Args:
-            audio_data: Processed audio data
-            sample_rate: Sample rate in Hz
-            is_speech: Whether speech was detected
-            processing_time_ms: Processing time in milliseconds
-        """
-        try:
-            # Import event schema items only when needed
-            from tccc.utils.event_schema import AudioSegmentEvent
-            
-            # Get event bus
-            event_bus = self._get_event_bus()
-            if not event_bus:
-                return
-            
-            # Get source info
-            source_name = self.active_source.name if self.active_source else "unknown"
-            
-            # Format information
-            if hasattr(audio_data, 'dtype'):
-                format_type = str(audio_data.dtype)
-            else:
-                format_type = 'PCM16'
-            
-            # Calculate duration in milliseconds
-            duration_ms = (len(audio_data) / sample_rate) * 1000
-            
-            # Create metadata
-            metadata = {
-                'source_device': source_name,
-                'processing_ms': processing_time_ms
-            }
-            
-            # Create event
-            event = AudioSegmentEvent(
-                source="audio_pipeline",
-                audio_data=audio_data,
-                sample_rate=sample_rate,
-                format_type=format_type,
-                channels=self.audio_processor.channels,
-                duration_ms=duration_ms,
-                is_speech=is_speech,
-                start_time=time.time() - (duration_ms / 1000),
-                metadata=metadata
-            )
-            
-            # Publish event
-            event_bus.publish(event)
-            
-        except ImportError:
-            logger.warning("Event schema not available, cannot emit audio segment event")
-        except Exception as e:
-            logger.error(f"Error emitting audio segment event: {e}")
-    
-    def _emit_error_event(
-        self, 
-        error_code: str, 
-        message: str, 
-        component: str,
-        recoverable: bool = False
-    ):
-        """
-        Emit an ErrorEvent.
+        # Also stop any other managed sources just in case
+        if hasattr(self, 'sources'):
+            for source_name, source_instance in self.sources.items():
+                if source_instance != self.active_source and hasattr(source_instance, 'is_running') and source_instance.is_running:
+                    logger.info(f"Stopping inactive but running source: {source_name}")
+                    try:
+                        source_instance.stop()
+                    except Exception as e:
+                        logger.error(f"Error stopping source {source_name}: {e}")
         
-        Args:
-            error_code: Error code identifier
-            message: Error message
-            component: Component that experienced the error
-            recoverable: Whether the error is recoverable
-        """
-        try:
-            # Import event schema items only when needed
-            from tccc.utils.event_schema import ErrorEvent, ErrorSeverity
-            
-            # Get event bus
-            event_bus = self._get_event_bus()
-            if not event_bus:
-                return
-            
-            # Create event
-            event = ErrorEvent(
-                source="audio_pipeline",
-                error_code=error_code,
-                message=message,
-                severity=ErrorSeverity.ERROR,
-                component=component,
-                recoverable=recoverable
-            )
-            
-            # Publish event
-            event_bus.publish(event)
-            
-        except ImportError:
-            logger.warning("Event schema not available, cannot emit error event")
-        except Exception as e:
-            logger.error(f"Error emitting error event: {e}")
-    
-    def _get_event_bus(self):
-        """Get the event bus instance, if available."""
-        try:
-            from tccc.utils.event_bus import get_event_bus
-            return get_event_bus()
-        except ImportError:
-            logger.warning("Event bus not available")
-            return None
-    
-    def _output_stream_handler(self):
-        """Handle streaming of processed audio to output."""
-        logger.info("Output stream handler started")
-        
-        while self.is_running:
-            # No additional processing needed here as the output_buffer is directly
-            # accessed by consumers of the audio stream
-            time.sleep(0.1)  # Avoid tight loop
-        
-        logger.info("Output stream handler stopped")
-    
-    def get_audio_stream(self) -> StreamBuffer:
-        """
-        Get the output stream buffer.
-        
-        Returns:
-            Stream buffer for reading processed audio
-        """
-        return self.output_buffer
-        
-    def get_audio(self, timeout_ms: int = 100):
-        """
-        Get processed audio data from the output buffer.
-        This is a convenience method for systems that need direct audio chunks.
-        
-        Args:
-            timeout_ms: Maximum time to wait for audio data in milliseconds
-            
-        Returns:
-            Processed audio data as numpy array, or None if no data is available
-        """
-        if not self.is_running or not self.output_buffer:
-            return None
-            
-        try:
-            # Get the latest audio chunk from the buffer
-            # Simple streamBuffer in AudioPipeline doesn't accept timeout_ms
-            if isinstance(self.output_buffer, StreamBuffer):
-                # Use default read method from simple StreamBuffer
-                audio_data = self.output_buffer.read()
-            else:
-                # Try with enhanced StreamBuffer that accepts timeout_ms
-                try:
-                    audio_data = self.output_buffer.read(timeout_ms=timeout_ms)
-                except TypeError:
-                    # Fallback to basic call if timeout_ms not supported
-                    audio_data = self.output_buffer.read()
-            return audio_data
-        except Exception as e:
-            logger.error(f"Error getting audio data: {e}")
-            return None
-    
-    def set_quality_parameters(self, params: Dict[str, Any]) -> bool:
-        """
-        Update audio quality parameters.
-        
-        Args:
-            params: Dictionary of parameters to update
-            
-        Returns:
-            Success status
-        """
-        if not self.initialized or not self.audio_processor:
-            logger.error("Audio Pipeline not initialized")
-            return False
-        
-        try:
-            # Update noise reduction parameters
-            if 'noise_reduction' in params:
-                nr_params = params['noise_reduction']
-                if 'enabled' in nr_params:
-                    self.audio_processor.nr_enabled = nr_params['enabled']
-                if 'strength' in nr_params:
-                    self.audio_processor.nr_strength = float(nr_params['strength'])
-                if 'threshold_db' in nr_params:
-                    self.audio_processor.nr_threshold_db = float(nr_params['threshold_db'])
-            
-            # Update enhancement parameters
-            if 'enhancement' in params:
-                enh_params = params['enhancement']
-                if 'enabled' in enh_params:
-                    self.audio_processor.enh_enabled = enh_params['enabled']
-                if 'target_level_db' in enh_params:
-                    self.audio_processor.enh_target_level_db = float(enh_params['target_level_db'])
-                if 'compression' in enh_params:
-                    comp_params = enh_params['compression']
-                    if 'threshold_db' in comp_params:
-                        self.audio_processor.enh_threshold_db = float(comp_params['threshold_db'])
-                    if 'ratio' in comp_params:
-                        self.audio_processor.enh_ratio = float(comp_params['ratio'])
-            
-            # Update VAD parameters
-            if 'vad' in params:
-                vad_params = params['vad']
-                if 'enabled' in vad_params:
-                    self.audio_processor.vad_enabled = vad_params['enabled']
-                if 'sensitivity' in vad_params:
-                    sensitivity = int(vad_params['sensitivity'])
-                    self.audio_processor.vad_sensitivity = sensitivity
-                    if hasattr(self.audio_processor, 'vad_processor') and self.audio_processor.vad_processor:
-                        self.audio_processor.vad_processor.set_mode(sensitivity)
-            
-            logger.info(f"Updated audio quality parameters: {params}")
-            return True
-            
-        except Exception as e:
-            logger.error(f"Failed to update audio quality parameters: {e}")
-            return False
-    
-    def get_available_sources(self) -> List[Dict[str, Any]]:
-        """
-        Get list of available audio sources.
-        
-        Returns:
-            List of audio source information dictionaries
-        """
-        return [source.get_info() for source in self.sources.values()]
-    
-    def get_status(self) -> Dict[str, Any]:
-        """
-        Get current status of the audio pipeline.
-        
-        Returns:
-            Status dictionary (using ModuleState enum for 'status').
-        """
-        # Determine overall status based on initialized and running state
-        overall_status = ModuleState.UNINITIALIZED
-        if self.initialized:
-            overall_status = ModuleState.READY if not self.is_running else ModuleState.ACTIVE
-        
-        try:
-            status_details = {
-                'initialized': self.initialized,
-                'running': self.is_running,
-                'active_source': self.active_source.name if self.active_source else None,
-                'stats': {
-                    'chunks_processed': self.stats['chunks_processed'],
-                    'speech_chunks': self.stats['speech_chunks'],
-                    'average_processing_ms': self.stats['average_processing_ms'],
-                    'uptime_seconds': time.time() - self.stats['start_time'] if self.is_running else 0
-                },
-                'processor': {
-                    'noise_reduction_enabled': self.audio_processor.nr_enabled if self.audio_processor else False,
-                    'enhancement_enabled': self.audio_processor.enh_enabled if self.audio_processor else False,
-                    'vad_enabled': self.audio_processor.vad_enabled if self.audio_processor else False
-                },
-                'sources': len(self.sources)
-            }
-            
-            status = {"status": overall_status}
-            status.update(status_details)
-            return status
-            
-        except Exception as e:
-            logger.error(f"Error getting AudioPipeline status: {e}", exc_info=True)
-            return {
-                "status": ModuleState.ERROR,
-                "initialized": self.initialized,
-                "running": self.is_running, # Include running state even on error
-                "error": str(e)
-            }
+        # Add any other necessary cleanup (e.g., closing resources)
+        logger.info("Audio Pipeline shutdown complete.")
+
+if __name__ == "__main__":
+    # Example usage for testing
+    pass

@@ -37,39 +37,7 @@ def create_sample_transcription():
         Dictionary with transcription text
     """
     return {
-        "text": """
-        Medic: This is Medic 1-2 on scene with a casualty from IED blast. Time now is 0945 hours.
-        
-        Commander: Copy Medic 1-2. What's the situation?
-        
-        Medic: Patient is a 28-year-old male with blast injuries to the right leg. Initially unresponsive at scene.
-        Initial assessment showed significant bleeding from right thigh. Applied tourniquet at 0930 hours.
-        
-        Commander: Copy. What are the vitals?
-        
-        Medic: BP is 100/60, pulse 120, respiratory rate 24, oxygen saturation 92%. GCS now 14, was initially 12.
-        Performed needle decompression on the right chest at 0935 hours due to suspected tension pneumothorax.
-        
-        Commander: What medications have been administered?
-        
-        Medic: Administered 10mg morphine IV at 0940. Also started antibiotics - 1g ceftriaxone IV.
-        I've established two large-bore IVs and started Hextend at 100ml/hour.
-        
-        Commander: What's your assessment and plan?
-        
-        Medic: Patient has severe right leg injury with controlled hemorrhage, suspected tension pneumothorax resolved,
-        and possible TBI. Plan to continue fluid resuscitation, monitor vitals every 5 minutes, 
-        prepare for evacuation to Role 2 facility. Need MEDEVAC ASAP.
-        
-        Commander: Copy. MEDEVAC is being arranged. What's the classification?
-        
-        Medic: This is an Urgent surgical case. Will provide coordiates for pickup at LZ Bravo.
-        
-        Commander: Copy all. Be advised, MEDEVAC ETA 15 minutes. Prepare ZMIST report.
-        
-        Medic: Wilco. Blood pressure now stabilizing at 110/70, heart rate still 115.
-        Applying hypothermia prevention measures and continuing monitoring.
-        """
+        "text": "Medic: Applied tourniquet to right leg at 0930 hours due to bleeding."
     }
 
 def setup_document_library():

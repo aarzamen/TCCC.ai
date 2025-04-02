@@ -58,7 +58,7 @@ hardware:
   waveshare:
     backlight:
       default_value: 200
-      enabled: true
+      enabled: false  # Disabled: Path /sys/class/backlight/waveshare/brightness does not exist
       max_value: 255
       path: /sys/class/backlight/waveshare/brightness
     hdmi_cvt: 720 1560 60 6 0 0 0

@@ -661,5 +661,320 @@
     "file_path": null,
     "content": "This is a test document for integration between LLM and Document Library",
     "added_at": "2025-03-31T14:48:58.600882"
+  },
+  "50": {
+    "id": "50",
+    "metadata": {
+      "title": "Test Integration Document",
+      "source": "verification_script",
+      "file_name": "Test Integration Document"
+    },
+    "file_path": null,
+    "content": "This is a test document for integration between LLM and Document Library",
+    "added_at": "2025-03-31T17:11:52.894077"
+  },
+  "51": {
+    "id": "51",
+    "metadata": {
+      "title": "Test Integration Document",
+      "source": "verification_script",
+      "file_name": "Test Integration Document"
+    },
+    "file_path": null,
+    "content": "This is a test document for integration between LLM and Document Library",
+    "added_at": "2025-03-31T17:18:40.173380"
+  },
+  "52": {
+    "id": "52",
+    "metadata": {
+      "title": "Test Integration Document",
+      "source": "verification_script",
+      "file_name": "Test Integration Document"
+    },
+    "file_path": null,
+    "content": "This is a test document for integration between LLM and Document Library",
+    "added_at": "2025-03-31T17:22:26.959662"
+  },
+  "53": {
+    "id": "53",
+    "metadata": {
+      "title": "Test Integration Document",
+      "source": "verification_script",
+      "file_name": "Test Integration Document"
+    },
+    "file_path": null,
+    "content": "This is a test document for integration between LLM and Document Library",
+    "added_at": "2025-03-31T17:25:51.462534"
+  },
+  "54": {
+    "id": "54",
+    "metadata": {
+      "title": "Test Integration Document",
+      "source": "verification_script",
+      "file_name": "Test Integration Document"
+    },
+    "file_path": null,
+    "content": "This is a test document for integration between LLM and Document Library",
+    "added_at": "2025-03-31T17:29:47.759834"
+  },
+  "55": {
+    "id": "55",
+    "metadata": {
+      "title": "Test Integration Document",
+      "source": "verification_script",
+      "file_name": "Test Integration Document"
+    },
+    "file_path": null,
+    "content": "This is a test document for integration between LLM and Document Library",
+    "added_at": "2025-03-31T17:33:07.061464"
+  },
+  "56": {
+    "id": "56",
+    "metadata": {
+      "title": "Test Integration Document",
+      "source": "verification_script",
+      "file_name": "Test Integration Document"
+    },
+    "file_path": null,
+    "content": "This is a test document for integration between LLM and Document Library",
+    "added_at": "2025-03-31T18:01:42.746273"
+  },
+  "57": {
+    "id": "57",
+    "metadata": {
+      "title": "Test Integration Document",
+      "source": "verification_script",
+      "file_name": "Test Integration Document"
+    },
+    "file_path": null,
+    "content": "This is a test document for integration between LLM and Document Library",
+    "added_at": "2025-03-31T18:55:26.128586"
+  },
+  "58": {
+    "id": "58",
+    "metadata": {
+      "title": "Test Integration Document",
+      "source": "verification_script",
+      "file_name": "Test Integration Document"
+    },
+    "file_path": null,
+    "content": "This is a test document for integration between LLM and Document Library",
+    "added_at": "2025-03-31T18:59:08.193850"
+  },
+  "59": {
+    "id": "59",
+    "metadata": {
+      "title": "Test Integration Document",
+      "source": "verification_script",
+      "file_name": "Test Integration Document"
+    },
+    "file_path": null,
+    "content": "This is a test document for integration between LLM and Document Library",
+    "added_at": "2025-03-31T19:05:08.649167"
+  },
+  "60": {
+    "id": "60",
+    "metadata": {
+      "title": "Test Integration Document",
+      "source": "verification_script",
+      "file_name": "Test Integration Document"
+    },
+    "file_path": null,
+    "content": "This is a test document for integration between LLM and Document Library",
+    "added_at": "2025-03-31T19:10:41.324222"
+  },
+  "61": {
+    "id": "61",
+    "metadata": {
+      "title": "Test Integration Document",
+      "source": "verification_script",
+      "file_name": "Test Integration Document"
+    },
+    "file_path": null,
+    "content": "This is a test document for integration between LLM and Document Library",
+    "added_at": "2025-03-31T19:14:41.928138"
+  },
+  "62": {
+    "id": "62",
+    "metadata": {
+      "title": "Test Integration Document",
+      "source": "verification_script",
+      "file_name": "Test Integration Document"
+    },
+    "file_path": null,
+    "content": "This is a test document for integration between LLM and Document Library",
+    "added_at": "2025-03-31T19:44:32.901360"
+  },
+  "63": {
+    "id": "63",
+    "metadata": {
+      "title": "Test Integration Document",
+      "source": "verification_script",
+      "file_name": "Test Integration Document"
+    },
+    "file_path": null,
+    "content": "This is a test document for integration between LLM and Document Library",
+    "added_at": "2025-03-31T19:51:15.357439"
+  },
+  "64": {
+    "id": "64",
+    "metadata": {
+      "title": "Test Integration Document",
+      "source": "verification_script",
+      "file_name": "Test Integration Document"
+    },
+    "file_path": null,
+    "content": "This is a test document for integration between LLM and Document Library",
+    "added_at": "2025-03-31T20:00:49.525755"
+  },
+  "65": {
+    "id": "65",
+    "metadata": {
+      "title": "Test Integration Document",
+      "source": "verification_script",
+      "file_name": "Test Integration Document"
+    },
+    "file_path": null,
+    "content": "This is a test document for integration between LLM and Document Library",
+    "added_at": "2025-03-31T20:09:58.029344"
+  },
+  "66": {
+    "id": "66",
+    "metadata": {
+      "title": "Test Integration Document",
+      "source": "verification_script",
+      "file_name": "Test Integration Document"
+    },
+    "file_path": null,
+    "content": "This is a test document for integration between LLM and Document Library",
+    "added_at": "2025-03-31T20:14:36.256796"
+  },
+  "67": {
+    "id": "67",
+    "metadata": {
+      "title": "Test Integration Document",
+      "source": "verification_script",
+      "file_name": "Test Integration Document"
+    },
+    "file_path": null,
+    "content": "This is a test document for integration between LLM and Document Library",
+    "added_at": "2025-03-31T20:55:35.263314"
+  },
+  "68": {
+    "id": "68",
+    "metadata": {
+      "title": "Test Integration Document",
+      "source": "verification_script",
+      "file_name": "Test Integration Document"
+    },
+    "file_path": null,
+    "content": "This is a test document for integration between LLM and Document Library",
+    "added_at": "2025-03-31T21:57:56.255335"
+  },
+  "69": {
+    "id": "69",
+    "metadata": {
+      "title": "Test Integration Document",
+      "source": "verification_script",
+      "file_name": "Test Integration Document"
+    },
+    "file_path": null,
+    "content": "This is a test document for integration between LLM and Document Library",
+    "added_at": "2025-03-31T22:17:55.007525"
+  },
+  "70": {
+    "id": "70",
+    "metadata": {
+      "title": "Test Integration Document",
+      "source": "verification_script",
+      "file_name": "Test Integration Document"
+    },
+    "file_path": null,
+    "content": "This is a test document for integration between LLM and Document Library",
+    "added_at": "2025-03-31T22:43:32.022871"
+  },
+  "71": {
+    "id": "71",
+    "metadata": {
+      "category": "Medical Procedures",
+      "type": "Reference",
+      "source": "TCCC Guidelines",
+      "file_name": "tccc_procedures.txt",
+      "content_type": "text/plain",
+      "file_size": 937
+    },
+    "file_path": "/home/ama/tccc-project/data/documents/tccc_procedures.txt",
+    "content": "# TCCC Medical Procedures Reference ## Airway Management - Chin lift/jaw thrust - Nasopharyngeal airway - Endotracheal intubation - Cricothyroidotomy ## Breathing Management - Needle decompression for tension pneumothorax - Chest seal for open pneumothorax - Supplemental oxygen administration ## Circulation Management - Tourniquet application for extremity hemorrhage - Wound packing with hemostatic gauze - IV/IO access - Fluid resuscitation - TXA administration for hemorrhagic shock ## Medication Administration - Morphine: 5-10mg IV/IO for pain - Antibiotics: Ceftriaxone 1-2g IV for open wounds - TXA: 1g IV over 10 minutes for hemorrhagic shock ## Assessment Guidelines - GCS scoring and monitoring - Vital signs interpretation in trauma - Signs of tension pneumothorax - Signs of hypovolemic shock",
+    "added_at": "2025-04-02T03:46:42.397568"
+  },
+  "72": {
+    "id": "72",
+    "metadata": {
+      "category": "Medical Procedures",
+      "type": "Reference",
+      "source": "TCCC Guidelines",
+      "file_name": "tccc_procedures.txt",
+      "content_type": "text/plain",
+      "file_size": 937
+    },
+    "file_path": "/home/ama/tccc-project/data/documents/tccc_procedures.txt",
+    "content": "# TCCC Medical Procedures Reference ## Airway Management - Chin lift/jaw thrust - Nasopharyngeal airway - Endotracheal intubation - Cricothyroidotomy ## Breathing Management - Needle decompression for tension pneumothorax - Chest seal for open pneumothorax - Supplemental oxygen administration ## Circulation Management - Tourniquet application for extremity hemorrhage - Wound packing with hemostatic gauze - IV/IO access - Fluid resuscitation - TXA administration for hemorrhagic shock ## Medication Administration - Morphine: 5-10mg IV/IO for pain - Antibiotics: Ceftriaxone 1-2g IV for open wounds - TXA: 1g IV over 10 minutes for hemorrhagic shock ## Assessment Guidelines - GCS scoring and monitoring - Vital signs interpretation in trauma - Signs of tension pneumothorax - Signs of hypovolemic shock",
+    "added_at": "2025-04-02T03:47:49.893773"
+  },
+  "73": {
+    "id": "73",
+    "metadata": {
+      "category": "Medical Procedures",
+      "type": "Reference",
+      "source": "TCCC Guidelines",
+      "file_name": "tccc_procedures.txt",
+      "content_type": "text/plain",
+      "file_size": 937
+    },
+    "file_path": "/home/ama/tccc-project/data/documents/tccc_procedures.txt",
+    "content": "# TCCC Medical Procedures Reference ## Airway Management - Chin lift/jaw thrust - Nasopharyngeal airway - Endotracheal intubation - Cricothyroidotomy ## Breathing Management - Needle decompression for tension pneumothorax - Chest seal for open pneumothorax - Supplemental oxygen administration ## Circulation Management - Tourniquet application for extremity hemorrhage - Wound packing with hemostatic gauze - IV/IO access - Fluid resuscitation - TXA administration for hemorrhagic shock ## Medication Administration - Morphine: 5-10mg IV/IO for pain - Antibiotics: Ceftriaxone 1-2g IV for open wounds - TXA: 1g IV over 10 minutes for hemorrhagic shock ## Assessment Guidelines - GCS scoring and monitoring - Vital signs interpretation in trauma - Signs of tension pneumothorax - Signs of hypovolemic shock",
+    "added_at": "2025-04-02T03:50:05.294059"
+  },
+  "74": {
+    "id": "74",
+    "metadata": {
+      "category": "Medical Procedures",
+      "type": "Reference",
+      "source": "TCCC Guidelines",
+      "file_name": "tccc_procedures.txt",
+      "content_type": "text/plain",
+      "file_size": 937
+    },
+    "file_path": "/home/ama/tccc-project/data/documents/tccc_procedures.txt",
+    "content": "# TCCC Medical Procedures Reference ## Airway Management - Chin lift/jaw thrust - Nasopharyngeal airway - Endotracheal intubation - Cricothyroidotomy ## Breathing Management - Needle decompression for tension pneumothorax - Chest seal for open pneumothorax - Supplemental oxygen administration ## Circulation Management - Tourniquet application for extremity hemorrhage - Wound packing with hemostatic gauze - IV/IO access - Fluid resuscitation - TXA administration for hemorrhagic shock ## Medication Administration - Morphine: 5-10mg IV/IO for pain - Antibiotics: Ceftriaxone 1-2g IV for open wounds - TXA: 1g IV over 10 minutes for hemorrhagic shock ## Assessment Guidelines - GCS scoring and monitoring - Vital signs interpretation in trauma - Signs of tension pneumothorax - Signs of hypovolemic shock",
+    "added_at": "2025-04-02T03:57:46.622841"
+  },
+  "75": {
+    "id": "75",
+    "metadata": {
+      "category": "Medical Procedures",
+      "type": "Reference",
+      "source": "TCCC Guidelines",
+      "file_name": "tccc_procedures.txt",
+      "content_type": "text/plain",
+      "file_size": 937
+    },
+    "file_path": "/home/ama/tccc-project/data/documents/tccc_procedures.txt",
+    "content": "# TCCC Medical Procedures Reference ## Airway Management - Chin lift/jaw thrust - Nasopharyngeal airway - Endotracheal intubation - Cricothyroidotomy ## Breathing Management - Needle decompression for tension pneumothorax - Chest seal for open pneumothorax - Supplemental oxygen administration ## Circulation Management - Tourniquet application for extremity hemorrhage - Wound packing with hemostatic gauze - IV/IO access - Fluid resuscitation - TXA administration for hemorrhagic shock ## Medication Administration - Morphine: 5-10mg IV/IO for pain - Antibiotics: Ceftriaxone 1-2g IV for open wounds - TXA: 1g IV over 10 minutes for hemorrhagic shock ## Assessment Guidelines - GCS scoring and monitoring - Vital signs interpretation in trauma - Signs of tension pneumothorax - Signs of hypovolemic shock",
+    "added_at": "2025-04-02T04:08:23.585215"
+  },
+  "76": {
+    "id": "76",
+    "metadata": {
+      "category": "Medical Procedures",
+      "type": "Reference",
+      "source": "TCCC Guidelines",
+      "file_name": "tccc_procedures.txt",
+      "content_type": "text/plain",
+      "file_size": 937
+    },
+    "file_path": "/home/ama/tccc-project/data/documents/tccc_procedures.txt",
+    "content": "# TCCC Medical Procedures Reference ## Airway Management - Chin lift/jaw thrust - Nasopharyngeal airway - Endotracheal intubation - Cricothyroidotomy ## Breathing Management - Needle decompression for tension pneumothorax - Chest seal for open pneumothorax - Supplemental oxygen administration ## Circulation Management - Tourniquet application for extremity hemorrhage - Wound packing with hemostatic gauze - IV/IO access - Fluid resuscitation - TXA administration for hemorrhagic shock ## Medication Administration - Morphine: 5-10mg IV/IO for pain - Antibiotics: Ceftriaxone 1-2g IV for open wounds - TXA: 1g IV over 10 minutes for hemorrhagic shock ## Assessment Guidelines - GCS scoring and monitoring - Vital signs interpretation in trauma - Signs of tension pneumothorax - Signs of hypovolemic shock",
+    "added_at": "2025-04-02T04:20:27.212035"
   }
 }

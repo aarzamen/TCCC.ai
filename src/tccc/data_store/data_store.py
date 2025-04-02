@@ -779,7 +779,60 @@ class DataStore:
         except Exception as e:
             logger.error(f"Failed to store event: {e}")
             raise
-    
+
+    def get_event(self, event_id: str) -> Optional[Dict[str, Any]]:
+        """
+        Retrieve a specific event by its ID.
+
+        Args:
+            event_id: The ID of the event to retrieve.
+
+        Returns:
+            The event dictionary if found, otherwise None.
+        """
+        if not self.initialized:
+            raise RuntimeError("Data Store is not initialized")
+
+        try:
+            with self.db_manager.get_connection() as conn:
+                cursor = conn.cursor()
+                cursor.execute(
+                    "SELECT * FROM events WHERE event_id = ?", 
+                    (event_id,)
+                )
+                row = cursor.fetchone()
+
+                if row:
+                    logger.debug(f"[DataStore.get_event] Raw row fetched: {dict(row)}") # Log raw row
+                    event = dict(row)
+                    
+                    # Parse JSON fields
+                    try:
+                        if event.get('data') and isinstance(event['data'], str):
+                            event['data'] = json.loads(event['data'])
+                    except json.JSONDecodeError:
+                        logger.warning(f"Failed to decode JSON data for event {event_id}. Raw: {event.get('data')}")
+                        # Decide how to handle: return raw string, empty dict, or raise? 
+                        # For verification script compatibility, let's return it raw for now if decode fails.
+                        pass 
+                        
+                    try:
+                        if event.get('metadata') and isinstance(event['metadata'], str):
+                            event['metadata'] = json.loads(event['metadata'])
+                    except json.JSONDecodeError:
+                         logger.warning(f"Failed to decode JSON metadata for event {event_id}. Raw: {event.get('metadata')}")
+                         # Keep raw string if decode fails
+                         pass
+
+                    return event
+                else:
+                    logger.warning(f"Event with ID {event_id} not found.")
+                    return None
+
+        except Exception as e:
+            logger.error(f"Failed to get event {event_id}: {e}")
+            raise
+
     def store_report(self, report: Dict[str, Any]) -> str:
         """
         Store generated report and return report ID.
@@ -1112,6 +1165,9 @@ class DataStore:
                     'entries': len(self.query_cache) if hasattr(self, 'query_cache') else 0
                 }
             }
+            
+            # Add top-level event_count for verification script compatibility
+            status['event_count'] = status['database']['counts']['events']
             
             return status
             

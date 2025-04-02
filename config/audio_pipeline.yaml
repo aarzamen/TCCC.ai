@@ -139,7 +139,7 @@ io:
   input_sources:
     - name: "default_microphone"
       type: "microphone"
-      device_id: 0
+      device_id: 31 # Changed from 0 to 31 (system default)
     
     - name: "voip"
       type: "network"

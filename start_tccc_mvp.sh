@@ -54,8 +54,11 @@ else
     export TCCC_ENABLE_DISPLAY=0
 fi
 
-# Start the system
-python -m tccc.system.system --config config/jetson_mvp.yaml
+# Run the main system module
+# Pass the specific MVP config file name
+python -m tccc.system --config jetson_mvp.yaml --log-level DEBUG
+
+EXIT_CODE=$?
 
 # This script can be run with:
 # ./start_tccc_mvp.sh

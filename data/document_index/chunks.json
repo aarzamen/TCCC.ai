@@ -9630,5 +9630,236 @@
     "text": "This is a test document for integration between LLM and Document Library",
     "start_char": 0,
     "end_char": 72
+  },
+  "50_0": {
+    "chunk_id": "50_0",
+    "doc_id": "50",
+    "text": "This is a test document for integration between LLM and Document Library",
+    "start_char": 0,
+    "end_char": 72
+  },
+  "51_0": {
+    "chunk_id": "51_0",
+    "doc_id": "51",
+    "text": "This is a test document for integration between LLM and Document Library",
+    "start_char": 0,
+    "end_char": 72
+  },
+  "52_0": {
+    "chunk_id": "52_0",
+    "doc_id": "52",
+    "text": "This is a test document for integration between LLM and Document Library",
+    "start_char": 0,
+    "end_char": 72
+  },
+  "53_0": {
+    "chunk_id": "53_0",
+    "doc_id": "53",
+    "text": "This is a test document for integration between LLM and Document Library",
+    "start_char": 0,
+    "end_char": 72
+  },
+  "54_0": {
+    "chunk_id": "54_0",
+    "doc_id": "54",
+    "text": "This is a test document for integration between LLM and Document Library",
+    "start_char": 0,
+    "end_char": 72
+  },
+  "55_0": {
+    "chunk_id": "55_0",
+    "doc_id": "55",
+    "text": "This is a test document for integration between LLM and Document Library",
+    "start_char": 0,
+    "end_char": 72
+  },
+  "56_0": {
+    "chunk_id": "56_0",
+    "doc_id": "56",
+    "text": "This is a test document for integration between LLM and Document Library",
+    "start_char": 0,
+    "end_char": 72
+  },
+  "57_0": {
+    "chunk_id": "57_0",
+    "doc_id": "57",
+    "text": "This is a test document for integration between LLM and Document Library",
+    "start_char": 0,
+    "end_char": 72
+  },
+  "58_0": {
+    "chunk_id": "58_0",
+    "doc_id": "58",
+    "text": "This is a test document for integration between LLM and Document Library",
+    "start_char": 0,
+    "end_char": 72
+  },
+  "59_0": {
+    "chunk_id": "59_0",
+    "doc_id": "59",
+    "text": "This is a test document for integration between LLM and Document Library",
+    "start_char": 0,
+    "end_char": 72
+  },
+  "60_0": {
+    "chunk_id": "60_0",
+    "doc_id": "60",
+    "text": "This is a test document for integration between LLM and Document Library",
+    "start_char": 0,
+    "end_char": 72
+  },
+  "61_0": {
+    "chunk_id": "61_0",
+    "doc_id": "61",
+    "text": "This is a test document for integration between LLM and Document Library",
+    "start_char": 0,
+    "end_char": 72
+  },
+  "62_0": {
+    "chunk_id": "62_0",
+    "doc_id": "62",
+    "text": "This is a test document for integration between LLM and Document Library",
+    "start_char": 0,
+    "end_char": 72
+  },
+  "63_0": {
+    "chunk_id": "63_0",
+    "doc_id": "63",
+    "text": "This is a test document for integration between LLM and Document Library",
+    "start_char": 0,
+    "end_char": 72
+  },
+  "64_0": {
+    "chunk_id": "64_0",
+    "doc_id": "64",
+    "text": "This is a test document for integration between LLM and Document Library",
+    "start_char": 0,
+    "end_char": 72
+  },
+  "65_0": {
+    "chunk_id": "65_0",
+    "doc_id": "65",
+    "text": "This is a test document for integration between LLM and Document Library",
+    "start_char": 0,
+    "end_char": 72
+  },
+  "66_0": {
+    "chunk_id": "66_0",
+    "doc_id": "66",
+    "text": "This is a test document for integration between LLM and Document Library",
+    "start_char": 0,
+    "end_char": 72
+  },
+  "67_0": {
+    "chunk_id": "67_0",
+    "doc_id": "67",
+    "text": "This is a test document for integration between LLM and Document Library",
+    "start_char": 0,
+    "end_char": 72
+  },
+  "68_0": {
+    "chunk_id": "68_0",
+    "doc_id": "68",
+    "text": "This is a test document for integration between LLM and Document Library",
+    "start_char": 0,
+    "end_char": 72
+  },
+  "69_0": {
+    "chunk_id": "69_0",
+    "doc_id": "69",
+    "text": "This is a test document for integration between LLM and Document Library",
+    "start_char": 0,
+    "end_char": 72
+  },
+  "70_0": {
+    "chunk_id": "70_0",
+    "doc_id": "70",
+    "text": "This is a test document for integration between LLM and Document Library",
+    "start_char": 0,
+    "end_char": 72
+  },
+  "71_0": {
+    "chunk_id": "71_0",
+    "doc_id": "71",
+    "text": "# TCCC Medical Procedures Reference ## Airway Management - Chin lift/jaw thrust - Nasopharyngeal airway - Endotracheal intubation - Cricothyroidotomy ## Breathing Management - Needle decompression for tension pneumothorax - Chest seal for open pneumothorax - Supplemental oxygen administration ## Circulation Management - Tourniquet application for extremity hemorrhage - Wound packing with hemostatic gauze - IV/IO access - Fluid resuscitation - TXA administration for hemorrhagic shock ## Medication Administration - Morphine: 5-10mg IV/IO for pain - Antibiotics: Ceftriaxone 1-2g IV for open wounds - TXA: 1g IV over 10 minutes for hemorrhagic shock ## Assessment Guidelines - GCS scoring and monitoring - Vital signs interpretation in trauma - Signs of tension pneumothorax - Signs of hypovolemic shock",
+    "start_char": 0,
+    "end_char": 806
+  },
+  "71_1": {
+    "chunk_id": "71_1",
+    "doc_id": "71",
+    "text": " shock",
+    "start_char": 800,
+    "end_char": 806
+  },
+  "72_0": {
+    "chunk_id": "72_0",
+    "doc_id": "72",
+    "text": "# TCCC Medical Procedures Reference ## Airway Management - Chin lift/jaw thrust - Nasopharyngeal airway - Endotracheal intubation - Cricothyroidotomy ## Breathing Management - Needle decompression for tension pneumothorax - Chest seal for open pneumothorax - Supplemental oxygen administration ## Circulation Management - Tourniquet application for extremity hemorrhage - Wound packing with hemostatic gauze - IV/IO access - Fluid resuscitation - TXA administration for hemorrhagic shock ## Medication Administration - Morphine: 5-10mg IV/IO for pain - Antibiotics: Ceftriaxone 1-2g IV for open wounds - TXA: 1g IV over 10 minutes for hemorrhagic shock ## Assessment Guidelines - GCS scoring and monitoring - Vital signs interpretation in trauma - Signs of tension pneumothorax - Signs of hypovolemic shock",
+    "start_char": 0,
+    "end_char": 806
+  },
+  "72_1": {
+    "chunk_id": "72_1",
+    "doc_id": "72",
+    "text": " shock",
+    "start_char": 800,
+    "end_char": 806
+  },
+  "73_0": {
+    "chunk_id": "73_0",
+    "doc_id": "73",
+    "text": "# TCCC Medical Procedures Reference ## Airway Management - Chin lift/jaw thrust - Nasopharyngeal airway - Endotracheal intubation - Cricothyroidotomy ## Breathing Management - Needle decompression for tension pneumothorax - Chest seal for open pneumothorax - Supplemental oxygen administration ## Circulation Management - Tourniquet application for extremity hemorrhage - Wound packing with hemostatic gauze - IV/IO access - Fluid resuscitation - TXA administration for hemorrhagic shock ## Medication Administration - Morphine: 5-10mg IV/IO for pain - Antibiotics: Ceftriaxone 1-2g IV for open wounds - TXA: 1g IV over 10 minutes for hemorrhagic shock ## Assessment Guidelines - GCS scoring and monitoring - Vital signs interpretation in trauma - Signs of tension pneumothorax - Signs of hypovolemic shock",
+    "start_char": 0,
+    "end_char": 806
+  },
+  "73_1": {
+    "chunk_id": "73_1",
+    "doc_id": "73",
+    "text": " shock",
+    "start_char": 800,
+    "end_char": 806
+  },
+  "74_0": {
+    "chunk_id": "74_0",
+    "doc_id": "74",
+    "text": "# TCCC Medical Procedures Reference ## Airway Management - Chin lift/jaw thrust - Nasopharyngeal airway - Endotracheal intubation - Cricothyroidotomy ## Breathing Management - Needle decompression for tension pneumothorax - Chest seal for open pneumothorax - Supplemental oxygen administration ## Circulation Management - Tourniquet application for extremity hemorrhage - Wound packing with hemostatic gauze - IV/IO access - Fluid resuscitation - TXA administration for hemorrhagic shock ## Medication Administration - Morphine: 5-10mg IV/IO for pain - Antibiotics: Ceftriaxone 1-2g IV for open wounds - TXA: 1g IV over 10 minutes for hemorrhagic shock ## Assessment Guidelines - GCS scoring and monitoring - Vital signs interpretation in trauma - Signs of tension pneumothorax - Signs of hypovolemic shock",
+    "start_char": 0,
+    "end_char": 806
+  },
+  "74_1": {
+    "chunk_id": "74_1",
+    "doc_id": "74",
+    "text": " shock",
+    "start_char": 800,
+    "end_char": 806
+  },
+  "75_0": {
+    "chunk_id": "75_0",
+    "doc_id": "75",
+    "text": "# TCCC Medical Procedures Reference ## Airway Management - Chin lift/jaw thrust - Nasopharyngeal airway - Endotracheal intubation - Cricothyroidotomy ## Breathing Management - Needle decompression for tension pneumothorax - Chest seal for open pneumothorax - Supplemental oxygen administration ## Circulation Management - Tourniquet application for extremity hemorrhage - Wound packing with hemostatic gauze - IV/IO access - Fluid resuscitation - TXA administration for hemorrhagic shock ## Medication Administration - Morphine: 5-10mg IV/IO for pain - Antibiotics: Ceftriaxone 1-2g IV for open wounds - TXA: 1g IV over 10 minutes for hemorrhagic shock ## Assessment Guidelines - GCS scoring and monitoring - Vital signs interpretation in trauma - Signs of tension pneumothorax - Signs of hypovolemic shock",
+    "start_char": 0,
+    "end_char": 806
+  },
+  "75_1": {
+    "chunk_id": "75_1",
+    "doc_id": "75",
+    "text": " shock",
+    "start_char": 800,
+    "end_char": 806
+  },
+  "76_0": {
+    "chunk_id": "76_0",
+    "doc_id": "76",
+    "text": "# TCCC Medical Procedures Reference ## Airway Management - Chin lift/jaw thrust - Nasopharyngeal airway - Endotracheal intubation - Cricothyroidotomy ## Breathing Management - Needle decompression for tension pneumothorax - Chest seal for open pneumothorax - Supplemental oxygen administration ## Circulation Management - Tourniquet application for extremity hemorrhage - Wound packing with hemostatic gauze - IV/IO access - Fluid resuscitation - TXA administration for hemorrhagic shock ## Medication Administration - Morphine: 5-10mg IV/IO for pain - Antibiotics: Ceftriaxone 1-2g IV for open wounds - TXA: 1g IV over 10 minutes for hemorrhagic shock ## Assessment Guidelines - GCS scoring and monitoring - Vital signs interpretation in trauma - Signs of tension pneumothorax - Signs of hypovolemic shock",
+    "start_char": 0,
+    "end_char": 806
+  },
+  "76_1": {
+    "chunk_id": "76_1",
+    "doc_id": "76",
+    "text": " shock",
+    "start_char": 800,
+    "end_char": 806
   }
 }

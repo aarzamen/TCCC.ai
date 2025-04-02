@@ -143,4 +143,4 @@ ZMIST -> Zulu time MIST report, timed MIST report
 PPA -> Pain, Pulse, Alertness
 blood pressure -> BP, hypertension, hypotension, blood pressure reading
 blood type -> blood group, ABO type, blood compatibility
-evacuation -> MEDEVAC, CASEVAC, medical transport, patient transport
+evacuation -> MEDEVAC, CASEVAC, medical transport, patient transport        

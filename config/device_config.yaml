@@ -17,6 +17,6 @@ display:
   resolution: "1560x720"
 
 hardware:
-  platform: "jetson_nano"
-  memory: "4GB"
+  platform: "jetson_orin_nano"  # Corrected from jetson_nano
+  memory: "8GB"                 # Corrected from 4GB
   optimize_for_device: true

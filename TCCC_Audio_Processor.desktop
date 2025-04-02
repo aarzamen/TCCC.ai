@@ -1,8 +1,0 @@
-[Desktop Entry]
-Version=1.0
-Type=Application
-Name=TCCC Audio Processor
-Comment=Record and process tactical medical audio
-Exec=/home/ama/tccc-project/run_tccc_audio_processor.sh
-Terminal=true
-Categories=Utility;

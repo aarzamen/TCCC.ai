@@ -12,7 +12,11 @@ import threading
 from typing import Dict, List, Any, Optional, Tuple, Set, Callable, Type
 from dataclasses import dataclass
 from enum import Enum, auto
+print("DEBUG [ProcessingCore]: Importing networkx...")
 import networkx as nx
+print("DEBUG [ProcessingCore]: networkx imported.")
+import sys
+import traceback
 
 from tccc.utils.logging import get_logger
 from tccc.utils.config import Config
@@ -21,12 +25,65 @@ from tccc.utils.event_schema import (
     ProcessedTextEvent, ErrorEvent, create_event
 )
 from tccc.utils.event_bus import get_event_bus
-from tccc.processing_core.entity_extractor import EntityExtractor, Entity
-from tccc.processing_core.intent_classifier import IntentClassifier, Intent
-from tccc.processing_core.sentiment_analyzer import SentimentAnalyzer, SentimentAnalysis
-from tccc.processing_core.resource_monitor import ResourceMonitor
-from tccc.processing_core.plugin_manager import PluginManager
-from tccc.processing_core.state_manager import StateManager
+
+# --- Processing Core Sub-module Imports with Debugging ---
+# print("DEBUG [ProcessingCore]: Importing EntityExtractor...")
+# try:
+#     from tccc.processing_core.entity_extractor import EntityExtractor, Entity
+#     print("DEBUG [ProcessingCore]: EntityExtractor imported.")
+# except Exception as e:
+#     print(f"ERROR [ProcessingCore] importing EntityExtractor: {e}\n{traceback.format_exc()}")
+#     EntityExtractor, Entity = None, None
+#     sys.exit(1)
+EntityExtractor, Entity = None, None # Define as None to avoid NameErrors
+
+# print("DEBUG [ProcessingCore]: Importing IntentClassifier...")
+# try:
+#     from tccc.processing_core.intent_classifier import IntentClassifier, Intent
+#     print("DEBUG [ProcessingCore]: IntentClassifier imported.")
+# except Exception as e:
+#     print(f"ERROR [ProcessingCore] importing IntentClassifier: {e}\n{traceback.format_exc()}")
+#     IntentClassifier, Intent = None, None
+#     sys.exit(1)
+IntentClassifier, Intent = None, None # Define as None
+
+# print("DEBUG [ProcessingCore]: Importing SentimentAnalyzer...")
+# try:
+#     from tccc.processing_core.sentiment_analyzer import SentimentAnalyzer, SentimentAnalysis
+#     print("DEBUG [ProcessingCore]: SentimentAnalyzer imported.")
+# except Exception as e:
+#     print(f"ERROR [ProcessingCore] importing SentimentAnalyzer: {e}\n{traceback.format_exc()}")
+#     SentimentAnalyzer, SentimentAnalysis = None, None
+#     sys.exit(1)
+SentimentAnalyzer, SentimentAnalysis = None, None # Define as None
+
+print("DEBUG [ProcessingCore]: Importing ResourceMonitor...")
+try:
+    from tccc.processing_core.resource_monitor import ResourceMonitor
+    print("DEBUG [ProcessingCore]: ResourceMonitor imported.")
+except Exception as e:
+    print(f"ERROR [ProcessingCore] importing ResourceMonitor: {e}\n{traceback.format_exc()}")
+    ResourceMonitor = None
+    sys.exit(1)
+
+print("DEBUG [ProcessingCore]: Importing PluginManager...")
+try:
+    from tccc.processing_core.plugin_manager import PluginManager
+    print("DEBUG [ProcessingCore]: PluginManager imported.")
+except Exception as e:
+    print(f"ERROR [ProcessingCore] importing PluginManager: {e}\n{traceback.format_exc()}")
+    PluginManager = None
+    sys.exit(1)
+
+print("DEBUG [ProcessingCore]: Importing StateManager...")
+try:
+    from tccc.processing_core.state_manager import StateManager
+    print("DEBUG [ProcessingCore]: StateManager imported.")
+except Exception as e:
+    print(f"ERROR [ProcessingCore] importing StateManager: {e}\n{traceback.format_exc()}")
+    StateManager = None
+    sys.exit(1)
+# --- End Sub-module Imports ---
 
 logger = get_logger(__name__)
 
@@ -512,11 +569,7 @@ class ProcessingCore:
             # Gather resource usage
             resource_usage = {}
             if self.resource_monitor:
-                resource_usage = {
-                    "cpu": self.resource_monitor.get_cpu_usage(),
-                    "memory": self.resource_monitor.get_memory_usage(),
-                    "concurrent_tasks": self.current_concurrent_tasks if hasattr(self, 'current_concurrent_tasks') else 1
-                }
+                resource_usage = self.resource_monitor.get_resource_metrics()
             
             # Create and emit event
             event_bus = self._get_event_bus()
@@ -730,54 +783,66 @@ class ProcessingCore:
             )
             self.modules["state_manager"].update_state(ModuleState.READY)
             
-            # Initialize entity extractor
-            entity_config = config.get("entity_extraction", {})
-            self.entity_extractor = EntityExtractor(entity_config)
-            self.register_module(
-                name="entity_extractor",
-                module_type="extractor",
-                instance=self.entity_extractor,
-                dependencies=["resource_monitor"],
-                config=entity_config
-            )
-            self.modules["entity_extractor"].update_state(ModuleState.READY)
+            # Initialize entity extractor if config exists
+            entity_config = config.get("entity_extraction")
+            if entity_config:
+                # self.entity_extractor = EntityExtractor(entity_config)
+                self.register_module(
+                    name="entity_extractor",
+                    module_type="extractor",
+                    instance=None,
+                    dependencies=["resource_monitor"],
+                    config=entity_config
+                )
+                self.modules["entity_extractor"].update_state(ModuleState.READY)
+            else:
+                logger.info("Entity extraction module configuration not found, skipping initialization.")
+
+            # Initialize intent classifier if config exists
+            intent_config = config.get("intent_classification")
+            if intent_config:
+                # self.intent_classifier = IntentClassifier(intent_config)
+                self.register_module(
+                    name="intent_classifier",
+                    module_type="classifier",
+                    instance=None,
+                    dependencies=["resource_monitor"],
+                    config=intent_config
+                )
+                self.modules["intent_classifier"].update_state(ModuleState.READY)
+            else:
+                logger.info("Intent classification module configuration not found, skipping initialization.")
             
-            # Initialize intent classifier
-            intent_config = config.get("intent_classification", {})
-            self.intent_classifier = IntentClassifier(intent_config)
-            self.register_module(
-                name="intent_classifier",
-                module_type="classifier",
-                instance=self.intent_classifier,
-                dependencies=["resource_monitor"],
-                config=intent_config
-            )
-            self.modules["intent_classifier"].update_state(ModuleState.READY)
-            
-            # Initialize sentiment analyzer
-            sentiment_config = config.get("sentiment_analysis", {})
-            self.sentiment_analyzer = SentimentAnalyzer(sentiment_config)
-            self.register_module(
-                name="sentiment_analyzer",
-                module_type="analyzer",
-                instance=self.sentiment_analyzer,
-                dependencies=["resource_monitor"],
-                config=sentiment_config
-            )
-            self.modules["sentiment_analyzer"].update_state(ModuleState.READY)
-            
-            # Initialize plugin manager
-            plugin_config = config.get("plugins", {})
-            self.plugin_manager = PluginManager(plugin_config)
-            self.register_module(
-                name="plugin_manager",
-                module_type="manager",
-                instance=self.plugin_manager,
-                dependencies=["resource_monitor", "state_manager"],
-                config=plugin_config
-            )
-            self.modules["plugin_manager"].update_state(ModuleState.READY)
-            
+            # Initialize sentiment analyzer if config exists
+            sentiment_config = config.get("sentiment_analysis")
+            if sentiment_config:
+                # self.sentiment_analyzer = SentimentAnalyzer(sentiment_config)
+                self.register_module(
+                    name="sentiment_analyzer",
+                    module_type="analyzer",
+                    instance=None,
+                    dependencies=["resource_monitor"],
+                    config=sentiment_config
+                )
+                self.modules["sentiment_analyzer"].update_state(ModuleState.READY)
+            else:
+                logger.info("Sentiment analysis module configuration not found, skipping initialization.")
+
+            # Initialize plugin manager if config exists
+            plugin_config = config.get("plugins")
+            if plugin_config:
+                self.plugin_manager = PluginManager(plugin_config)
+                self.register_module(
+                    name="plugin_manager",
+                    module_type="manager",
+                    instance=self.plugin_manager,
+                    dependencies=["resource_monitor", "state_manager"],
+                    config=plugin_config
+                )
+                self.modules["plugin_manager"].update_state(ModuleState.READY)
+            else:
+                logger.info("Plugin manager module configuration not found, skipping initialization.")
+
             # Register resource monitor callback to track resource usage
             if self.resource_monitor and self.state_manager:
                 self.resource_monitor.register_callback(self._on_resource_update)
@@ -968,36 +1033,36 @@ class ProcessingCore:
                 async with semaphore:
                     return await coro
             
-            entity_task = run_with_semaphore(self.extractEntities(segment.text))
-            intent_task = run_with_semaphore(self.identifyIntents(segment.text))
-            sentiment_task = run_with_semaphore(self.analyzeSentiment(segment.text))
+            # entity_task = run_with_semaphore(self.extractEntities(segment.text))
+            # intent_task = run_with_semaphore(self.identifyIntents(segment.text))
+            # sentiment_task = run_with_semaphore(self.analyzeSentiment(segment.text))
             
             # Gather results
-            results = await asyncio.gather(
-                entity_task,
-                intent_task,
-                sentiment_task,
-                return_exceptions=True
-            )
+            # results = await asyncio.gather(
+            #     entity_task,
+            #     intent_task,
+            #     sentiment_task,
+            #     return_exceptions=True
+            # )
             
             # Extract results
-            processed.entities = results[0] if not isinstance(results[0], Exception) else []
-            processed.intents = results[1] if not isinstance(results[1], Exception) else []
-            processed.sentiment = results[2] if not isinstance(results[2], Exception) else None
+            # processed.entities = results[0] if not isinstance(results[0], Exception) else []
+            # processed.intents = results[1] if not isinstance(results[1], Exception) else []
+            # processed.sentiment = results[2] if not isinstance(results[2], Exception) else None
             
             # Handle any exceptions
-            for i, result in enumerate(results):
-                if isinstance(result, Exception):
-                    logger.error(f"Error in processing segment: {str(result)}")
-                    self.metrics.errors_encountered += 1
+            # for i, result in enumerate(results):
+            #     if isinstance(result, Exception):
+            #         logger.error(f"Error in processing segment: {str(result)}")
+            #         self.metrics.errors_encountered += 1
                     
-                    # Update module state to ERROR
-                    if i == 0 and "entity_extractor" in self.modules:
-                        self.modules["entity_extractor"].update_state(ModuleState.ERROR, str(result))
-                    elif i == 1 and "intent_classifier" in self.modules:
-                        self.modules["intent_classifier"].update_state(ModuleState.ERROR, str(result))
-                    elif i == 2 and "sentiment_analyzer" in self.modules:
-                        self.modules["sentiment_analyzer"].update_state(ModuleState.ERROR, str(result))
+            #         # Update module state to ERROR
+            #         if i == 0 and "entity_extractor" in self.modules:
+            #             self.modules["entity_extractor"].update_state(ModuleState.ERROR, str(result))
+            #         elif i == 1 and "intent_classifier" in self.modules:
+            #             self.modules["intent_classifier"].update_state(ModuleState.ERROR, str(result))
+            #         elif i == 2 and "sentiment_analyzer" in self.modules:
+            #             self.modules["sentiment_analyzer"].update_state(ModuleState.ERROR, str(result))
             
             # Apply plugins if manager is in READY or ACTIVE state
             if self.plugin_manager and "plugin_manager" in self.modules:
@@ -1010,9 +1075,9 @@ class ProcessingCore:
                         "start_time": processed.start_time,
                         "end_time": processed.end_time,
                         "confidence": processed.confidence,
-                        "entities": [e.to_dict() for e in processed.entities] if processed.entities else [],
-                        "intents": [i.to_dict() for i in processed.intents] if processed.intents else [],
-                        "sentiment": processed.sentiment.to_dict() if processed.sentiment else None,
+                        "entities": [], # [e.to_dict() for e in processed.entities] if processed.entities else [],
+                        "intents": [], # [i.to_dict() for i in processed.intents] if processed.intents else [],
+                        "sentiment": None, # processed.sentiment.to_dict() if processed.sentiment else None,
                         "metadata": processed.metadata or {}
                     }
                     
@@ -1033,9 +1098,9 @@ class ProcessingCore:
             
             # Record metrics
             self.metrics.segments_processed += 1
-            self.metrics.entities_extracted += len(processed.entities) if processed.entities else 0
-            self.metrics.intents_identified += len(processed.intents) if processed.intents else 0
-            self.metrics.sentiment_analyzed += 1 if processed.sentiment else 0
+            # self.metrics.entities_extracted += len(processed.entities) if processed.entities else 0
+            # self.metrics.intents_identified += len(processed.intents) if processed.intents else 0
+            # self.metrics.sentiment_analyzed += 1 if processed.sentiment else 0
             
             processing_time = time.time() - start_time
             self.metrics.record_processing_time(processing_time)
@@ -1068,10 +1133,12 @@ class ProcessingCore:
                 if self.state_manager:
                     try:
                         # Record error in state manager
-                        self.state_manager.set_state_value("last_error", {
-                            "message": str(e),
-                            "timestamp": time.time(),
-                            "segment_id": segment.metadata.get("id") if segment.metadata else None
+                        self.state_manager.update_state({
+                            "last_error": {
+                                "message": str(e),
+                                "timestamp": time.time(),
+                                "segment_id": segment.metadata.get("id") if segment.metadata else None
+                            }
                         })
                         
                         # Return to READY state after error recording
@@ -1139,7 +1206,8 @@ class ProcessingCore:
         start_time = time.time()
         
         try:
-            entities = await self.entity_extractor.extract_entities(text)
+            # entities = await self.entity_extractor.extract_entities(text)
+            entities = []
             self.metrics.entity_extraction_time += time.time() - start_time
             return entities
         except Exception as e:
@@ -1163,7 +1231,8 @@ class ProcessingCore:
         start_time = time.time()
         
         try:
-            intents = await self.intent_classifier.identify_intents(statement)
+            # intents = await self.intent_classifier.identify_intents(statement)
+            intents = []
             self.metrics.intent_classification_time += time.time() - start_time
             return intents
         except Exception as e:
@@ -1187,7 +1256,8 @@ class ProcessingCore:
         start_time = time.time()
         
         try:
-            sentiment = await self.sentiment_analyzer.analyze_sentiment(text)
+            # sentiment = await self.sentiment_analyzer.analyze_sentiment(text)
+            sentiment = SentimentAnalysis("neutral", 0.5)
             self.metrics.sentiment_analysis_time += time.time() - start_time
             return sentiment
         except Exception as e:

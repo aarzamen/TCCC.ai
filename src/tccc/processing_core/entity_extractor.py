@@ -6,30 +6,71 @@ This module provides entity extraction functionality for the Processing Core.
 
 import re
 from typing import Dict, List, Optional, Any, Tuple
+import sys
+import traceback
+
 # Try to import spacy, but provide fallback if not available
+print("DEBUG [EntityExtractor]: Importing spacy...")
 try:
     import spacy
     SPACY_AVAILABLE = True
+    print("DEBUG [EntityExtractor]: spacy imported.")
 except ImportError:
+    print("INFO [EntityExtractor]: spacy not available.")
     SPACY_AVAILABLE = False
+except Exception as e:
+    print(f"ERROR [EntityExtractor] importing spacy: {e}\n{traceback.format_exc()}")
+    SPACY_AVAILABLE = False # Assume failed
+    # Don't exit yet, maybe transformers works
+    
 # Try to import spacy-related modules with fallbacks
 if SPACY_AVAILABLE:
-    from spacy.tokens import Doc
-    from spacy.language import Language
+    print("DEBUG [EntityExtractor]: Importing spacy internals...")
+    try:
+        from spacy.tokens import Doc
+        from spacy.language import Language
+        print("DEBUG [EntityExtractor]: spacy internals imported.")
+    except Exception as e:
+        print(f"ERROR [EntityExtractor] importing spacy internals: {e}\n{traceback.format_exc()}")
+        SPACY_AVAILABLE = False # Mark spacy as unusable
+else:
+    Doc = None
+    Language = None
 
 # Try to import transformers, but provide fallback if not available
+print("DEBUG [EntityExtractor]: Importing transformers...")
 try:
-    from transformers import pipeline, AutoTokenizer, AutoModelForTokenClassification
+    # Simplify import to check top-level package first
+    import transformers 
+    # If the above succeeds, try importing specifics needed later if necessary
+    # from transformers import pipeline, AutoTokenizer, AutoModelForTokenClassification
     TRANSFORMERS_AVAILABLE = True
+    print("DEBUG [EntityExtractor]: transformers imported.")
 except ImportError:
+    print("INFO [EntityExtractor]: transformers not available.")
     TRANSFORMERS_AVAILABLE = False
-
+except Exception as e:
+    print(f"ERROR [EntityExtractor] importing transformers: {e}\n{traceback.format_exc()}")
+    TRANSFORMERS_AVAILABLE = False
+    # Don't exit yet, maybe spacy works
+    
 # Try to import torch, but provide fallback if not available
+print("DEBUG [EntityExtractor]: Importing torch...")
 try:
     import torch
     TORCH_AVAILABLE = True
+    print("DEBUG [EntityExtractor]: torch imported.")
 except ImportError:
+    print("INFO [EntityExtractor]: torch not available.")
     TORCH_AVAILABLE = False
+except Exception as e:
+    print(f"ERROR [EntityExtractor] importing torch: {e}\n{traceback.format_exc()}")
+    TORCH_AVAILABLE = False
+
+# Check if at least one NER library is available
+if not SPACY_AVAILABLE and not TRANSFORMERS_AVAILABLE:
+    print("ERROR [EntityExtractor]: Neither spacy nor transformers is available. Entity extraction disabled.")
+    # Optionally raise an error or set a flag for the class
 
 from tccc.utils.logging import get_logger
 
@@ -232,12 +273,13 @@ class EntityExtractor:
             logger.info(f"Using CUDA device {device} for entity extraction")
         
         try:
+            from transformers import AutoTokenizer, AutoModelForTokenClassification, pipeline
             self.tokenizer = AutoTokenizer.from_pretrained(model_name)
             self.model = AutoModelForTokenClassification.from_pretrained(model_name)
             
             # Apply quantization if enabled
             if config.get("use_quantized", False) and device != -1:
-                logger.info("Applying quantization to transformers model")
+                logger.info("Applying int8 quantization to the NER model.")
                 self.model = torch.quantization.quantize_dynamic(
                     self.model, {torch.nn.Linear}, dtype=torch.qint8
                 )

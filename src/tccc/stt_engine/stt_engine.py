@@ -99,35 +99,38 @@ class ModelManager:
             config: Configuration dictionary
         """
         self.config = config
-        self.model_config = config.get('model', {})
-        self.hardware_config = config.get('hardware', {})
         
-        # Extract model settings
-        self.model_type = self.model_config.get('type', 'whisper')
-        self.model_size = self.model_config.get('size', 'medium')
-        self.model_path = self.model_config.get('path', f'models/whisper-{self.model_size}-en/')
+        # --- Modified to use flat config structure ---
+        # Assuming the passed 'config' is the flat stt_engine section from main config
+        self.model_type = config.get('type', 'whisper') # Defaulting to whisper if not specified
+        self.model_size = config.get('model', 'medium') # Key 'model' holds the size (e.g., 'tiny.en')
+        self.model_path = config.get('model_path', f'models/whisper-{self.model_size}-en/')
         
         # --- Workaround for tiny.en model name issue ---
         if self.model_size == 'tiny.en':
             logger.warning("Workaround: Changing requested model size from 'tiny.en' to 'tiny' due to Whisper library inconsistency.")
             self.model_size = 'tiny'
-            # Adjust default path if it used the original size
-            if self.model_path == f'models/whisper-tiny.en-en/':
-                 self.model_path = f'models/whisper-{self.model_size}-en/'
+            # Adjust default path if it used the original size and wasn't explicitly set
+            if config.get('model_path') is None and self.model_path == f'models/whisper-tiny.en-en/':
+                self.model_path = f'models/whisper-{self.model_size}-en/'
         # --- End Workaround ---
         
-        self.batch_size = self.model_config.get('batch_size', 1)
-        self.mixed_precision = self.model_config.get('mixed_precision', True)
-        self.language = self.model_config.get('language', 'en')
-        self.beam_size = self.model_config.get('beam_size', 5)
+        self.batch_size = config.get('batch_size', 1)
+        # Map compute_type to mixed_precision if compute_type exists, else default True?
+        # Let's assume compute_type dictates precision, defaulting to True if compute_type not present.
+        self.mixed_precision = config.get('compute_type', 'float16') == 'float16' 
+        self.language = config.get('language', 'en')
+        self.beam_size = config.get('beam_size', 5)
         
-        # Extract hardware acceleration settings
-        self.enable_acceleration = self.hardware_config.get('enable_acceleration', True)
-        self.cuda_device = self.hardware_config.get('cuda_device', 0)
-        self.use_tensorrt = self.hardware_config.get('use_tensorrt', True)
-        self.cuda_streams = self.hardware_config.get('cuda_streams', 2)
-        self.memory_limit_mb = self.hardware_config.get('memory_limit_mb', 4096)
-        self.quantization = self.hardware_config.get('quantization', 'FP16')
+        # Extract hardware acceleration settings directly from config
+        self.enable_acceleration = config.get('enable_acceleration', True) # Assuming this key exists or defaults true
+        self.device = config.get('device', 'cuda') # Use 'device' key from config
+        self.use_tensorrt = config.get('use_tensorrt', True if self.device == 'cuda' else False) # Default based on device?
+        self.cuda_streams = config.get('cuda_streams', 2)
+        self.memory_limit_mb = config.get('memory_limit_mb', 4096)
+        # Map compute_type to quantization? Default FP16
+        self.quantization = config.get('compute_type', 'float16').upper()
+        # --- End Modification ---
         
         # Model and session objects
         self.model = None
@@ -186,7 +189,7 @@ class ModelManager:
                 
         except Exception as e:
             logger.error(f"Failed to initialize model: {e}")
-            logger.debug(traceback.format_exc()) # Add traceback for model init failure
+            logger.error(traceback.format_exc()) # Log traceback at ERROR level
             return False
     
     def _initialize_whisper_onnx(self) -> bool:
@@ -236,12 +239,12 @@ class ModelManager:
             provider_options = []
             
             # Check if acceleration is enabled and appropriate providers are available
-            if self.enable_acceleration and self.cuda_device >= 0:
+            if self.enable_acceleration and self.device == 'cuda':
                 # Try to use TensorRT if available and requested
                 if self.use_tensorrt and 'TensorrtExecutionProvider' in available_providers:
                     # TensorRT execution provider options
                     trt_options = {
-                        'device_id': self.cuda_device,
+                        'device_id': 0, # Default to device 0
                         'trt_max_workspace_size': self.memory_limit_mb * 1024 * 1024,
                         'trt_fp16_enable': '1' if self.mixed_precision else '0',
                     }
@@ -253,7 +256,7 @@ class ModelManager:
                 if 'CUDAExecutionProvider' in available_providers:
                     # CUDA execution provider options
                     cuda_options = {
-                        'device_id': self.cuda_device,
+                        'device_id': 0, # Default to device 0
                         'arena_extend_strategy': 'kNextPowerOfTwo',
                         'gpu_mem_limit': self.memory_limit_mb * 1024 * 1024,
                         'cudnn_conv_algo_search': 'EXHAUSTIVE',
@@ -328,7 +331,7 @@ class ModelManager:
             
         except Exception as e:
             logger.error(f"Failed to initialize Whisper ONNX model: {e}")
-            logger.debug(traceback.format_exc()) # Add traceback for ONNX init failure
+            logger.error(traceback.format_exc()) # Log traceback at ERROR level
             return False
     
     def _initialize_whisper_torch(self) -> bool:
@@ -362,7 +365,7 @@ class ModelManager:
             
         except Exception as e:
             logger.error(f"Failed to initialize Whisper PyTorch model: {e}")
-            logger.exception("Traceback for Whisper PyTorch initialization failure:") # Log exception with traceback
+            logger.error("Whisper PyTorch initialization failed", exc_info=True)
             return False
     
     def _convert_whisper_to_onnx(self) -> bool:
@@ -836,20 +839,19 @@ class ModelManager:
         Returns:
             Status dictionary
         """
-        overall_status = ModuleState.UNINITIALIZED
-        if self.initialized:
-             # Assume READY, check components below
-            overall_status = ModuleState.READY
-            
+        # Determine the status based on initialization state
+        current_status = ModuleState.READY if self.initialized else ModuleState.UNINITIALIZED
+        
         try:
             status_details = {
+                'status': current_status,
                 'initialized': self.initialized,
                 'model_type': self.model_type,
                 'model_size': self.model_size,
                 'language': self.language,
                 'acceleration': {
                     'enabled': self.enable_acceleration,
-                    'cuda_device': self.cuda_device,
+                    'cuda_device': 0, # Default to device 0
                     'tensorrt': self.use_tensorrt
                 }
             }
@@ -866,7 +868,9 @@ class ModelManager:
         
         except Exception as e:
             logger.error(f"Failed to get model status: {e}")
+            # Return an error status if an exception occurs during status retrieval
             return {
+                'status': ModuleState.ERROR,
                 'initialized': self.initialized,
                 'error': str(e)
             }
@@ -1249,7 +1253,7 @@ class STTEngine:
             self.config = config
             
             # Create model directory if it doesn't exist
-            model_path = config.get('model', {}).get('path', 'models/stt')
+            model_path = config.get('model_path', 'models/stt') 
             os.makedirs(model_path, exist_ok=True)
             
             # Track component initialization status
@@ -2013,5 +2017,3 @@ class STTEngine:
                 
             def correct_result(self, result):
                 return result  # No-op, just pass through
-        
-        return MinimalTermProcessor(config)

@@ -39,7 +39,7 @@ dependencies = [
     "torch>=2.0.0",
     "torchaudio>=2.0.0",
     "transformers>=4.30.0",
-    "onnxruntime-gpu>=1.15.0",
+    "onnxruntime>=1.15.0", # Changed from onnxruntime-gpu for Jetson compatibility
     "openai-whisper>=20231117",
     "pyannote.audio>=3.0.0",
     "speechbrain>=0.5.14",
@@ -50,6 +50,7 @@ dependencies = [
     "fastapi>=0.100.0",
     "uvicorn>=0.22.0",
     "websockets>=11.0.3",
+    "psutil>=5.9.0", # Added for ResourceMonitor
 ]
 
 [project.urls]

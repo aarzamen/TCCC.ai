@@ -23,12 +23,19 @@ from tccc.utils.config import Config
 from tccc.utils.logging import get_logger
 
 # Try to import transformers for real implementation
-try:
-    import torch
-    from transformers import AutoModelForCausalLM, AutoTokenizer, TextIteratorStreamer
-    TRANSFORMERS_AVAILABLE = True
-except ImportError:
-    TRANSFORMERS_AVAILABLE = False
+# print("DEBUG [mock_llm]: Importing torch & transformers...") # Add print for debugging
+# try:
+#     import torch
+#     from transformers import AutoModelForCausalLM, AutoTokenizer, TextIteratorStreamer
+#     TRANSFORMERS_AVAILABLE = True
+#     print("DEBUG [mock_llm]: torch & transformers imported.") # Add print for debugging
+# except ImportError:
+#     TRANSFORMERS_AVAILABLE = False
+#     print("INFO [mock_llm]: torch & transformers not available.") # Add print for debugging
+# except Exception as e:
+#     print(f"ERROR [mock_llm] importing torch/transformers: {e}\n{traceback.format_exc()}")
+#     TRANSFORMERS_AVAILABLE = False
+TRANSFORMERS_AVAILABLE = False # Assume not available for MVP / GGUF focus
 
 logger = get_logger(__name__)
 

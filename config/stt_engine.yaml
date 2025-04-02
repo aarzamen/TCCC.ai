@@ -26,7 +26,7 @@ model:
 # Diarization settings
 diarization:
   # Enable speaker diarization
-  enabled: true
+  enabled: false
   
   # Number of speakers (0 for auto-detection)
   num_speakers: 0
@@ -87,9 +87,6 @@ hardware:
   
   # CUDA stream configuration
   cuda_streams: 2
-  
-  # Memory limit in MB
-  memory_limit_mb: 4096
   
   # CPU threads for CPU-bound operations
   cpu_threads: 4

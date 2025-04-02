@@ -68,7 +68,7 @@ backup:
 # Schema configuration
 schema:
   # Enable schema validation
-  validate: true
+  validate: false  # Disabled: config/schemas/ directory does not exist
   
   # Auto-migrate schema changes
   auto_migrate: false
@@ -119,7 +119,7 @@ security:
   encryption_key_file: "config/security/encryption.key"
   
   # Hash sensitive data in queries
-  hash_sensitive_data: true
+  hash_sensitive_data: false # Disabled for MVP simplification
   
   # Salt for hashing (environment variable: TCCC_HASH_SALT)
   hash_salt: "${TCCC_HASH_SALT}"
@@ -133,7 +133,7 @@ security:
 # Retention configuration
 retention:
   # Enable data retention policies
-  enabled: true
+  enabled: false  # Disabled for MVP simplification
   
   # Default retention period in days
   default_period_days: 90

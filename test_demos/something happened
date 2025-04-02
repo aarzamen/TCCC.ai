@@ -1,0 +1,132 @@
+ama@ama-desktop:~$ '/home/ama/tccc-project/test_demos/tccc-demo-launcher.desktop' 
+bash: /home/ama/tccc-project/test_demos/tccc-demo-launcher.desktop: Permission denied
+ama@ama-desktop:~$ sudo '/home/ama/tccc-project/test_demos/tccc-demo-launcher.desktop' 
+[sudo] password for ama: 
+sudo: /home/ama/tccc-project/test_demos/tccc-demo-launcher.desktop: command not found
+ama@ama-desktop:~$ '/home/ama/tccc-project/test_demos/run_launcher.sh' 
+--- Wrapper: Activating Virtual Environment (/home/ama/tccc-project/venv/bin/activate) ---
+--- Wrapper: Launching Demo Launcher (/home/ama/tccc-project/test_demos/demo_launcher.py) using /home/ama/tccc-project/venv/bin/python ---
+Traceback (most recent call last):
+  File "/home/ama/tccc-project/test_demos/demo_launcher.py", line 42, in <module>
+    from inquirerpy import inquirer
+ModuleNotFoundError: No module named 'inquirerpy'
+
+--- Wrapper: Launcher finished with exit code: 1 ---
+Press Enter to close terminal.
+ama@ama-desktop:~$ '/home/ama/tccc-project/test_demos/demo_launcher.py' 
+Traceback (most recent call last):
+  File "/home/ama/tccc-project/test_demos/demo_launcher.py", line 42, in <module>
+    from inquirerpy import inquirer
+ModuleNotFoundError: No module named 'inquirerpy'
+ama@ama-desktop:~$ '/home/ama/tccc-project/test_demos/simple_audio_stt_demo.py' 
+bash: /home/ama/tccc-project/test_demos/simple_audio_stt_demo.py: Permission denied
+ama@ama-desktop:~$ sudo '/home/ama/tccc-project/test_demos/simple_audio_stt_demo.py' 
+sudo: /home/ama/tccc-project/test_demos/simple_audio_stt_demo.py: command not found
+ama@ama-desktop:~$ cd /home/ama/tccc-project/test_demos
+ama@ama-desktop:~/tccc-project/test_demos$ '/home/ama/tccc-project/test_demos/simple_audio_stt_demo.py' 
+bash: /home/ama/tccc-project/test_demos/simple_audio_stt_demo.py: Permission denied
+ama@ama-desktop:~/tccc-project/test_demos$ /home/ama/tccc-project/test_demos/run_launcher.sh
+--- Wrapper: Activating Virtual Environment (/home/ama/tccc-project/venv/bin/activate) ---
+--- Wrapper: Launching Demo Launcher (/home/ama/tccc-project/test_demos/demo_launcher.py) using /home/ama/tccc-project/venv/bin/python ---
+Traceback (most recent call last):
+  File "/home/ama/tccc-project/test_demos/demo_launcher.py", line 42, in <module>
+    from inquirerpy import inquirer
+ModuleNotFoundError: No module named 'inquirerpy'
+
+--- Wrapper: Launcher finished with exit code: 1 ---
+Press Enter to close terminal.
+ama@ama-desktop:~/tccc-project/test_demos$ run_launcher.sh
+bash: run_launcher.sh: command not found
+ama@ama-desktop:~/tccc-project/test_demos$ python3 simple_audio_stt_demo.py
+/home/ama/tccc-project/venv/lib/python3.10/site-packages/torchvision/datapoints/__init__.py:12: UserWarning: The torchvision.datapoints and torchvision.transforms.v2 namespaces are still Beta. While we do not expect major breaking changes, some APIs may still change according to user feedback. Please submit any feedback you may have in this issue: https://github.com/pytorch/vision/issues/6753, and you can also check out https://github.com/pytorch/vision/issues/7319 to learn more about the APIs that we suspect might involve future changes. You can silence this warning by calling torchvision.disable_beta_transforms_warning().
+  warnings.warn(_BETA_TRANSFORMS_WARNING)
+/home/ama/tccc-project/venv/lib/python3.10/site-packages/torchvision/transforms/v2/__init__.py:54: UserWarning: The torchvision.datapoints and torchvision.transforms.v2 namespaces are still Beta. While we do not expect major breaking changes, some APIs may still change according to user feedback. Please submit any feedback you may have in this issue: https://github.com/pytorch/vision/issues/6753, and you can also check out https://github.com/pytorch/vision/issues/7319 to learn more about the APIs that we suspect might involve future changes. You can silence this warning by calling torchvision.disable_beta_transforms_warning().
+  warnings.warn(_BETA_TRANSFORMS_WARNING)
+Attempting to load configuration from: /home/ama/tccc-project/config
+2025-04-01 19:09:29,839 - AudioSTTDemo - ERROR - Error loading configuration: Configuration file not found: /home/ama/tccc-project/config/audio_pipeline.yaml.yaml
+ama@ama-desktop:~/tccc-project/test_demos$ 
+
+
+
+19:17
+--- Wrapper: Activating Virtual Environment (/home/ama/tccc-project/venv/bin/activate) ---
+--- Wrapper: Launching Demo Launcher (/home/ama/tccc-project/test_demos/demo_launcher.py) using /home/ama/tccc-project/venv/bin/python ---
+Traceback (most recent call last):
+  File "/home/ama/tccc-project/test_demos/demo_launcher.py", line 42, in <module>
+    from inquirerpy import inquirer
+ModuleNotFoundError: No module named 'inquirerpy'
+
+--- Wrapper: Launcher finished with exit code: 1 ---
+Press Enter to close terminal.
+
+19:27
+ama@ama-desktop:~$ which python3
+/home/ama/tccc-project/venv/bin/python3
+ama@ama-desktop:~$ python3 -m pip show inquirerpy
+Name: inquirerpy
+Version: 0.3.4
+Summary: Python port of Inquirer.js (A collection of common interactive command-line user interfaces)
+Home-page: https://github.com/kazhala/InquirerPy
+Author: Kevin Zhuang
+Author-email: kevin7441@gmail.com
+License: MIT
+Location: /home/ama/tccc-project/venv/lib/python3.10/site-packages
+Requires: pfzy, prompt-toolkit
+Required-by: 
+ama@ama-desktop:~$ 
+
+19:30
+--- Wrapper: Activating Virtual Environment (/home/ama/tccc-project/venv/bin/activate) ---
+--- Wrapper: Set PYTHONPATH to: /home/ama/tccc-project/venv/lib/python3.10/site-packages ---
+--- Wrapper: Launching Demo Launcher (/home/ama/tccc-project/test_demos/demo_launcher.py) using /home/ama/tccc-project/venv/bin/python ---
+Traceback (most recent call last):
+  File "/home/ama/tccc-project/test_demos/demo_launcher.py", line 42, in <module>
+    from inquirerpy import inquirer
+ModuleNotFoundError: No module named 'inquirerpy'
+
+--- Wrapper: Launcher finished with exit code: 1 ---
+Press Enter to close terminal.
+
+19:56
+ama@ama-desktop:~$ cd /home/ama/tccc-project/test_demos
+ama@ama-desktop:~/tccc-project/test_demos$ python3 demo_launcher.py
+Traceback (most recent call last):
+  File "/home/ama/tccc-project/test_demos/demo_launcher.py", line 42, in <module>
+    from inquirerpy import inquirer
+ModuleNotFoundError: No module named 'inquirerpy'
+ama@ama-desktop:~/tccc-project/test_demos$ simple_audio_stt_demo.py
+bash: simple_audio_stt_demo.py: command not found
+ama@ama-desktop:~/tccc-project/test_demos$ python3 simple_audio_stt_demo.py
+/home/ama/tccc-project/venv/lib/python3.10/site-packages/torchvision/datapoints/__init__.py:12: UserWarning: The torchvision.datapoints and torchvision.transforms.v2 namespaces are still Beta. While we do not expect major breaking changes, some APIs may still change according to user feedback. Please submit any feedback you may have in this issue: https://github.com/pytorch/vision/issues/6753, and you can also check out https://github.com/pytorch/vision/issues/7319 to learn more about the APIs that we suspect might involve future changes. You can silence this warning by calling torchvision.disable_beta_transforms_warning().
+  warnings.warn(_BETA_TRANSFORMS_WARNING)
+/home/ama/tccc-project/venv/lib/python3.10/site-packages/torchvision/transforms/v2/__init__.py:54: UserWarning: The torchvision.datapoints and torchvision.transforms.v2 namespaces are still Beta. While we do not expect major breaking changes, some APIs may still change according to user feedback. Please submit any feedback you may have in this issue: https://github.com/pytorch/vision/issues/6753, and you can also check out https://github.com/pytorch/vision/issues/7319 to learn more about the APIs that we suspect might involve future changes. You can silence this warning by calling torchvision.disable_beta_transforms_warning().
+  warnings.warn(_BETA_TRANSFORMS_WARNING)
+Attempting to load configuration from: /home/ama/tccc-project/config
+2025-04-01 19:56:09,403 - AudioSTTDemo - ERROR - Error loading configuration: Configuration file not found: /home/ama/tccc-project/config/audio_pipeline.yaml.yaml
+ama@ama-desktop:~/tccc-project/test_demos$ 
+
+ls -la /home/ama/tccc-project/venv/lib/python3.10/site-packages/
+
+20:20
+ama@ama-desktop:~$ ls -la /home/ama/tccc-project/venv/lib/python3.10/site-packages/
+total 68
+drwxrwxr-x 16 ama ama 4096 Apr  1 20:18 .
+drwxrwxr-x  3 ama ama 4096 Apr  1 20:17 ..
+drwxrwxr-x  3 ama ama 4096 Apr  1 20:18 _distutils_hack
+-rw-rw-r--  1 ama ama  152 Apr  1 20:18 distutils-precedence.pth
+drwxrwxr-x  6 ama ama 4096 Apr  1 20:18 InquirerPy
+drwxrwxr-x  2 ama ama 4096 Apr  1 20:18 inquirerpy-0.3.4.dist-info
+drwxrwxr-x  3 ama ama 4096 Apr  1 20:18 pfzy
+drwxrwxr-x  2 ama ama 4096 Apr  1 20:18 pfzy-0.3.4.dist-info
+drwxrwxr-x  5 ama ama 4096 Apr  1 20:18 pip
+drwxrwxr-x  2 ama ama 4096 Apr  1 20:18 pip-22.0.2.dist-info
+drwxrwxr-x  6 ama ama 4096 Apr  1 20:18 pkg_resources
+drwxrwxr-x 18 ama ama 4096 Apr  1 20:18 prompt_toolkit
+drwxrwxr-x  2 ama ama 4096 Apr  1 20:18 prompt_toolkit-3.0.50.dist-info
+drwxrwxr-x  7 ama ama 4096 Apr  1 20:18 setuptools
+drwxrwxr-x  2 ama ama 4096 Apr  1 20:18 setuptools-59.6.0.dist-info
+drwxrwxr-x  3 ama ama 4096 Apr  1 20:18 wcwidth
+drwxrwxr-x  2 ama ama 4096 Apr  1 20:18 wcwidth-0.2.13.dist-info
+ama@ama-desktop:~$ 
+
+

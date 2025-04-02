@@ -1,0 +1,41 @@
+# Commands to find the correct Python path and inquirerpy location
+# Run these in the Jetson terminal where 'python demo_launcher.py' works.
+
+which python
+
+pip show inquirerpy
+
+# Copy the output of these commands and paste them back into the chat.
+
+
+
+terminal on 4th execution:
+Traceback (most recent call last):
+  File "/home/ama/tccc-project/test_demos/demo_launcher.py", line 42, in <module>
+    from inquirerpy import inquirer
+ModuleNotFoundError: No module named 'inquirerpy'
+\nScript finished or encountered an error. Press Enter to close terminal.
+
+and result of commands
+ama@ama-desktop:~$ which python
+/home/ama/tccc-project/venv/bin/python
+ama@ama-desktop:~$ 
+ama@ama-desktop:~$ which python
+/home/ama/tccc-project/venv/bin/python
+ama@ama-desktop:~$ pip show inquirerpy
+Name: inquirerpy
+Version: 0.3.4
+Summary: Python port of Inquirer.js (A collection of common interactive command-line user interfaces)
+Home-page: https://github.com/kazhala/InquirerPy
+Author: Kevin Zhuang
+Author-email: kevin7441@gmail.com
+License: MIT
+Location: /home/ama/.local/lib/python3.10/site-packages
+Requires: pfzy, prompt-toolkit
+Required-by: 
+ama@ama-desktop:~$ 
+
+
+
+
+

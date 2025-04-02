@@ -27,7 +27,7 @@ import torch
 # Utilities
 from tccc.utils.config import Config
 from tccc.utils.logging import get_logger
-from tccc.document_library import DocumentLibrary
+from tccc.document_library import DocumentLibrary 
 
 # Event schema
 from tccc.utils.event_schema import (
@@ -352,7 +352,7 @@ class LLMEngine:
         
         For this implementation, we'll create a simplified placeholder.
         """
-        # In a real implementation, we would do:
+        # In a real implementation, you would do:
         # from llama_cpp import Llama
         # model = Llama(
         #     model_path=f"{model_path}/model.gguf",
@@ -1364,7 +1364,11 @@ TREATMENT: Tourniquet, needle decompression, medications, fluids
 EVACUATION: Urgent surgical case"""
             }
             
-            # Use appropriate mock report based on type
+            # Use appropriate mock report based on typeconctoinnctuioenn cuttooeni tdntieuobneu u gdet.e o
+            bt uodg e.db
+            eubgu.g
+            .
+            
             report_content = mock_reports.get(report_type, "No report available for this type")
             
             result = {
@@ -1383,7 +1387,7 @@ class ContextIntegrator:
     Enhances analysis by integrating document library context.
     """
     
-    def __init__(self, document_library: DocumentLibrary, config: Dict[str, Any]):
+    def __init__(self, document_library: 'DocumentLibrary', config: Dict[str, Any]):
         """Initialize the context integrator.
         
         Args:
@@ -1414,25 +1418,27 @@ class ContextIntegrator:
             context_length = max_context_length if max_context_length is not None else self.max_context_length
             
             # Query document library with context length constraint
-            if hasattr(self.document_library, 'generate_llm_prompt'):
-                # Use the more advanced prompt generation which handles context length constraints
-                prompt = self.document_library.generate_llm_prompt(
+            if hasattr(self.document_library, 'search_documents'): # Basic check for DocumentLibrary interface
+                # Use the more advanced query method
+                results = self.document_library.search_documents(
                     query=query, 
                     limit=n_results,
                     max_context_length=context_length
                 )
                 
-                # Extract structured context from prompt (simplified implementation)
-                context = [{
-                    "text": prompt,
-                    "score": 1.0,
-                    "source": "Generated prompt",
-                    "document_id": "prompt"
-                }]
+                # Format results
+                context = []
+                for result in results.get("results", []):
+                    context.append({
+                        "text": result["text"],
+                        "score": result["score"],
+                        "source": result["metadata"].get("file_name", "Unknown source"),
+                        "document_id": result["document_id"]
+                    })
                 
                 return context
             
-            # Fall back to basic query if advanced prompt generation not available
+            # Fall back to basic query if advanced query method not available
             results = self.document_library.query(query, n_results=n_results)
             
             # Format results
@@ -1751,6 +1757,7 @@ class LLMAnalysis:
             
         except Exception as e:
             logger.error(f"Error emitting LLM analysis event: {e}")
+            logger.debug(f"Error details: {e}")
             self._emit_error_event(
                 error_code="EVENT_EMISSION_ERROR",
                 message=f"Error emitting LLM analysis event: {e}",
@@ -1834,20 +1841,23 @@ class LLMAnalysis:
             logger.error(f"Error emitting error event: {e}")
             return False
     
-    def set_document_library(self, document_library: DocumentLibrary) -> None:
-        """Set the DocumentLibrary dependency through dependency injection.
-        
-        Args:
-            document_library: DocumentLibrary instance
-        """
+    def set_dependency(self, name: str, instance: Any):
+        """Sets a dependency for the LLM Analysis module."""
+        logger.debug(f"Setting dependency '{name}' for LLMAnalysis")
+        if name == "document_library":
+            self.set_document_library(instance) 
+
+    def set_document_library(self, document_library):
+        """Set the DocumentLibrary dependency through dependency injection."""
+        logger.info("DocumentLibrary dependency set for LLMAnalysis")
         self.document_library = document_library
-        
-        # Initialize context integrator if we have config
-        if self.config:
-            self.context_integrator = ContextIntegrator(self.document_library, self.config)
-        
-        logger.info("Document library dependency set via injection")
-    
+        try:
+            self.context_integrator = ContextIntegrator(self.document_library, {})
+            logger.info("Context integrator initialized")
+        except Exception as ci_error:
+            logger.warning(f"Failed to initialize context integrator: {str(ci_error)}")
+            self.context_integrator = None 
+
     def initialize(self, config: Dict[str, Any]) -> bool:
         """Initialize the LLM analysis module with configuration.
         
@@ -1857,200 +1867,107 @@ class LLMAnalysis:
         Returns:
             True if initialization successful, False otherwise
         """
-        try:
-            # Use a copy of config to avoid modifying the original
-            if config is None:
-                logger.warning("No configuration provided, using default configuration")
-                config = {
-                    "model": {
-                        "primary": {
-                            "provider": "local",
-                            "name": "phi-2-mock",
-                            "path": "models/phi-2-instruct/"
-                        },
-                        "fallback": {
-                            "provider": "local",
-                            "name": "phi-2-mock"
-                        }
+        # Use a copy of config to avoid modifying the original
+        if config is None:
+            logger.warning("No configuration provided, using default configuration")
+            config = {
+                "model": {
+                    "primary": {
+                        "provider": "local",
+                        "name": "phi-2-mock",
+                        "path": "models/phi-2-instruct/"
                     },
-                    "hardware": {
-                        "enable_acceleration": False,
-                        "cuda_device": -1,
-                        "quantization": "none",
-                        "memory_limit_mb": 512
-                    },
-                    "caching": {
-                        "enabled": True,
-                        "type": "memory",
-                        "ttl_seconds": 3600,
-                        "max_size_mb": 512
-                    },
-                    "event_handling": {
-                        "enabled": True
+                    "fallback": {
+                        "provider": "local",
+                        "name": "phi-2-mock"
                     }
+                },
+                "hardware": {
+                    "enable_acceleration": False,
+                    "cuda_device": -1,
+                    "quantization": "none",
+                    "memory_limit_mb": 512
+                },
+                "caching": {
+                    "enabled": True,
+                    "type": "memory",
+                    "ttl_seconds": 3600,
+                    "max_size_mb": 512
+                },
+                "event_handling": {
+                    "enabled": True
                 }
-                
-            # Initialize event bus connection and create session ID
-            self.event_bus = self._get_event_bus()
-            self.session_id = f"llm_analysis_{int(time.time())}"
+            }
             
-            self.config = config
-            
-            # Initialize components with proper error handling
-            components_initialized = True
-            
-            # Initialize LLM engine with error handling
-            logger.info("Initializing LLM engine")
-            try:
-                self.llm_engine = LLMEngine(config)
-                llm_engine_status = self.llm_engine.get_status()
-                
-                # Check if any real models were loaded (not just placeholders)
-                primary_loaded = llm_engine_status.get('models', {}).get('primary', {}).get('loaded', False)
-                primary_is_placeholder = llm_engine_status.get('models', {}).get('primary', {}).get('placeholder', True)
-                
-                fallback_loaded = llm_engine_status.get('models', {}).get('fallback', {}).get('loaded', False)
-                fallback_is_placeholder = llm_engine_status.get('models', {}).get('fallback', {}).get('placeholder', True)
-                
-                if not primary_loaded and not fallback_loaded:
-                    logger.warning("No LLM models loaded successfully, functionality will be limited")
-                    components_initialized = False
-                elif primary_is_placeholder and fallback_is_placeholder:
-                    logger.warning("Only placeholder LLM models loaded, results will be simulated")
-                else:
-                    logger.info("LLM engine initialized successfully")
-            except Exception as llm_error:
-                logger.error(f"Failed to initialize LLM engine: {str(llm_error)}")
-                # Create a minimal LLM engine with placeholder functionality
-                self.llm_engine = self._create_minimal_llm_engine(config)
-                components_initialized = False
-            
-            # Initialize document library if integration enabled and not already set
-            policy_qa_enabled = config.get("policy_qa", {}).get("enabled", False)
-            if policy_qa_enabled and not self.document_library:
-                logger.info("Initializing document library integration")
-                # Note: This direct instantiation is maintained for backward compatibility
-                # Better to use set_document_library for new code
-                try:
-                    self.document_library = DocumentLibrary()
-                    try:
-                        # Try to load configuration from config manager
-                        from tccc.utils.config_manager import ConfigManager
-                        cfg_manager = ConfigManager()
-                        doc_lib_config = cfg_manager.load_config("document_library")
-                    except Exception as config_error:
-                        logger.warning(f"Failed to load document library config: {str(config_error)}")
-                        # Use default config
-                        doc_lib_config = {}
-                    
-                    doc_lib_result = self.document_library.initialize(doc_lib_config)
-                    if not doc_lib_result:
-                        logger.warning("Document library initialization returned False")
-                        components_initialized = False
-                    
-                    # Initialize context integrator
-                    try:
-                        self.context_integrator = ContextIntegrator(self.document_library, config)
-                        logger.info("Context integrator initialized")
-                    except Exception as ci_error:
-                        logger.warning(f"Failed to initialize context integrator: {str(ci_error)}")
-                        self.context_integrator = None
-                        components_initialized = False
-                except Exception as e:
-                    logger.warning(f"Failed to initialize document library: {str(e)}")
-                    self.document_library = None
-                    self.context_integrator = None
-                    components_initialized = False
-            
-            # Initialize entity extractor with error handling
-            try:
-                logger.info("Initializing medical entity extractor")
-                self.entity_extractor = MedicalEntityExtractor(self.llm_engine, config)
-                logger.info("Medical entity extractor initialized")
-            except Exception as ee_error:
-                logger.warning(f"Failed to initialize entity extractor: {str(ee_error)}")
-                # Create minimal entity extractor that returns empty results
-                self.entity_extractor = self._create_minimal_entity_extractor()
-                components_initialized = False
-            
-            # Initialize event sequencer (simple class, unlikely to fail)
-            try:
-                logger.info("Initializing temporal event sequencer")
-                self.event_sequencer = TemporalEventSequencer()
-                logger.info("Temporal event sequencer initialized")
-            except Exception as es_error:
-                logger.warning(f"Failed to initialize event sequencer: {str(es_error)}")
-                # Create minimal event sequencer
-                self.event_sequencer = self._create_minimal_event_sequencer()
-                components_initialized = False
-            
-            # Initialize report generator with error handling
-            try:
-                logger.info("Initializing report generator")
-                self.report_generator = ReportGenerator(self.llm_engine, config)
-                logger.info("Report generator initialized")
-            except Exception as rg_error:
-                logger.warning(f"Failed to initialize report generator: {str(rg_error)}")
-                # Create minimal report generator
-                self.report_generator = self._create_minimal_report_generator()
-                components_initialized = False
-            
-            # Initialize cache if enabled
-            cache_config = config.get("caching", {})
-            if cache_config.get("enabled", False):
-                logger.info("Initializing analysis cache")
-                self.cache = {}
-            else:
-                self.cache = {}  # Initialize empty cache anyway for consistency
-            
-            # Subscribe to transcription events if event handling is enabled
-            event_handling_enabled = config.get("event_handling", {}).get("enabled", True)
-            if event_handling_enabled:
-                success = self.subscribe_to_transcription_events()
-                if not success:
-                    logger.warning("Failed to subscribe to transcription events, will use direct method calls")
-                    # Don't mark components_initialized as False since this is an optional feature
-            
-            # Mark as initialized, even with limited functionality
-            self.initialized = True
-            
-            # Emit initialization event
-            try:
-                if event_handling_enabled and hasattr(self, "_emit_error_event"):
-                    self._emit_error_event(
-                        error_code="INIT_COMPLETE",
-                        message="LLM Analysis module initialized",
-                        severity=ErrorSeverity.INFO
-                    )
-            except Exception as event_error:
-                logger.warning(f"Failed to emit initialization event: {str(event_error)}")
-            
-            if components_initialized:
-                logger.info("LLM Analysis initialized successfully")
-            else:
-                logger.warning("LLM Analysis initialized with limited functionality")
-            
-            return components_initialized
+        # Initialize event bus connection and create session ID
+        self.event_bus = self._get_event_bus()
+        self.session_id = f"llm_analysis_{int(time.time())}"
         
-        except Exception as e:
-            logger.error(f"LLM analysis initialization failed: {str(e)}")
-            logger.debug(traceback.format_exc())
+        self.config = config
+        
+        # Initialize components with proper error handling
+        components_initialized = True
+        
+        # Initialize LLM engine with error handling
+        logger.info("Initializing LLM engine")
+        try:
+            self.llm_engine = LLMEngine(config)
+            llm_engine_status = self.llm_engine.get_status()
             
-            # Emit error event
-            try:
-                if hasattr(self, 'session_id') and self.session_id and hasattr(self, "_emit_error_event"):
-                    self._emit_error_event(
-                        error_code="INIT_FAILED",
-                        message=f"LLM Analysis initialization failed: {e}",
-                        severity=ErrorSeverity.CRITICAL
-                    )
-            except Exception:
-                # If error event emission fails, just log it
-                pass
+            # Check if any real models were loaded (not just placeholders)
+            primary_loaded = llm_engine_status.get('models', {}).get('primary', {}).get('loaded', False)
+            primary_is_placeholder = llm_engine_status.get('models', {}).get('primary', {}).get('placeholder', True)
             
-            # Set up minimal functioning state 
+            fallback_loaded = llm_engine_status.get('models', {}).get('fallback', {}).get('loaded', False)
+            fallback_is_placeholder = llm_engine_status.get('models', {}).get('fallback', {}).get('placeholder', True)
+            
+            # Simplified LLM Loading Check:
+            if not primary_loaded and not fallback_loaded:
+                # Only fail initialization if BOTH models fail to load
+                logger.warning("Neither primary nor fallback LLM model loaded. Functionality severely limited.")
+                components_initialized = False
+            elif not primary_loaded and fallback_loaded:
+                # Primary failed, but fallback loaded. Allow initialization to continue.
+                log_level = logging.WARNING if fallback_is_placeholder else logging.INFO
+                logger.log(log_level, "Primary LLM failed to load. Using fallback model.")
+                if fallback_is_placeholder:
+                    logger.warning("Fallback model is a placeholder, results will be simulated.")
+            elif primary_loaded:
+                # Primary model loaded successfully
+                logger.info("LLM engine initialized successfully (Primary loaded).")
+            
+            # If we get here, initialize the rest of the components
             try:
-                # Placeholder LLM engine
+                # Initialize other components normally
+                self.entity_extractor = MedicalEntityExtractor(self.llm_engine, config)
+                self.event_sequencer = TemporalEventSequencer()
+                self.report_generator = ReportGenerator(self.llm_engine, config)
+                
+                # Check for document library
+                if self.document_library:
+                    self.context_integrator = ContextIntegrator(self.document_library, config)
+                
+                # Subscribe to events if configured
+                if config.get("event_handling", {}).get("enabled", True):
+                    self.subscribe_to_transcription_events()
+                
+                # Mark as initialized
+                self.initialized = True
+                logger.info("LLM analysis module initialized successfully")
+                
+                return True
+            except Exception as e:
+                # Component initialization failed
+                logger.error(f"Failed to initialize LLM analysis components: {str(e)}")
+                self.initialized = False
+                return False
+                
+        except Exception as llm_error:
+            logger.error(f"Failed to initialize LLM engine: {str(llm_error)}")
+            
+            try:
+                # Create a minimal LLM engine with placeholder functionality
+                logger.debug(f"LLMAnalysis: Before _create_minimal_llm_engine, components_initialized={components_initialized}")
                 self.llm_engine = self._create_minimal_llm_engine(config or {})
                 
                 # Minimal components
@@ -2065,8 +1982,9 @@ class LLMAnalysis:
                 self.initialized = True
                 logger.warning("LLM analysis initialized with minimal functionality after error")
                 return True
-            except:
+            except Exception as e:
                 # Complete failure
+                logger.error(f"Failed to initialize even minimal components: {str(e)}")
                 self.initialized = False
                 return False
     
@@ -2316,12 +2234,6 @@ class LLMAnalysis:
                 logger.info("Using cached analysis results")
                 return cached_results
             
-        # Get context length constraints if available
-        max_context_length = None
-        if context and "max_context_length" in context:
-            max_context_length = context.get("max_context_length")
-            logger.info(f"Using provided context length constraint: {max_context_length}")
-            
         try:
             # Extract entities from transcription
             logger.info("Extracting medical entities from transcription")
@@ -2345,7 +2257,7 @@ class LLMAnalysis:
                 # Pass context length constraint if provided
                 enhanced_events = self.context_integrator.enhance_with_context(
                     sequenced_events,
-                    max_context_length=max_context_length
+                    max_context_length=context.get("max_context_length")
                 )
             else:
                 enhanced_events = sequenced_events
@@ -2417,52 +2329,75 @@ class LLMAnalysis:
             if self.llm_engine:
                 try:
                     llm_status = self.llm_engine.get_status()
+                    if isinstance(llm_status.get('status'), ModuleState):
+                        llm_status['status'] = llm_status['status'].name
                     status_details["llm_engine"] = llm_status
                     # If engine is in error state, reflect it in overall status
-                    if llm_status.get('status') == ModuleState.ERROR:
+                    if llm_status.get('status') == ModuleState.ERROR.name:
                         overall_status = ModuleState.ERROR
                 except Exception as engine_error:
                     logger.warning(f"Error getting LLM engine status: {engine_error}")
-                    status_details["llm_engine"] = {"status": "error", "error": str(engine_error)}
-                
+                    status_details["llm_engine"] = {"status": ModuleState.ERROR.name, "error": str(engine_error)}
+            
             # Add document library status if available
             if self.document_library:
                 try:
                     doc_lib_status = self.document_library.get_status()
-                    # Handle both possible formats of return value
-                    if isinstance(doc_lib_status.get('status'), ModuleState):
-                        doc_lib_module_state = doc_lib_status.get('status')
+                    doc_lib_module_state = doc_lib_status.get('status')
+                    if isinstance(doc_lib_module_state, ModuleState):
+                        doc_lib_module_state = doc_lib_module_state.name
                     else:
                         # Try to convert string to ModuleState if necessary
                         status_str = doc_lib_status.get('status', 'unknown')
                         try:
-                            doc_lib_module_state = getattr(ModuleState, status_str.upper()) 
+                            doc_lib_module_state = getattr(ModuleState, status_str.upper())
                         except (AttributeError, TypeError):
                             # Default to UNKNOWN if conversion fails
                             doc_lib_module_state = ModuleState.UNKNOWN
                     
                     status_details["document_library"] = {
-                        "status": doc_lib_module_state,  # Store the actual enum value
+                        "status": doc_lib_module_state,  # Store the enum name (string)
                         "initialized": doc_lib_module_state in (ModuleState.READY, ModuleState.ACTIVE),
                         "documents": doc_lib_status.get("document_count", 0)
                     }
                     # If doc lib is in error state, reflect it
-                    if doc_lib_module_state == ModuleState.ERROR:
+                    if doc_lib_module_state == ModuleState.ERROR.name:
                         overall_status = ModuleState.ERROR
                 except Exception as doc_lib_error:
                     logger.warning(f"Error getting document library status: {doc_lib_error}")
-                    status_details["document_library"] = {"status": ModuleState.ERROR, "error": str(doc_lib_error)}
-
+                    status_details["document_library"] = {"status": ModuleState.ERROR.name, "error": str(doc_lib_error)}
+            
             # Return the full status dict with overall status as the primary status key
             return {
-                "status": overall_status,  # This is the key the verification script checks
+                "status": overall_status.name,  # Return enum name (string)
                 **status_details  # Include all other details
             }
             
         except Exception as e:
             logger.error(f"Error getting LLMAnalysis status: {e}")
             return {
-                "status": ModuleState.ERROR,
+                "status": ModuleState.ERROR.name, # Return enum name (string)
                 "initialized": self.initialized,
                 "error": str(e)
             }
+    
+    def shutdown(self):
+        """Shutdown the LLM analysis module and release resources."""
+        logger.info("Shutting down LLM Analysis module")
+        # In the future, add logic here to explicitly release LLM models,
+        # stop background threads, or clean up other resources.
+        if hasattr(self, 'llm_engine') and self.llm_engine and hasattr(self.llm_engine, 'shutdown'):
+            try:
+                self.llm_engine.shutdown()
+                logger.info("LLM engine shutdown successfully.")
+            except Exception as e:
+                logger.error(f"Error shutting down LLM engine: {e}")
+
+        if hasattr(self, 'document_library') and self.document_library and hasattr(self.document_library, 'shutdown'):
+            try:
+                self.document_library.shutdown()
+                logger.info("Document library shutdown successfully.")
+            except Exception as e:
+                logger.error(f"Error shutting down document library: {e}")
+                
+        logger.info("LLM Analysis module shutdown complete")

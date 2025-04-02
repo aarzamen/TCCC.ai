@@ -1,0 +1,11 @@
+# Guide to run demo_launcher.py from terminal using default python3
+
+# 1. Navigate to the test_demos directory:
+cd /home/ama/tccc-project/test_demos
+
+# 2. Run the launcher script using the system's default python3:
+#    (This relies on inquirerpy being installed in ~/.local/lib/python3.10/site-packages)
+python3 demo_launcher.py
+
+# 3. The TUI menu should appear. Select a demo to run or Ctrl+C to exit.
+#    Output from the demo will be logged to a file in this directory.
