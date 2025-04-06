@@ -188,21 +188,36 @@ class MicrophoneSource(AudioSource):
             
             logger.info(f"Started microphone capture (device {self.device_id})")
             
+            logger.debug(f"Capture loop starting for {self.name}. is_running: {self.is_running}") # ADDED
             while self.is_running:
                 try:
+                    logger.debug(f"Attempting to read {self.chunk_size} frames...") # ADDED
                     # Read audio chunk
                     data = stream.read(self.chunk_size, exception_on_overflow=False)
+                    data_len = len(data) # ADDED
+                    logger.debug(f"Read {data_len} bytes of audio data.") # ADDED
+
+                    if data_len == 0: # ADDED Check for empty read
+                        logger.warning("stream.read() returned 0 bytes. Sleeping briefly.") # ADDED
+                        time.sleep(0.01) # ADDED
+                        continue # ADDED
                     
                     # Convert to numpy array
                     audio_data = np.frombuffer(data, dtype=self.dtype)
+                    logger.debug(f"Converted to numpy array shape: {audio_data.shape}") # ADDED
                     
                     # Pass to callback
                     if self.data_callback:
+                        logger.debug("Calling data callback...") # ADDED
                         self.data_callback(audio_data)
+                        logger.debug("Data callback returned.") # ADDED
+                    else: # ADDED
+                        logger.warning("No data callback registered for microphone source.") # ADDED
                         
                 except Exception as e:
                     if self.is_running:  # Only log if we're supposed to be running
-                        logger.error(f"Error capturing from microphone: {e}")
+                        # Use logger.exception to include traceback
+                        logger.exception(f"Error capturing from microphone (device {self.device_id})") # CHANGED to exception
                         time.sleep(0.1)  # Avoid tight loop in case of repeated errors
             
             # Clean up
@@ -1461,15 +1476,11 @@ class AudioPipeline:
         logger.debug("AudioPipeline.__init__: Entering")
         try:
             # Ensure self.config is always a Config object
-            raw_config_dict = config or {}
-            self.config = Config(raw_config_dict) # Wrap the dict
+            self.config = config or {}
             self.system = None # Keep system placeholder
-            logger.debug(f"AudioPipeline.__init__: Config object created from: {raw_config_dict}")
-            logger.debug(f"AudioPipeline.__init__: Raw config check: {self.config.get_raw_config()}") # Now this should work
-
+            logger.debug(f"AudioPipeline.__init__: Config dictionary assigned: {self.config}")
+            
             # Get sample rate from config object
-            # Assuming Config class allows accessing nested keys like this, or adjust if needed.
-            # Since TCCCSystem passes the 'audio_pipeline' sub-dict, simple key access should work.
             self.sample_rate = self.config.get('sample_rate', 16000)
             logger.debug(f"AudioPipeline.__init__: Sample rate set to {self.sample_rate}")
 
@@ -1484,7 +1495,9 @@ class AudioPipeline:
 
             # Internal state
             self.is_running = False
-            self.audio_lock = threading.Lock()
+            logger.debug("AudioPipeline.__init__: ===> About to create threading.Lock...")
+            self.audio_lock = threading.Lock() # Restored
+            logger.debug("AudioPipeline.__init__: ===> Created threading.Lock.") # Adjusted log
             self.active_source = None
 
             # Event Bus integration
@@ -1492,89 +1505,17 @@ class AudioPipeline:
             logger.debug(f"AudioPipeline.__init__: Event bus obtained from system: {self.event_bus}")
 
             logger.info("AudioPipeline initialized successfully.")
-            self.status = ModuleState.IDLE
+            # Assign the correct initial state
+            self.status = ModuleState.READY
         except Exception as e:
+            # Use error logging that is compatible with ContextLogger if exception is not available
             logger.exception("AudioPipeline.__init__: Exception during initialization")
             self.status = ModuleState.ERROR
             raise # Re-raise the exception so TCCCSystem knows init failed
         finally:
-            logger.debug("AudioPipeline.__init__: Exiting")
-            
-    
-    def _initialize_sources(self):
-        """Initialize audio sources based on configuration."""
-        logger.debug("AudioPipeline._initialize_sources: Entering")
-        io_config = self.config.get('io', {})
-        
-        if 'input_sources' not in io_config:
-            logger.warning("AudioPipeline._initialize_sources: No input sources defined in configuration.")
-            return
+            logger.debug("AudioPipeline.__init__: Exiting __init__ method (finally block).")
 
-        sources_config = io_config.get('input_sources', [])
-        
-        if not isinstance(sources_config, list):
-            logger.error(f"AudioPipeline._initialize_sources: Expected sources_config to be a list, but got {type(sources_config)}. Skipping.")
-            return
-
-        logger.debug(f"AudioPipeline._initialize_sources: Type of sources_config is {type(sources_config)}")
-        
-        logger.debug(f"AudioPipeline._initialize_sources: Found {len(sources_config)} sources in config")
-        
-        if not sources_config:
-            logger.warning("AudioPipeline._initialize_sources: No input sources defined in configuration.")
-            return
-
-        logger.debug(f"AudioPipeline._initialize_sources: io_config = {io_config}") # Inspect io_config
-        logger.debug(f"AudioPipeline._initialize_sources: sources_config = {sources_config}") # Inspect sources_config
-        
-        for source_config in sources_config: # Iterate through the list of source dicts
-            if not isinstance(source_config, dict):
-                logger.error(f"AudioPipeline._initialize_sources: Expected source_config to be a dict, but got {type(source_config)}. Skipping.")
-                continue
-                
-            source_name = source_config.get('name')
-            source_type = source_config.get('type')
-            logger.debug(f"AudioPipeline._initialize_sources: Processing source '{source_name}' of type '{source_type}'")
-
-            if not source_name or not source_type:
-                logger.warning(f"AudioPipeline._initialize_sources: Skipping source with missing name or type: {source_config}")
-                continue
-                
-            try:
-                if source_type == 'pyaudio':
-                    source = PyAudioSource(config=self.config, source_config=source_config, system=self.system)
-                elif source_type == 'sounddevice':
-                    source = SoundDeviceSource(config=self.config, source_config=source_config, system=self.system)
-                elif source_type == 'file':
-                    source = FileSource(config=self.config, source_config=source_config, system=self.system)
-                else:
-                    logger.warning(f"AudioPipeline._initialize_sources: Unsupported source type '{source_type}' for source '{source_name}'")
-                    continue
-                    
-                self.sources[source_name] = source
-                logger.info(f"AudioPipeline._initialize_sources: Initialized source '{source_name}' ({source_type})")
-                
-            except Exception as e:
-                 logger.exception(f"AudioPipeline._initialize_sources: Failed to initialize source '{source_name}': {e}")
-
-        # Set default source if defined
-        default_input_name = io_config.get('default_input')
-        if default_input_name and default_input_name in self.sources:
-            self.active_source = self.sources[default_input_name]
-            logger.info(f"AudioPipeline._initialize_sources: Set active source to '{default_input_name}'")
-        elif self.sources:
-            # Fallback to the first initialized source if default is not set or invalid
-            first_source_name = list(self.sources.keys())[0]
-            self.active_source = self.sources[first_source_name]
-            logger.warning(f"AudioPipeline._initialize_sources: Default input '{default_input_name}' not found or invalid. Falling back to first available source: '{first_source_name}'")
-        else:
-             logger.error("AudioPipeline._initialize_sources: No audio sources were successfully initialized.")
-             self.status = ModuleState.ERROR # Critical if no sources
-             
-        logger.debug("AudioPipeline._initialize_sources: Exiting")
-
-
-    def initialize(self, config: Dict[str, Any]) -> bool:
+    async def initialize(self, config: Dict[str, Any]) -> bool:
         """
         Initialize audio pipeline with configuration.
         
@@ -1591,12 +1532,6 @@ class AudioPipeline:
             # Assign config early
             self.config = config
             
-            # --- TEMPORARILY BYPASS AudioProcessor --- 
-            print("DEBUG: AudioPipeline.initialize - SKIPPING AudioProcessor creation") # Added print
-            # self.audio_processor = AudioProcessor(config) # <-- Commented out
-            self.audio_processor = None # <-- Added placeholder
-            # --- END TEMPORARY BYPASS --- 
-            
             # Determine number of input channels based on config
             io_config = config.get('io', {})
             sources_config = io_config.get('input_sources', [])
@@ -1609,6 +1544,7 @@ class AudioPipeline:
             source_class_map = {
                 "sounddevice": MicrophoneSource, # Map sounddevice to MicrophoneSource for now
                 "microphone": MicrophoneSource,
+                "pyaudio": MicrophoneSource,    # Add mapping for pyaudio type
                 "file": FileSource,
                 # "network": NetworkSource, # Add if NetworkSource exists and is needed
             }

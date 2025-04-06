@@ -17,6 +17,8 @@ from dataclasses import dataclass, field
 from collections import deque
 from pathlib import Path
 import traceback
+import asyncio
+import queue
 
 try:
     import torch
@@ -663,7 +665,7 @@ class ModelManager:
         
         try:
             import whisper
-            
+        
             # Ensure audio is the right format (float32)
             if audio.dtype != np.float32:
                 # If int16, explicitly convert to float32 and normalize
@@ -672,59 +674,57 @@ class ModelManager:
                 else:
                     # For other types, convert to float32
                     audio = audio.astype(np.float32)
-                    
+                
                 # Ensure values are within [-1.0, 1.0]
                 if np.abs(audio).max() > 1.0:
                     audio = audio / np.abs(audio).max()
             
             # Ensure the sample rate is 16kHz (Whisper requirement)
             # If we had resampling code here we would use it, but for now we assume 16kHz
-            
-            # Use Whisper's built-in transcription with explicit timeout
+        
+            # --- MODIFICATION: Always use simpler transcription settings to reduce load ---
+            logger.debug("_transcribe_with_torch: Forcing simple transcription settings (beam_size=1, no timestamps)")
             try:
-                whisper_result = self.model.transcribe(
+                # Use a simpler approach without beam search or timestamps
+                simple_text = self.model.transcribe(
                     audio,
                     language=self.language,
-                    task="transcribe",
-                    beam_size=self.beam_size,
                     temperature=0.0,
-                    word_timestamps=config.word_timestamps,
-                    fp16=False  # Force FP32 to avoid GPU-specific issues
-                )
-            except RuntimeError as e:
-                # If there's a specific torch error, try again with a simpler approach
-                logger.warning(f"Initial PyTorch transcription failed: {e}, trying simpler approach")
-                # Use a simpler approach without beam search or timestamps
+                    fp16=False,
+                    beam_size=1,  # Simple beam size
+                    word_timestamps=False  # No timestamps
+                )["text"]
+            
                 whisper_result = {
-                    "text": self.model.transcribe(
-                        audio,
-                        language=self.language,
-                        temperature=0.0,
-                        fp16=False,
-                        beam_size=1,  # Simple beam size
-                        word_timestamps=False  # No timestamps
-                    )["text"],
+                    "text": simple_text,
                     "segments": [
                         {
-                            "text": self.model.transcribe(audio, language=self.language, fp16=False)["text"],
+                            "text": simple_text, # Reuse transcribed text
                             "start": 0.0,
                             "end": len(audio) / 16000.0,
-                            "confidence": 0.8
+                            "confidence": 0.8, # Assign default confidence
+                            "words": [] # Empty words list as timestamps are off
                         }
                     ],
                     "language": self.language
                 }
-            
+                logger.debug(f"_transcribe_with_torch: Simple transcription successful. Text: '{simple_text[:50]}...' ")
+            except Exception as e:
+                 logger.exception(f"_transcribe_with_torch: Simple transcription attempt FAILED: {e}")
+                 # Return empty result on failure
+                 return TranscriptionResult(text="", is_partial=False)
+            # --- END MODIFICATION ---
+
             # Extract text and segments
             text = whisper_result["text"]
-            
+        
             # Create TranscriptionResult
             result = TranscriptionResult(
                 text=text,
                 is_partial=False,
-                language=whisper_result.get("language", self.language)
+                language=whisper_result.get('language', 'en')
             )
-            
+        
             # Process segments
             for i, segment in enumerate(whisper_result["segments"]):
                 # Create a TranscriptionSegment
@@ -734,22 +734,11 @@ class ModelManager:
                     end_time=segment["end"],
                     confidence=segment.get("confidence", 0.8)
                 )
-                
-                # Add words if available
-                if "words" in segment and config.word_timestamps:
-                    for word_info in segment["words"]:
-                        word = Word(
-                            text=word_info["word"],
-                            start_time=word_info["start"],
-                            end_time=word_info["end"],
-                            confidence=word_info.get("confidence", 0.8)
-                        )
-                        ts_segment.words.append(word)
-                
+            
                 result.segments.append(ts_segment)
-            
+        
             return result
-            
+        
         except Exception as e:
             logger.error(f"PyTorch transcription error: {e}")
             return TranscriptionResult(text="", is_partial=False)
@@ -1193,34 +1182,69 @@ class STTEngine:
     Speech-to-Text Engine implementation.
     """
     
-    def __init__(self):
+    def __init__(self, config: Optional[Dict[str, Any]] = None):
         """Initialize the STT engine."""
-        self.initialized = False
-        self.config = None
-        self.model_manager = None
-        self.diarizer = None
-        self.term_processor = None
-        
-        # Streaming context
-        self.context = ""
-        self.context_max_length = 1000
-        
-        # Recent audio buffer for streaming
-        self.audio_buffer = deque(maxlen=100)
-        
-        # Recent transcriptions
-        self.recent_segments = deque(maxlen=10)
-        
-        # Performance metrics
-        self.metrics = {
-            'total_audio_seconds': 0,
-            'total_processing_time': 0,
-            'transcript_count': 0,
-            'error_count': 0,
-            'avg_confidence': 0
-        }
-    
-    def initialize(self, config: Dict[str, Any]) -> bool:
+        logger.debug("STTEngine.__init__: Entering constructor")
+        try:
+            logger.debug("STTEngine.__init__: Initializing base attributes...")
+            self.config = config or {} # Store the passed config or use an empty dict
+            logger.debug(f"STTEngine.__init__: Config assigned: {self.config}") # Log assigned config
+            self.initialized = False
+            self.model_manager = None
+            self.diarizer = None
+            self.term_processor = None
+            self.status = ModuleState.INITIALIZING # Set initial status
+            self._tccc_system_ref = None # Reference to TCCCSystem for callbacks
+            logger.debug("STTEngine.__init__: Base attributes initialized.")
+            
+            # --- ADDED: Queue and Worker Thread setup ---
+            logger.debug("STTEngine.__init__: Initializing audio queue and worker thread components...")
+            self.audio_queue = queue.Queue()
+            self._worker_thread = None
+            self._stop_event = threading.Event()
+            logger.debug("STTEngine.__init__: Queue and worker components initialized.")
+            # --- END ADDED ---
+
+            # Streaming context
+            logger.debug("STTEngine.__init__: Initializing streaming context...")
+            self.context = ""
+            self.context_max_length = 1000
+            logger.debug("STTEngine.__init__: Streaming context initialized.")
+            
+            # Recent audio buffer for streaming
+            logger.debug("STTEngine.__init__: Creating audio buffer deque...")
+            self.audio_buffer = deque(maxlen=100)
+            logger.debug("STTEngine.__init__: Audio buffer deque created.")
+            
+            # Recent transcriptions
+            logger.debug("STTEngine.__init__: Creating recent segments deque...")
+            self.recent_segments = deque(maxlen=10)
+            logger.debug("STTEngine.__init__: Recent segments deque created.")
+            
+            # Performance metrics
+            logger.debug("STTEngine.__init__: Initializing metrics dictionary...")
+            self.metrics = {
+                'total_audio_seconds': 0,
+                'total_processing_time': 0,
+                'transcript_count': 0,
+                'error_count': 0,
+                'avg_confidence': 0
+            }
+            logger.debug("STTEngine.__init__: Metrics dictionary initialized.")
+
+            logger.debug("STTEngine.__init__: Constructor finished successfully.")
+            # Note: Actual initialization (model loading etc.) happens in the async initialize method
+            # We don't set status to IDLE here, as async init needs to run first.
+
+        except Exception as e:
+            logger.error(f"STTEngine.__init__: CRITICAL FAILURE DURING __init__: {e}\n{traceback.format_exc()}")
+            self.status = ModuleState.ERROR # Ensure status reflects error
+            # Optional: Re-raise if needed, but logging might be sufficient for __init__ failure
+            # raise
+        finally:
+            logger.debug("STTEngine.__init__: Exiting constructor (finally block)")
+            
+    async def initialize(self, config: Dict[str, Any]) -> bool:
         """
         Initialize the STT engine with configuration.
         
@@ -1336,115 +1360,111 @@ class STTEngine:
             except Exception as e:
                 logger.warning(f"Failed to subscribe to audio events: {e}")
                 
-            # Return the actual initialization status
-            return components_initialized
-        
+            # Start the background processing worker thread
+            if self._worker_thread is None or not self._worker_thread.is_alive():
+                logger.info("STTEngine.initialize: Starting STT processing worker thread...")
+                self._stop_event.clear()
+                self._worker_thread = threading.Thread(target=self._processing_loop, daemon=True, name="STTWorkerThread")
+                self._worker_thread.start()
+                logger.info("STTEngine.initialize: STT processing worker thread started.")
+            else:
+                logger.warning("STTEngine.initialize: STT processing worker thread already running.")
+
+            # Final status update
+            self.status = ModuleState.IDLE
+            return True
+
         except Exception as e:
             logger.error(f"Failed to initialize STT Engine: {e}")
-            
-            # Set up minimal functioning state
-            try:
-                logger.warning("Setting up minimal STT Engine after initialization error")
-                # Mock components
-                self.model_manager = self._create_minimal_model_manager(config or {})
-                self.diarizer = self._create_minimal_diarizer(config or {})
-                self.term_processor = self._create_minimal_term_processor(config or {})
-                
-                # Default context length
-                self.context_max_length = 60 * 16000
-                
-                # Mark as initialized with limited functionality
-                self.initialized = True
-                logger.warning("STT Engine initialized with minimal functionality after error")
-                return True
-            except:
-                # Complete failure
-                self.initialized = False
-                return False
+            self.status = ModuleState.ERROR
+            return False
     
-    def transcribe_segment(self, audio: np.ndarray, metadata: Dict[str, Any] = None) -> Dict[str, Any]:
-        """
-        Transcribe audio segment.
-        
-        Args:
-            audio: Audio data as numpy array
-            metadata: Additional metadata for transcription
-            
-        Returns:
-            Dictionary with transcription result
-        """
+    def set_system_reference(self, system_ref):
+        """Store a reference to the TCCCSystem instance for scheduling callbacks."""
+        logger.debug("STTEngine.set_system_reference: Setting TCCCSystem reference.")
+        self._tccc_system_ref = system_ref
+
+    def enqueue_audio(self, audio_data: np.ndarray, metadata: Dict[str, Any], event_context: Dict[str, Any]):
+        """Add audio data and context to the processing queue."""
         if not self.initialized:
-            logger.error("STT Engine not initialized")
-            return {'error': 'STT Engine not initialized', 'text': ''}
-        
+            logger.warning("STTEngine not initialized, cannot enqueue audio.")
+            return
+            
         try:
-            # Track performance
-            start_time = time.time()
-            
-            # Update audio buffer for context
-            if len(audio) > 0:
-                self.audio_buffer.append(audio)
-            
-            # Parse metadata
-            if metadata is None:
-                metadata = {}
-            
-            is_partial = metadata.get('is_partial', False)
-            include_diarization = metadata.get('diarization', self.diarizer.enabled)
-            
-            # Process audio
-            audio_duration = len(audio) / 16000  # Assuming 16kHz sample rate
-            
-            # Create transcription configuration
-            transcription_config = self._create_transcription_config(metadata)
-            
-            # Transcribe audio
-            result = self.model_manager.transcribe(audio, transcription_config)
-            
-            # Perform diarization if enabled
-            if include_diarization and not is_partial:
-                diarization = self.diarizer.diarize(audio)
-                self._apply_diarization(result, diarization)
-            
-            # Apply medical terminology correction
-            result = self.term_processor.correct_result(result)
-            
-            # Update context
-            if result.text and not is_partial:
-                self._update_internal_context(result.text)
-            
-            # Store segment for context
-            if not is_partial:
-                self.recent_segments.append(result)
-            
-            # Track performance metrics
-            processing_time = time.time() - start_time
-            
-            self.metrics['total_audio_seconds'] += audio_duration
-            self.metrics['total_processing_time'] += processing_time
-            self.metrics['transcript_count'] += 1
-            
-            # Calculate average confidence
-            avg_confidence = sum(segment.confidence for segment in result.segments) / len(result.segments) if result.segments else 0
-            self.metrics['avg_confidence'] = (self.metrics['avg_confidence'] * (self.metrics['transcript_count'] - 1) + avg_confidence) / self.metrics['transcript_count']
-            
-            # Convert result to dictionary
-            result_dict = self._result_to_dict(result)
-            
-            # Add performance metrics
-            result_dict['metrics'] = {
-                'audio_duration': audio_duration,
-                'processing_time': processing_time,
-                'real_time_factor': processing_time / audio_duration if audio_duration > 0 else 0
-            }
-            
-            return result_dict
-            
+            # logger.debug(f"STTEngine.enqueue_audio: Queuing audio chunk (seq {event_context.get('sequence', 'N/A')}) for processing.")
+            self.audio_queue.put((audio_data, metadata, event_context))
         except Exception as e:
-            logger.error(f"Transcription error: {e}")
-            self.metrics['error_count'] += 1
-            return {'error': str(e), 'text': ''}
-    
+            logger.exception(f"STTEngine.enqueue_audio: Failed to queue audio chunk: {e}")
+
+    def _processing_loop(self):
+        """Worker thread method to process audio chunks from the queue sequentially."""
+        logger.info("STT Worker Thread: Starting processing loop.")
+        
+        while not self._stop_event.is_set():
+            try:
+                # Wait for an item from the queue
+                audio_data, metadata, event_context = self.audio_queue.get(timeout=1)
+                sequence = event_context.get('sequence', 'N/A')
+                # logger.debug(f"STT Worker Thread: Dequeued audio chunk (seq {sequence}). Starting transcription...")
+                
+                # Perform synchronous transcription
+                transcription_result = self.transcribe_segment(audio_data, metadata)
+                # logger.debug(f"STT Worker Thread: Transcription finished for seq {sequence}.")
+                
+                # Check if transcription is valid and has text
+                if transcription_result and not transcription_result.get('error') and transcription_result.get('text', '').strip():
+                    logger.info(f"STT Worker Thread: Transcription successful (seq {sequence}). Text: '{transcription_result.get('text', '')[:50]}...' Scheduling event processing.")
+                    
+                    # Convert result to standard event format using the adapter
+                    try:
+                        transcription_event = STTEngineAdapter.convert_transcription_to_event(
+                            transcription_result, event_context
+                        )
+                    except Exception as adapter_error:
+                        logger.exception(f"STT Worker Thread: Error converting transcription using STTEngineAdapter (seq {sequence}): {adapter_error}")
+                        continue # Skip processing this event further
+                        
+                    # Schedule the process_event coroutine on the main event loop
+                    if self._tccc_system_ref and hasattr(self._tccc_system_ref, '_main_event_loop') and self._tccc_system_ref._main_event_loop:
+                        if self._tccc_system_ref._main_event_loop.is_running():
+                            future = asyncio.run_coroutine_threadsafe(
+                                self._tccc_system_ref.process_event(transcription_event),
+                                self._tccc_system_ref._main_event_loop
+                            )
+                            
+                            # Optional: Add callback to future to log result/errors after execution
+                            def log_event_result(f):
+                                try:
+                                    result = f.result()
+                                    # logger.debug(f"STT Worker Thread: Main loop processed transcription event (seq {sequence}). Result: {result}")
+                                except Exception as e_future:
+                                    logger.error(f"STT Worker Thread: Error processing transcription event in main loop (seq {sequence}): {e_future}")
+                            
+                            future.add_done_callback(log_event_result)
+                        else:
+                            logger.error(f"STT Worker Thread: Main event loop is not running. Cannot schedule event processing for seq {sequence}.")
+                    else:
+                         logger.error(f"STT Worker Thread: TCCCSystem reference or main event loop not available. Cannot schedule event processing for seq {sequence}.")
+                         
+                elif transcription_result and transcription_result.get('error'):
+                     logger.error(f"STT Worker Thread: Transcription failed with error (seq {sequence}): {transcription_result['error']}")
+                     # Optionally emit an error event here?
+                     
+                else:
+                    # No transcription text (silence or VAD filter?)
+                    # logger.debug(f"STT Worker Thread: No transcription text returned for seq {sequence}.")
+                    pass # Just continue to the next chunk
+                    
+            except queue.Empty:
+                # Timeout waiting for queue item, just loop again
+                continue
+            except Exception as e:
+                logger.exception(f"STT Worker Thread: Unexpected error in processing loop: {e}")
+                # Optional: short sleep to prevent rapid looping on persistent errors
+                time.sleep(0.1)
+                
+        logger.info("STT Worker Thread: Stop event received. Exiting processing loop.")
+
     def update_context(self, context: str) -> bool:
         """
         Update context for improved transcription accuracy.
@@ -1466,293 +1486,106 @@ class STTEngine:
         except Exception as e:
             logger.error(f"Failed to update context: {e}")
             return False
-    
-    def _update_internal_context(self, text: str) -> None:
+
+    def transcribe_segment(self, audio: np.ndarray, metadata: Dict[str, Any] = None) -> Dict[str, Any]:
         """
-        Update internal context with new text.
+        Transcribe audio segment.
         
         Args:
-            text: New text to add to context
-        """
-        current_context = self.context + " " + text
-        if len(current_context) > self.context_max_length:
-            current_context = current_context[-self.context_max_length:]
-        
-        self.context = current_context.strip()
-    
-    def _create_transcription_config(self, metadata: Dict[str, Any]) -> TranscriptionConfig:
-        """
-        Create transcription configuration from metadata.
-        
-        Args:
-            metadata: Metadata dictionary
+            audio: Audio data as numpy array
+            metadata: Additional metadata for transcription
             
         Returns:
-            TranscriptionConfig object
+            Dictionary with transcription result
         """
-        # Get transcription settings from config
-        transcription_config = self.config.get('transcription', {})
-        
-        # Create config object
-        config = TranscriptionConfig(
-            confidence_threshold=transcription_config.get('confidence_threshold', 0.6),
-            word_timestamps=transcription_config.get('word_timestamps', True),
-            include_punctuation=transcription_config.get('include_punctuation', True),
-            include_capitalization=transcription_config.get('include_capitalization', True),
-            format_numbers=transcription_config.get('format_numbers', True),
-            segment_length=transcription_config.get('segment_length', 30)
-        )
-        
-        # Override with metadata if provided
-        if 'confidence_threshold' in metadata:
-            config.confidence_threshold = metadata['confidence_threshold']
-        if 'word_timestamps' in metadata:
-            config.word_timestamps = metadata['word_timestamps']
-        if 'include_punctuation' in metadata:
-            config.include_punctuation = metadata['include_punctuation']
-        if 'include_capitalization' in metadata:
-            config.include_capitalization = metadata['include_capitalization']
-        if 'format_numbers' in metadata:
-            config.format_numbers = metadata['format_numbers']
-        
-        return config
-    
-    def _apply_diarization(self, result: TranscriptionResult, diarization: Dict[str, Any]) -> None:
-        """
-        Apply diarization results to transcription.
-        
-        Args:
-            result: TranscriptionResult to update
-            diarization: Diarization results
-        """
-        # Process each segment
-        for segment in result.segments:
-            segment_center = (segment.start_time + segment.end_time) / 2
+        if not self.initialized:
+            logger.error("STT Engine not initialized")
+            return {'error': 'STT Engine not initialized', 'text': ''}
             
-            # Find matching diarization segment
-            for dia_segment in diarization['segments']:
-                if dia_segment['start'] <= segment_center <= dia_segment['end']:
-                    segment.speaker = dia_segment['speaker']
-                    break
+        try:
+            # Track performance
+            start_time = time.time()
             
-            # Apply speaker to words
-            if segment.speaker is not None:
-                for word in segment.words:
-                    word.speaker = segment.speaker
-    
-    def _result_to_dict(self, result: TranscriptionResult) -> Dict[str, Any]:
-        """
-        Convert TranscriptionResult to dictionary.
-        
-        Args:
-            result: TranscriptionResult object
+            # --- VAD or other pre-processing can happen here ---
+            # Example: Check if audio energy is above a threshold
+            # if np.sqrt(np.mean(audio**2)) < self.config.get('vad_threshold', 0.01):
+            #     logger.debug("Audio below VAD threshold, skipping transcription.")
+            #     return {'text': '', 'is_silent': True} # Indicate silence
             
-        Returns:
-            Dictionary representation
-        """
-        segments = []
-        for segment in result.segments:
-            seg_dict = {
-                'text': segment.text,
-                'start_time': segment.start_time,
-                'end_time': segment.end_time,
-                'confidence': segment.confidence
+            # Update audio buffer for context (if using streaming logic)
+            # if len(audio) > 0:
+            #     self.audio_buffer.append(audio)
+            
+            # Parse metadata
+            if metadata is None:
+                metadata = {}
+            
+            # TODO: Adapt metadata usage if needed for new sequential flow
+            # is_partial = metadata.get('is_partial', False) 
+            # include_diarization = metadata.get('diarization', self.diarizer.enabled if self.diarizer else False)
+            include_diarization = False # Diarization disabled for now
+
+            # Process audio
+            audio_duration = len(audio) / 16000 # Assuming 16kHz sample rate
+            
+            # Create transcription configuration (simplified for now)
+            # transcription_config = self._create_transcription_config(metadata)
+            transcription_config = None # Use ModelManager defaults or simplified config
+            
+            # Transcribe audio using the model manager
+            # logger.debug(f"Transcribing segment of duration {audio_duration:.2f}s...")
+            result = self.model_manager.transcribe(audio, config=transcription_config)
+            # logger.debug(f"Transcription result received: Text='{result.text[:30]}...'")
+
+            # Perform diarization if enabled (currently disabled)
+            # if include_diarization and not is_partial:
+            #     diarization = self.diarizer.diarize(audio)
+            #     self._apply_diarization(result, diarization)
+            
+            # Apply medical terminology correction (if enabled)
+            # result = self.term_processor.correct_result(result)
+            
+            # Update context (if using context logic)
+            # if result.text and not is_partial:
+            #     self._update_internal_context(result.text)
+            
+            # Store segment for context (if needed)
+            # if not is_partial:
+            #     self.recent_segments.append(result)
+            
+            # Track performance metrics
+            processing_time = time.time() - start_time
+            
+            self.metrics['total_audio_seconds'] += audio_duration
+            self.metrics['total_processing_time'] += processing_time
+            self.metrics['transcript_count'] += 1
+            
+            # Calculate average confidence (handle potential lack of segments)
+            if result.segments:
+                avg_confidence = sum(getattr(segment, 'confidence', 0.0) for segment in result.segments) / len(result.segments)
+                self.metrics['avg_confidence'] = (self.metrics['avg_confidence'] * (self.metrics['transcript_count'] - 1) + avg_confidence) / self.metrics['transcript_count']
+            else:
+                avg_confidence = 0.0 # Default if no segments
+
+            # Convert result to dictionary (use adapter for consistency)
+            # We need the original event context here if using the adapter fully.
+            # For now, create a basic dict. Context will be added later in worker loop.
+            result_dict = STTEngineAdapter.convert_raw_result_to_dict(result)
+
+            # Add performance metrics to the dictionary
+            result_dict['metrics'] = {
+                'audio_duration': audio_duration,
+                'processing_time': processing_time,
+                'real_time_factor': processing_time / audio_duration if audio_duration > 0 else 0
             }
             
-            if segment.speaker is not None:
-                seg_dict['speaker'] = segment.speaker
+            # logger.debug(f"Transcription segment processed in {processing_time:.2f}s.")
+            return result_dict
             
-            if segment.words:
-                seg_dict['words'] = [
-                    {
-                        'text': word.text,
-                        'start_time': word.start_time,
-                        'end_time': word.end_time,
-                        'confidence': word.confidence,
-                        'speaker': word.speaker
-                    }
-                    for word in segment.words
-                ]
-            
-            segments.append(seg_dict)
-        
-        return {
-            'text': result.text,
-            'segments': segments,
-            'is_partial': result.is_partial,
-            'language': result.language
-        }
-    
-    def subscribe_to_audio_events(self) -> bool:
-        """
-        Subscribe to audio events from the Audio Pipeline.
-        
-        Returns:
-            Success status
-        """
-        try:
-            # Import required modules
-            from tccc.utils.event_bus import get_event_bus
-            from tccc.utils.event_schema import EventType
-            
-            # Get event bus
-            event_bus = get_event_bus()
-            
-            # Subscribe to audio segment events
-            success = event_bus.subscribe(
-                subscriber="stt_engine",
-                event_types=[EventType.AUDIO_SEGMENT],
-                callback=self._handle_audio_event
-            )
-            
-            if success:
-                logger.info("STT Engine subscribed to audio events")
-            else:
-                logger.warning("Failed to subscribe to audio events")
-                
-            return success
-            
-        except ImportError:
-            logger.warning("Event bus or schema not available, cannot subscribe to audio events")
-            return False
         except Exception as e:
-            logger.error(f"Error subscribing to audio events: {e}")
-            return False
-            
-    def _handle_audio_event(self, event):
-        """
-        Handle incoming audio segment events.
-        
-        Args:
-            event: AudioSegmentEvent to process
-        """
-        try:
-            # Check if event has audio data and is speech
-            if not hasattr(event, 'data') or not event.data.get('is_speech', False):
-                return
-                
-            # Extract audio data
-            audio_data = event.audio_data if hasattr(event, 'audio_data') else None
-            if audio_data is None:
-                logger.warning("Received audio event without audio data")
-                return
-                
-            # Process the audio
-            result = self.transcribe_segment(audio_data)
-            
-            # If we got a valid result, emit a transcription event
-            if result and 'text' in result and result['text']:
-                self._emit_transcription_event(result, event.session_id, event.sequence)
-                
-        except Exception as e:
-            logger.error(f"Error handling audio event: {e}")
-            
-            # Emit error event
-            try:
-                self._emit_error_event(
-                    "audio_processing_error",
-                    f"Error processing audio event: {e}",
-                    "stt_engine",
-                    True  # Recoverable
-                )
-            except Exception:
-                # Just log if event emission fails
-                pass
-    
-    def _emit_transcription_event(self, transcription: Dict[str, Any], session_id: str = None, sequence: int = None):
-        """
-        Emit a TranscriptionEvent.
-        
-        Args:
-            transcription: Transcription result dictionary
-            session_id: Session identifier from audio event
-            sequence: Sequence number from audio event
-        """
-        try:
-            # Import event schema items only when needed
-            from tccc.utils.event_schema import TranscriptionEvent
-            
-            # Get event bus
-            event_bus = self._get_event_bus()
-            if not event_bus:
-                return
-                
-            # Create event
-            event = TranscriptionEvent(
-                source="stt_engine",
-                text=transcription['text'],
-                segments=transcription['segments'],
-                language=transcription.get('language', 'en'),
-                confidence=transcription['segments'][0]['confidence'] if transcription['segments'] else 0.0,
-                is_partial=transcription.get('is_partial', False),
-                metadata={
-                    'processing_time': transcription.get('metrics', {}).get('processing_time', 0),
-                    'model': self.model_manager.model_size if self.model_manager else "unknown"
-                },
-                session_id=session_id,
-                sequence=sequence
-            )
-            
-            # Publish event
-            event_bus.publish(event)
-            logger.debug(f"Emitted transcription event: {transcription['text']}")
-            
-        except ImportError:
-            logger.warning("Event schema not available, cannot emit transcription event")
-        except Exception as e:
-            logger.error(f"Error emitting transcription event: {e}")
-    
-    def _emit_error_event(
-        self, 
-        error_code: str, 
-        message: str, 
-        component: str,
-        recoverable: bool = False
-    ):
-        """
-        Emit an ErrorEvent.
-        
-        Args:
-            error_code: Error code identifier
-            message: Error message
-            component: Component that experienced the error
-            recoverable: Whether the error is recoverable
-        """
-        try:
-            # Import event schema items only when needed
-            from tccc.utils.event_schema import ErrorEvent, ErrorSeverity
-            
-            # Get event bus
-            event_bus = self._get_event_bus()
-            if not event_bus:
-                return
-            
-            # Create event
-            event = ErrorEvent(
-                source="stt_engine",
-                error_code=error_code,
-                message=message,
-                severity=ErrorSeverity.ERROR,
-                component=component,
-                recoverable=recoverable
-            )
-            
-            # Publish event
-            event_bus.publish(event)
-            
-        except ImportError:
-            logger.warning("Event schema not available, cannot emit error event")
-        except Exception as e:
-            logger.error(f"Error emitting error event: {e}")
-    
-    def _get_event_bus(self):
-        """Get the event bus instance, if available."""
-        try:
-            from tccc.utils.event_bus import get_event_bus
-            return get_event_bus()
-        except ImportError:
-            logger.warning("Event bus not available")
-            return None
+            logger.error(f"Transcription error: {e}", exc_info=True) # Log traceback
+            self.metrics['error_count'] += 1
+            return {'error': str(e), 'text': ''}
 
     def get_status(self) -> Dict[str, Any]:
         """
@@ -1761,14 +1594,14 @@ class STTEngine:
         Returns:
             Status dictionary (using ModuleState enum for 'status').
         """
-        overall_status = ModuleState.UNINITIALIZED
-        if self.initialized:
-             # Assume READY, check components below
-            overall_status = ModuleState.READY
+        overall_status = self.status # Use the instance status attribute
             
         try:
             status_details = {
                 'initialized': self.initialized,
+                'status': overall_status.name, # Reflect the internal state
+                'worker_thread_alive': self._worker_thread.is_alive() if self._worker_thread else False,
+                'queue_size': self.audio_queue.qsize(),
                 'metrics': {
                     'total_audio_seconds': self.metrics['total_audio_seconds'],
                     'total_processing_time': self.metrics['total_processing_time'],
@@ -1779,84 +1612,54 @@ class STTEngine:
                 }
             }
             
-            # Add model status
-            model_manager_state = ModuleState.ERROR # Default if not available
+            # Add model status if available
             if self.model_manager:
                 model_status = self.model_manager.get_status()
                 status_details['model'] = model_status
-                model_manager_state = model_status.get('status', ModuleState.ERROR)
+                # Update overall status if model manager is in error
+                if model_status.get('status') == ModuleState.ERROR and overall_status not in [ModuleState.STOPPING, ModuleState.STOPPED]:
+                    overall_status = ModuleState.ERROR
+            else:
+                status_details['model'] = {'status': ModuleState.UNINITIALIZED.name}
+                if overall_status not in [ModuleState.STOPPING, ModuleState.STOPPED]:
+                    overall_status = ModuleState.ERROR # Critical component missing
             
-            # Add diarization status
-            diarizer_state = ModuleState.UNINITIALIZED # Default if not configured
+            # Add diarization status (simplified, as it's less critical/integrated now)
+            diarizer_status = ModuleState.UNINITIALIZED
             diarizer_enabled = False
-            diarizer_initialized = False
             if self.diarizer:
                 diarizer_enabled = self.diarizer.enabled
-                diarizer_initialized = self.diarizer.initialized
-                if not diarizer_enabled:
-                    diarizer_state = ModuleState.READY # Disabled is considered ready/ok for the engine
-                elif diarizer_initialized:
-                    diarizer_state = ModuleState.READY
-                else:
-                    # Enabled but not initialized. Check if init failed.
-                    # The initialize method sets enabled=False on failure, but let's be safe.
-                    if hasattr(self.diarizer, 'pipeline') and self.diarizer.pipeline is None and self.diarizer.enabled:
-                         diarizer_state = ModuleState.ERROR # Initialization likely failed
-                    else:
-                         diarizer_state = ModuleState.UNINITIALIZED # Or still initializing
+                diarizer_status = self.diarizer.status
+                if diarizer_status == ModuleState.ERROR and overall_status not in [ModuleState.STOPPING, ModuleState.STOPPED]:
+                    overall_status = ModuleState.WARNING # Diarizer error might not be fatal
 
-                status_details['diarization'] = {
-                    'status': diarizer_state.name, # Use the derived state
-                    'enabled': diarizer_enabled,
-                    'initialized': diarizer_initialized
-                }
-            else:
-                 # No diarizer configured, treat as READY/Not Applicable
-                 diarizer_state = ModuleState.READY
-                 status_details['diarization'] = {
-                     'status': diarizer_state.name,
-                     'enabled': False,
-                     'initialized': False
-                 }
+            status_details['diarization'] = {
+                'status': diarizer_status.name,
+                'enabled': diarizer_enabled,
+            }
             
-            # Add vocabulary status
-            # Term processor might not have a complex state, check initialization
-            term_processor_ready = False
+            # Add vocabulary status (simplified)
+            term_proc_enabled = False
             if self.term_processor:
-                 term_processor_ready = self.term_processor.enabled # Simple check for now
-                 status_details['vocabulary'] = {
-                     'enabled': self.term_processor.enabled,
-                     'medical_terms': len(self.term_processor.medical_terms),
-                     'abbreviations': len(self.term_processor.abbreviations)
-                 }
+                term_proc_enabled = self.term_processor.enabled
+            status_details['vocabulary'] = {
+                'enabled': term_proc_enabled
+            }
 
-            # Determine overall status based on components
-            if model_manager_state == ModuleState.ERROR:
-                overall_status = ModuleState.ERROR
-            elif diarizer_state == ModuleState.ERROR: # Check our derived state
-                 overall_status = ModuleState.ERROR
-            # Add other critical component checks here
-            
-            # If initialized but critical components aren't READY, reflect that
-            elif self.initialized and model_manager_state != ModuleState.READY:
-                overall_status = model_manager_state # Reflect model manager state (e.g., INITIALIZING)
-            elif self.initialized and diarizer_state not in [ModuleState.READY, ModuleState.UNINITIALIZED]: # If enabled, needs to be READY
-                 # If diarizer is enabled and not READY (e.g., ERROR, INITIALIZING), reflect its state
-                 if diarizer_enabled:
-                    overall_status = diarizer_state
-
-            status = {"status": overall_status}
-            status.update(status_details)
-            return status
+            # Final overall status check
+            final_status = {"status": overall_status.name}
+            final_status.update(status_details)
+            return final_status
 
         except Exception as e:
             logger.error(f"Error getting STTEngine status: {e}", exc_info=True)
+            # Return an error status if an exception occurs during status retrieval
             return {
-                "status": ModuleState.ERROR,
+                "status": ModuleState.ERROR.name, # Report error status
                 "initialized": self.initialized,
                 "error": str(e)
             }
-    
+
     def shutdown(self) -> bool:
         """
         Properly shut down the STT engine, releasing resources.
@@ -1864,156 +1667,195 @@ class STTEngine:
         Returns:
             Success status
         """
+        logger.info("STTEngine.shutdown: Beginning shutdown...")
+        if self.status in [ModuleState.STOPPING, ModuleState.STOPPED]:
+            logger.warning(f"STTEngine.shutdown: Already stopping or stopped (current state: {self.status.name}).")
+            return True # Or False? Indicate it wasn't a fresh shutdown.
+
+        self.status = ModuleState.STOPPING
+        success = True
+
         try:
-            logger.info("Shutting down STT Engine")
+            # --- Stop the worker thread FIRST ---
+            logger.info("STTEngine.shutdown: Signaling worker thread to stop...")
+            self._stop_event.set()
+            # Ensure queue is cleared or worker handles empty queue gracefully during shutdown
+            # Optional: Put a sentinel value in the queue if worker blocks indefinitely on get()
+            # try:
+            #     self.audio_queue.put(None, block=False) # Signal worker loop to exit
+            # except queue.Full:
+            #     logger.warning("STTEngine.shutdown: Audio queue full while trying to add sentinel.")
+                
+            if self._worker_thread is not None and self._worker_thread.is_alive():
+                logger.info("STTEngine.shutdown: Waiting for worker thread to join...")
+                self._worker_thread.join(timeout=5.0) # Wait up to 5 seconds
+                if self._worker_thread.is_alive():
+                    logger.warning("STTEngine.shutdown: Worker thread did not exit cleanly after 5 seconds.")
+                    success = False # Indicate unclean shutdown
+                else:
+                    logger.info("STTEngine.shutdown: Worker thread joined successfully.")
+            else:
+                logger.info("STTEngine.shutdown: Worker thread was not running or already stopped.")
+            # --- Worker thread stopped --- #
             
-            # Unsubscribe from event bus
-            try:
-                from tccc.utils.event_bus import get_event_bus
-                event_bus = get_event_bus()
-                if event_bus:
-                    event_bus.unsubscribe("stt_engine")
-                    logger.info("Unsubscribed from event bus")
-            except Exception as e:
-                logger.warning(f"Error unsubscribing from event bus: {e}")
+            # Unsubscribe from events (if using event bus)
+            # Example: self.event_bus.unsubscribe(self._handle_audio_event)
+            # logger.info("STTEngine.shutdown: Unsubscribed from events (if applicable).")
             
-            # Release model resources
+            # Release model resources (ensure model_manager exists)
             if hasattr(self, 'model_manager') and self.model_manager:
-                if hasattr(self.model_manager, 'model') and self.model_manager.model:
-                    self.model_manager.model = None
-                    
-                # Clear ONNX sessions
-                if hasattr(self.model_manager, 'encoder_session'):
-                    self.model_manager.encoder_session = None
-                if hasattr(self.model_manager, 'decoder_session'):
-                    self.model_manager.decoder_session = None
-                    
-                logger.info("Released model resources")
+                # Add specific shutdown/release logic for ModelManager if it exists
+                if hasattr(self.model_manager, 'shutdown'):
+                     self.model_manager.shutdown()
+                else:
+                     # Basic cleanup if no dedicated shutdown
+                     if hasattr(self.model_manager, 'model'): self.model_manager.model = None
+                     if hasattr(self.model_manager, 'encoder_session'): self.model_manager.encoder_session = None
+                     if hasattr(self.model_manager, 'decoder_session'): self.model_manager.decoder_session = None
+                logger.info("STTEngine.shutdown: Released model resources.")
             
-            # Release diarizer resources
-            if hasattr(self, 'diarizer') and self.diarizer and hasattr(self.diarizer, 'pipeline'):
-                self.diarizer.pipeline = None
-                logger.info("Released diarizer resources")
+            # Release diarizer resources (ensure diarizer exists)
+            if hasattr(self, 'diarizer') and self.diarizer:
+                if hasattr(self.diarizer, 'shutdown'):
+                    self.diarizer.shutdown()
+                elif hasattr(self.diarizer, 'pipeline'):
+                     self.diarizer.pipeline = None
+                logger.info("STTEngine.shutdown: Released diarizer resources.")
             
-            # Clear buffers
-            self.audio_buffer.clear()
-            self.recent_segments.clear()
+            # Clear buffers (if used)
+            # self.audio_buffer.clear()
+            # self.recent_segments.clear()
+            # logger.info("STTEngine.shutdown: Cleared internal buffers.")
             
-            # Reset initialization flag for clean restart
+            # Reset initialization flag and status
             self.initialized = False
-            
-            logger.info("STT Engine shutdown complete")
-            return True
+            self.status = ModuleState.STOPPED
+            logger.info("STTEngine shutdown complete.")
             
         except Exception as e:
-            logger.error(f"Error during STT Engine shutdown: {e}")
-            return False
+            logger.exception(f"STTEngine.shutdown: Error during shutdown: {e}")
+            self.status = ModuleState.ERROR # Mark as error state after failed shutdown
+            success = False
+            
+        return success
 
-    def _create_minimal_model_manager(self, config: Dict[str, Any]) -> Any:
-        """Create a minimal model manager with basic functionality.
-        
-        Args:
-            config: Configuration dictionary
+class STTEngineAdapter:
+    """Adapts data between TCCCSystem/Events and STTEngine."""
+
+    @staticmethod
+    def convert_audio_event_to_input(event_data: Dict[str, Any]) -> Dict[str, Any]:
+        """Converts an AUDIO_SEGMENT event payload into input for STTEngine.transcribe_segment."""
+        # logger.debug(f"Adapter: Converting audio event keys: {event_data.keys()}")
+        try:
+            # Extract the core data dictionary
+            core_data = event_data.get('data', {})
+            # Extract audio numpy array
+            audio_data = core_data.get('audio_data') 
+            if audio_data is None:
+                 raise ValueError("Audio event data missing 'audio_data'")
+                 
+            # Extract metadata dictionary
+            metadata = core_data.get('metadata', {})
             
-        Returns:
-            Minimal model manager object
-        """
-        class MinimalModelManager:
-            def __init__(self, config):
-                self.config = config
-                self.model_type = "mock-whisper"
-                self.model_size = "tiny"
-                self.initialized = True
-                self.is_warmed_up = True
+            # Add context from event if needed (session_id, sequence)
+            metadata['session_id'] = event_data.get('session_id')
+            metadata['sequence'] = event_data.get('sequence')
+
+            # logger.debug(f"Adapter: Extracted audio shape: {audio_data.shape}, metadata keys: {metadata.keys()}")
+            return {
+                "audio": audio_data,
+                "metadata": metadata
+            }
+        except Exception as e:
+            logger.exception(f"STTEngineAdapter: Error converting audio event: {e}")
+            raise # Re-raise to be caught by the caller
+
+    @staticmethod
+    def convert_transcription_to_event(transcription_result: Dict[str, Any], original_event_context: Dict[str, Any]) -> Dict[str, Any]:
+        """Converts the result from STTEngine.transcribe_segment into a TRANSCRIPTION event payload."""
+        # logger.debug(f"Adapter: Converting transcription result keys: {transcription_result.keys()}")
+        try:
+            # Extract essential info
+            text = transcription_result.get('text', '')
+            segments = transcription_result.get('segments', [])
+            language = transcription_result.get('language', 'en')
+            is_partial = transcription_result.get('is_partial', False) # Whisper doesn't usually do partials this way
+            metrics = transcription_result.get('metrics', {})
             
-            def initialize(self):
-                return True
-                
-            def transcribe(self, audio, config=None):
-                # Return a mock transcription result
-                return TranscriptionResult(
-                    text="[This is placeholder text from minimal STT Engine]",
-                    segments=[
-                        TranscriptionSegment(
-                            text="[This is placeholder text from minimal STT Engine]",
-                            start_time=0.0,
-                            end_time=len(audio) / 16000.0 if isinstance(audio, (list, np.ndarray)) else 1.0,
-                            confidence=0.8
-                        )
-                    ]
-                )
-                
-            def get_status(self):
-                return {
-                    'initialized': True,
-                    'warmed_up': True,
-                    'model_type': 'mock-whisper',
-                    'model_size': 'tiny',
-                    'language': 'en',
-                    'acceleration': {
-                        'enabled': False,
-                        'cuda_device': -1,
-                        'tensorrt': False
-                    }
+            # Calculate overall confidence (example: average of segments)
+            confidence = 0.0
+            if segments:
+                confidences = [seg.get('confidence', 0.0) for seg in segments]
+                if confidences:
+                    confidence = sum(confidences) / len(confidences)
+                    
+            # Prepare metadata for the event
+            event_metadata = {
+                'processing_time': metrics.get('processing_time'),
+                'real_time_factor': metrics.get('real_time_factor'),
+                'audio_duration': metrics.get('audio_duration')
+                # Add model info if available and needed
+                # 'model': self.model_manager.model_size if self.model_manager else "unknown"
+            }
+
+            # Create the event payload dictionary
+            event_payload = {
+                "source": "stt_engine", # Indicate the source is the STT engine itself
+                "type": EventType.TRANSCRIPTION.value,
+                "timestamp": time.time(), # Timestamp of event creation
+                "session_id": original_event_context.get('session_id'),
+                "sequence": original_event_context.get('sequence'), # Carry over sequence number
+                "data": {
+                    "text": text,
+                    "segments": segments, # Include detailed segments
+                    "language": language,
+                    "confidence": confidence,
+                    "is_partial": is_partial,
+                    "metadata": event_metadata # Attach processing metrics
                 }
-        
-        return MinimalModelManager(config)
-    
-    def _create_minimal_diarizer(self, config: Dict[str, Any]) -> Any:
-        """Create a minimal speaker diarizer with basic functionality.
-        
-        Args:
-            config: Configuration dictionary
+            }
+            # logger.debug(f"Adapter: Created TRANSCRIPTION event payload keys: {event_payload.keys()}")
+            return event_payload
             
-        Returns:
-            Minimal speaker diarizer object
+        except Exception as e:
+            logger.exception(f"STTEngineAdapter: Error converting transcription result: {e}")
+            # Return a minimal error structure or raise?
+            # For now, raise to indicate failure in conversion
+            raise
+
+    @staticmethod
+    def convert_raw_result_to_dict(result: TranscriptionResult) -> Dict[str, Any]:
+        """Converts the raw TranscriptionResult object to a dictionary format.
+           Needed because the object itself might not be directly serializable or suitable.
         """
-        class MinimalSpeakerDiarizer:
-            def __init__(self, config):
-                self.config = config
-                self.enabled = False
-                self.initialized = True
-            
-            def initialize(self):
-                return True
-                
-            def diarize(self, audio, sample_rate=16000):
-                # Return a simple diarization result with single speaker
-                return {
-                    'speakers': [0],
-                    'segments': [
+        segments_list = []
+        if result.segments:
+            for segment in result.segments:
+                seg_dict = {
+                    'text': getattr(segment, 'text', ''),
+                    'start_time': getattr(segment, 'start_time', 0.0),
+                    'end_time': getattr(segment, 'end_time', 0.0),
+                    'confidence': getattr(segment, 'confidence', 0.0),
+                    # Add speaker info if available
+                    'speaker': getattr(segment, 'speaker', None)
+                }
+                # Add word timings if available
+                if hasattr(segment, 'words') and segment.words:
+                    seg_dict['words'] = [
                         {
-                            'speaker': 0,
-                            'start': 0,
-                            'end': len(audio) / sample_rate if isinstance(audio, (list, np.ndarray)) else 1.0
+                            'text': getattr(word, 'text', ''),
+                            'start_time': getattr(word, 'start_time', 0.0),
+                            'end_time': getattr(word, 'end_time', 0.0),
+                            'confidence': getattr(word, 'confidence', 0.0),
+                            'speaker': getattr(word, 'speaker', None)
                         }
+                        for word in segment.words
                     ]
-                }
-        
-        return MinimalSpeakerDiarizer(config)
-    
-    def _create_minimal_term_processor(self, config: Dict[str, Any]) -> Any:
-        """Create a minimal medical term processor with basic functionality.
-        
-        Args:
-            config: Configuration dictionary
-            
-        Returns:
-            Minimal medical term processor object
-        """
-        class MinimalTermProcessor:
-            def __init__(self, config):
-                self.config = config
-                self.enabled = False
-                self.medical_terms = {}
-                self.abbreviations = {}
-                self.term_regexes = []
-            
-            def correct_text(self, text):
-                return text  # No-op, just pass through
-                
-            def correct_segment(self, segment):
-                return segment  # No-op, just pass through
-                
-            def correct_result(self, result):
-                return result  # No-op, just pass through
+                segments_list.append(seg_dict)
+
+        return {
+            'text': getattr(result, 'text', ''),
+            'segments': segments_list,
+            'is_partial': getattr(result, 'is_partial', False),
+            'language': getattr(result, 'language', 'en')
+        }

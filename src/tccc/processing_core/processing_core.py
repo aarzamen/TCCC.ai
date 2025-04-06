@@ -286,10 +286,12 @@ class ProcessingCore:
     system with dependency tracking.
     """
     
-    def __init__(self):
+    def __init__(self, config: Optional[Dict[str, Any]] = None):
         """Initialize the Processing Core."""
+        logger.debug("ProcessingCore.__init__: Entering constructor")
         self.initialized = False
-        self.config: Optional[Dict[str, Any]] = None
+        self.config = config or {} # Store the passed config or use an empty dict
+        logger.debug(f"ProcessingCore.__init__: Config assigned: {self.config}") # Log assigned config
         
         # Module registry and dependency graph
         self.modules: Dict[str, ModuleInfo] = {}
@@ -321,6 +323,7 @@ class ProcessingCore:
         
         # Current operational state
         self.operational_state = ModuleState.UNINITIALIZED
+        logger.debug("ProcessingCore.__init__: Constructor finished successfully.")
     
     def _get_event_bus(self):
         """Get the event bus singleton instance."""

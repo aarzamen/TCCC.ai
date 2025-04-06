@@ -56,7 +56,7 @@ fi
 
 # Run the main system module
 # Pass the specific MVP config file name
-python -m tccc.system --config jetson_mvp.yaml --log-level DEBUG
+python -X faulthandler -m tccc.system --config jetson_mvp.yaml --log-level DEBUG
 
 EXIT_CODE=$?
 

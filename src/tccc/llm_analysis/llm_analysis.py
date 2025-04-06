@@ -175,18 +175,48 @@ class LLMEngine:
         """Load primary and fallback LLM models."""
         # First try to load primary model
         try:
-            self._load_primary_model()
+            # Check if primary model config exists
+            if "primary" in self.model_config:
+                self._load_primary_model()
+            else:
+                logger.warning("No primary model configured.")
+                # Optionally, try to load fallback as primary if primary is missing
+                # if "fallback" in self.model_config:
+                #     logger.info("Attempting to load fallback as primary.")
+                #     self._load_fallback_model() # This would need adjustment to set self.primary_model
+                # else:
+                #     raise ValueError("No primary or fallback model configured.")
+            
         except Exception as e:
             logger.error(f"Failed to load primary model: {str(e)}")
-            logger.warning("Will use fallback model for all requests")
-        
-        # Load fallback model if configured
-        try:
-            self._load_fallback_model()
-        except Exception as e:
-            logger.error(f"Failed to load fallback model: {str(e)}")
-            if not self.model_info["primary"]["loaded"]:
-                logger.error("No models available - LLM functionality will be limited")
+            # Decide if we should attempt fallback even if primary fails
+            # logger.warning("Will attempt to use fallback model.") # Keep this if fallback is desired after primary failure
+
+        # Load fallback model ONLY IF CONFIGURED
+        if "fallback" in self.model_config:
+            try:
+                # Check if primary already loaded successfully to avoid redundant logging later
+                primary_loaded = self.model_info.get("primary", {}).get("loaded", False)
+                
+                self._load_fallback_model()
+                
+                # Log successful fallback load
+                logger.info("Fallback model loaded successfully.")
+                self.model_info["fallback"]["loaded"] = True # Ensure status is updated
+
+            except Exception as e:
+                logger.error(f"Failed to load configured fallback model: {str(e)}")
+                # If primary also failed, log that no models are available
+                if not primary_loaded:
+                     logger.error("Neither primary nor fallback model loaded - LLM functionality severely limited.")
+        else:
+            logger.info("No fallback model configured.")
+
+        # Final check: Ensure at least one model is loaded, otherwise raise error?
+        # This depends on desired system behavior if no models load.
+        # if not self.model_info.get("primary", {}).get("loaded", False) and \
+        #    not self.model_info.get("fallback", {}).get("loaded", False):
+        #     raise RuntimeError("Critical Error: No LLM models could be loaded.")
     
     def _load_primary_model(self):
         """Load the primary model based on provider."""
@@ -199,10 +229,25 @@ class LLMEngine:
             self._load_local_model(self.model_config["primary"])
         elif provider == "openai":
             self._setup_openai_model(self.model_config["primary"])
+        elif provider == "local-gguf": 
+            # Prepare config for PhiGGUFModel by combining relevant parts
+            gguf_config = {
+                # Map keys from jetson_mvp.yaml to what PhiGGUFModel expects
+                "gguf_model_path": Path(self.model_config["primary"].get("path", ".")) / self.model_config["primary"].get("file", ""),
+                "use_gpu": self.hardware_config.get("device", "cpu") == "cuda",
+                "max_tokens": self.hardware_config.get("max_tokens", 1024),
+                "temperature": self.hardware_config.get("temperature", 0.7),
+                "top_p": self.hardware_config.get("top_p", 0.9), 
+                "num_threads": self.hardware_config.get("num_threads", os.cpu_count()) 
+                # Add any other parameters PhiGGUFModel expects, mapped from hardware_config or model_config["primary"]
+            }
+            logger.debug(f"Instantiating PhiGGUFModel with config: {gguf_config}")
+            from .phi_gguf_model import PhiGGUFModel 
+            self.primary_model = PhiGGUFModel(gguf_config)
         else:
             logger.error(f"Unsupported model provider: {provider}")
             raise ValueError(f"Unsupported model provider: {provider}")
-        
+            
         self.model_info["primary"]["loaded"] = True
         logger.info(f"Primary model loaded successfully")
     
@@ -217,6 +262,21 @@ class LLMEngine:
             self._load_local_model(self.model_config["fallback"], is_primary=False)
         elif provider == "openai":
             self._setup_openai_model(self.model_config["fallback"], is_primary=False)
+        elif provider == "local-gguf": 
+            # Prepare config for PhiGGUFModel by combining relevant parts
+            gguf_config = {
+                # Map keys from jetson_mvp.yaml to what PhiGGUFModel expects
+                "gguf_model_path": Path(self.model_config["fallback"].get("path", ".")) / self.model_config["fallback"].get("file", ""),
+                "use_gpu": self.hardware_config.get("device", "cpu") == "cuda",
+                "max_tokens": self.hardware_config.get("max_tokens", 1024),
+                "temperature": self.hardware_config.get("temperature", 0.7),
+                "top_p": self.hardware_config.get("top_p", 0.9), 
+                "num_threads": self.hardware_config.get("num_threads", os.cpu_count()) 
+                # Add any other parameters PhiGGUFModel expects, mapped from hardware_config or model_config["fallback"]
+            }
+            logger.debug(f"Instantiating PhiGGUFModel with config: {gguf_config}")
+            from .phi_gguf_model import PhiGGUFModel 
+            self.fallback_model = PhiGGUFModel(gguf_config)
         else:
             logger.error(f"Unsupported model provider: {provider}")
             raise ValueError(f"Unsupported model provider: {provider}")
@@ -1548,9 +1608,11 @@ class LLMAnalysis:
     and generating structured reports. Supports event-based communication.
     """
     
-    def __init__(self):
+    def __init__(self, config: Optional[Dict[str, Any]] = None):
         """Initialize the LLM analysis module."""
-        self.config = None
+        logger.debug("LLMAnalysis.__init__: Entering constructor")
+        self.config = config or {} # Store the passed config or use an empty dict
+        logger.debug(f"LLMAnalysis.__init__: Config assigned: {self.config}") # Log assigned config
         self.llm_engine = None
         self.entity_extractor = None
         self.event_sequencer = None
@@ -1567,6 +1629,8 @@ class LLMAnalysis:
         self.event_bus = None
         self.session_id = None
         self.sequence_counter = 0
+        self.status = ModuleState.UNINITIALIZED # Add status attribute
+        logger.debug("LLMAnalysis.__init__: Constructor finished successfully.")
     
     def _get_event_bus(self):
         """Get the event bus singleton instance."""
@@ -1977,7 +2041,7 @@ class LLMAnalysis:
                 # Mark as initialized with limited functionality
                 self.initialized = True
                 logger.warning("LLM analysis initialized with minimal functionality after error")
-                return True
+                return False
             except Exception as e:
                 # Complete failure
                 logger.error(f"Failed to initialize even minimal components: {str(e)}")

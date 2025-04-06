@@ -39,24 +39,23 @@ class DocumentLibrary:
     - Query result caching
     """
     
-    def __init__(self):
+    def __init__(self, config: Optional[Dict[str, Any]] = None):
         """Initialize the document library."""
+        logger.debug("DocumentLibrary.__init__: Entering constructor")
+        self.config = config or {} # Store the passed config or use an empty dict
+        logger.debug(f"DocumentLibrary.__init__: Config assigned: {self.config}") # Log assigned config
         self.initialized = False
         self.documents = {}
         self.chunks = {}
         self.next_doc_id = 1
-        self.config = None
-        self.model = None
-        self.index = None
-        self.chunk_to_doc = {}
-        
-        # Will be initialized in initialize()
         self.document_processor = None
         self.cache_manager = None
         self.vector_store = None
         self.query_engine = None
         self.response_generator = None
         self.medical_vocabulary = None
+        self.status = ModuleState.UNINITIALIZED # Add status attribute
+        logger.debug("DocumentLibrary.__init__: Constructor finished successfully.")
     
     def initialize(self, config):
         """Initialize the document library with configuration.

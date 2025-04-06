@@ -216,49 +216,60 @@ class TCCCSystem:
             "stt_engine": {"future": asyncio.Future(), "initialized": False},
             "processing_core": {"future": asyncio.Future(), "initialized": False},
             "llm_analysis": {"future": asyncio.Future(), "initialized": False},
-            "data_store": {"future": asyncio.Future(), "initialized": False},
-            "document_library": {"future": asyncio.Future(), "initialized": False}
+            # "data_store": {"future": asyncio.Future(), "initialized": False}, # Disabled (memory / MVP)
+            # "document_library": {"future": asyncio.Future(), "initialized": False} # Disabled for MVP
         }
 
         # Create module instances (or mocks)
         if mock_modules is None:
             mock_modules = []
         
+        logger.debug("TCCCSystem.initialize: ===> PREPARING TO INSTANTIATE AudioPipeline...")
         if "audio_pipeline" in mock_modules:
             self.audio_pipeline = MockAudioPipeline(config=self.config.get("audio_pipeline", {}))
         else:
             self.audio_pipeline = AudioPipeline(config=self.config.get("audio_pipeline", {}))
+        logger.debug("TCCCSystem.initialize: ===> AudioPipeline INSTANTIATED (returned from __init__).")
         
+        logger.debug("TCCCSystem.initialize: ===> PREPARING TO INSTANTIATE STTEngine...")
         if "stt_engine" in mock_modules:
             self.stt_engine = MockSTTEngine(config=self.config.get("stt_engine", {}))
         else:
             self.stt_engine = STTEngine(config=self.config.get("stt_engine", {}))
-        
+        logger.debug("TCCCSystem.initialize: ===> STTEngine INSTANTIATED.")
+            
+        logger.debug("TCCCSystem.initialize: ===> PREPARING TO INSTANTIATE ProcessingCore...")
         if "processing_core" in mock_modules:
             self.processing_core = MockProcessingCore(config=self.config.get("processing_core", {}))
         else:
             self.processing_core = ProcessingCore(config=self.config.get("processing_core", {}))
-        
+        logger.debug("TCCCSystem.initialize: ===> ProcessingCore INSTANTIATED.")
+            
+        logger.debug("TCCCSystem.initialize: ===> PREPARING TO INSTANTIATE LLMAnalysis...")
         if "llm_analysis" in mock_modules:
             self.llm_analysis = MockLLMAnalysis(config=self.config.get("llm_analysis", {}))
         else:
             self.llm_analysis = LLMAnalysis(config=self.config.get("llm_analysis", {}))
+        logger.debug("TCCCSystem.initialize: ===> LLMAnalysis INSTANTIATED.")
         
         # self.data_store = DataStore(config=self.config.get("data_store", {}))
         
-        if "document_library" in mock_modules:
-            self.document_library = MockDocumentLibrary(config=self.config.get("document_library", {}))
-        else:
-            self.document_library = DocumentLibrary(config=self.config.get("document_library", {}))
+        # logger.debug("TCCCSystem.initialize: ===> PREPARING TO INSTANTIATE DocumentLibrary...") # Disabled for MVP
+        # if "document_library" in mock_modules: # Disabled for MVP
+        #     self.document_library = MockDocumentLibrary(config=self.config.get("document_library", {})) # Disabled for MVP
+        # else: # Disabled for MVP
+        #     self.document_library = DocumentLibrary(config=self.config.get("document_library", {})) # Disabled for MVP
+        # logger.debug("TCCCSystem.initialize: ===> DocumentLibrary INSTANTIATED.") # Disabled for MVP
 
         # Initialize modules asynchronously
+        logger.debug("TCCCSystem.initialize: Preparing async initialization tasks...")
         module_initializations = [
             self._initialize_module(self.audio_pipeline, "AudioPipeline", self.config.get("audio_pipeline", {}), init_events["audio_pipeline"]),
             self._initialize_module(self.stt_engine, "STTEngine", self.config.get("stt_engine", {}), init_events["stt_engine"]),
             self._initialize_module(self.processing_core, "ProcessingCore", self.config.get("processing_core", {}), init_events["processing_core"]),
             self._initialize_module(self.llm_analysis, "LLMAnalysis", self.config.get("llm_analysis", {}), init_events["llm_analysis"]),
-            # self._initialize_module(self.data_store, "DataStore", self.config.get("data_store", {}), init_events["data_store"]),
-            self._initialize_module(self.document_library, "DocumentLibrary", self.config.get("document_library", {}), init_events["document_library"])
+            # self._initialize_module(self.data_store, "DataStore", self.config.get("data_store", {}), init_events["data_store"]), # Already disabled (memory)
+            # self._initialize_module(self.document_library, "DocumentLibrary", self.config.get("document_library", {}), init_events["document_library"]) # Disabled for MVP
         ]
 
         # Wait for all modules to initialize
@@ -596,33 +607,21 @@ class TCCCSystem:
             logger.debug(f"Active audio source: {self.audio_pipeline.source.name} ({self.audio_pipeline.source.type})")
             logger.debug(f"Active audio source: name={metadata.get('source_type')}, type={metadata.get('source_type')}")
 
-            # Create audio event dictionary directly
-            # The actual AudioSegmentEvent object creation might happen inside process_event or adapter
-            event_payload = {
-                "source": "audio_pipeline",
-                "type": EventType.AUDIO_SEGMENT.value, # Use enum value for type
-                "timestamp": metadata["timestamp"],
-                "session_id": self._thread_session_id,
-                "sequence": current_sequence,
-                "data": {
-                     "audio_data": audio_data, # Pass the raw numpy array
-                     "metadata": metadata # Pass collected metadata
+            # Put data onto STT Engine's queue for sequential processing
+            try:
+                event_context = {
+                    'session_id': self.session_id,
+                    'sequence': self._audio_sequence,
+                    'timestamp': time.time(),
+                    'source': 'audio_pipeline',
                 }
-            }
-            
-            # logger.debug(f"Scheduling audio event processing for sequence {current_sequence}") # DEBUG log
-            # Schedule the async process_event coroutine on the main event loop
-            future = asyncio.run_coroutine_threadsafe(self.process_event(event_payload), self._main_event_loop)
+                self.stt_engine.enqueue_audio(audio_data, metadata, event_context)
+                # logger.debug(f"Enqueued audio chunk {self._audio_sequence} for STT processing.")
+            except Exception as e:
+                logger.exception(f"Error enqueuing audio data for STT: {e}")
 
-            # Optional: Add callback to future to log result/errors after execution
-            def log_audio_event_result(f):
-                 try:
-                      result = f.result()
-                      # logger.debug(f"Audio event (seq {current_sequence}) processing finished. Result: {result}") # DEBUG log
-                 except Exception as e_future:
-                      logger.error(f"Error processing audio event (seq {current_sequence}) in scheduled task: {e_future}")
-
-            future.add_done_callback(log_audio_event_result)
+            # Keep capturing state
+            self._update_system_state(SystemState.CAPTURING) # Maintain capturing state
 
         except Exception as e:
             # Log exception originating from within the callback itself
@@ -713,55 +712,7 @@ class TCCCSystem:
                 event_data["session_id"] = session_id
                 
             # Process based on event type
-            if event_type == EventType.AUDIO_SEGMENT.value:
-                # Handle audio segment event
-                # Data is now structured as event_data['data']['audio_data'] and event_data['data']['metadata']
-                
-                # Convert for STT Engine using the adapter
-                # The adapter needs to handle the new event structure
-                try:
-                     logger.debug(f"Converting audio event (seq {event_data.get('sequence', 'N/A')}) for STT...")
-                     stt_input = STTEngineAdapter.convert_audio_event_to_input(event_data)
-                except Exception as adapter_error:
-                     logger.exception(f"Error converting audio event using STTEngineAdapter: {adapter_error}")
-                     # Create and store error event
-                     error_event = ErrorEvent(
-                         source="system", error_code="adapter_error", message=f"STT Adapter failed: {adapter_error}",
-                         component="process_event.stt_adapter", recoverable=True, session_id=session_id, sequence=self._event_sequence
-                     ).to_dict()
-                     # await self._store_event_safe(error_event) # Helper needed
-                     return None # Stop processing this event
-
-                # Process with STT Engine
-                self.state = SystemState.PROCESSING
-                logger.debug(f"Sending audio (seq {event_data.get('sequence', 'N/A')}) to STT engine...")
-                transcription = await self._transcribe_async(stt_input.get("audio"), stt_input.get("metadata")) # Use .get for safety
-                
-                # Convert transcription to standard event
-                if transcription and transcription.get("text", ""): # Check if transcription is valid
-                    logger.debug(f"STT result (seq {event_data.get('sequence', 'N/A')}): '{transcription.get('text', '')[:50]}...'")
-                    try:
-                         transcription_event = STTEngineAdapter.convert_transcription_to_event(
-                              transcription, event_data # Pass original event for context
-                         )
-                    except Exception as adapter_error:
-                         logger.exception(f"Error converting transcription using STTEngineAdapter: {adapter_error}")
-                         # Create and store error event...
-                         return None
-                    # Recursively call process_event with the new transcription event
-                    return await self.process_event(transcription_event)
-                elif transcription and "error" in transcription:
-                     logger.error(f"STT engine returned an error for sequence {event_data.get('sequence', 'N/A')}: {transcription['error']}")
-                     # Create and store error event...
-                     return None
-                else:
-                    # No transcription text, maybe just silence or VAD decided no speech
-                    logger.debug(f"No transcription result from STT Engine for sequence {event_data.get('sequence', 'N/A')}")
-                    # Reset state if no further processing happens for this chunk
-                    self.state = SystemState.READY # Or CAPTURING if still running? Check logic
-                    return None
-                    
-            elif event_type == EventType.TRANSCRIPTION.value:
+            if event_type == EventType.TRANSCRIPTION.value:
                 # Handle transcription event
                 # Convert for Processing Core
                 processing_input = ProcessingCoreAdapter.convert_transcription_to_input(event_data)

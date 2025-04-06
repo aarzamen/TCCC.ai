@@ -15,8 +15,8 @@ audio_pipeline:
     input_sources:
       # Default microphone input using PyAudio
       - name: "default_mic"
-        type: "pyaudio" # Corrected type
-        device_index: null # Use system default device
+        type: "microphone" # Corrected type
+        device_index: 0 # Use system default device
         # Add other sounddevice options if needed (e.g., blocksize)
     default_input: "default_mic"
   channels: 1
@@ -39,12 +39,19 @@ stt_engine:
 
 # LLM settings
 llm_analysis:
-  model: "phi-2-gguf"
-  model_path: "models/phi-2-gguf"
-  model_file: "phi-2.Q4_K_M.gguf"
-  max_tokens: 256
-  temperature: 0.3
-  device: "cuda"
+  model:
+    primary:
+      provider: "local-gguf"
+      name: "phi-2"
+      path: "models/phi-2-gguf"
+      file: "phi-2.Q4_K_M.gguf"
+  hardware: # Hardware/runtime settings for the LLM
+    enable_acceleration: true # Added for get_status()
+    cuda_device: 0            # Added for get_status()
+    quantization: "gguf"      # Added for get_status()
+    max_tokens: 256      # Max tokens for generation
+    temperature: 0.3     # Sampling temperature
+    device: "cuda"       # Use GPU acceleration ('cuda' or 'cpu')
 
 # Power and resource management
 power_management:
