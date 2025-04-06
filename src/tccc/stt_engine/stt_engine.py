@@ -19,6 +19,7 @@ from pathlib import Path
 import traceback
 import asyncio
 import queue
+from tccc.processing_core.processing_core import ModuleState # Added import
 
 try:
     import torch
@@ -1193,7 +1194,7 @@ class STTEngine:
             self.model_manager = None
             self.diarizer = None
             self.term_processor = None
-            self.status = ModuleState.INITIALIZING # Set initial status
+            self.state = ModuleState.INITIALIZING # Set initial status
             self._tccc_system_ref = None # Reference to TCCCSystem for callbacks
             logger.debug("STTEngine.__init__: Base attributes initialized.")
             
@@ -1238,7 +1239,7 @@ class STTEngine:
 
         except Exception as e:
             logger.error(f"STTEngine.__init__: CRITICAL FAILURE DURING __init__: {e}\n{traceback.format_exc()}")
-            self.status = ModuleState.ERROR # Ensure status reflects error
+            self.state = ModuleState.ERROR # Ensure status reflects error
             # Optional: Re-raise if needed, but logging might be sufficient for __init__ failure
             # raise
         finally:
@@ -1371,12 +1372,12 @@ class STTEngine:
                 logger.warning("STTEngine.initialize: STT processing worker thread already running.")
 
             # Final status update
-            self.status = ModuleState.IDLE
+            self.state = ModuleState.IDLE
             return True
 
         except Exception as e:
             logger.error(f"Failed to initialize STT Engine: {e}")
-            self.status = ModuleState.ERROR
+            self.state = ModuleState.ERROR
             return False
     
     def set_system_reference(self, system_ref):
@@ -1594,7 +1595,7 @@ class STTEngine:
         Returns:
             Status dictionary (using ModuleState enum for 'status').
         """
-        overall_status = self.status # Use the instance status attribute
+        overall_status = self.state # Use the instance state attribute
             
         try:
             status_details = {
@@ -1668,11 +1669,12 @@ class STTEngine:
             Success status
         """
         logger.info("STTEngine.shutdown: Beginning shutdown...")
-        if self.status in [ModuleState.STOPPING, ModuleState.STOPPED]:
-            logger.warning(f"STTEngine.shutdown: Already stopping or stopped (current state: {self.status.name}).")
-            return True # Or False? Indicate it wasn't a fresh shutdown.
-
-        self.status = ModuleState.STOPPING
+        logger.debug(f"STTEngine.shutdown: Checking state before shutdown logic. Current state: {self.state}, Type: {type(self.state)}")
+        if self.state in [ModuleState.STOPPING, ModuleState.STOPPED]: # Corrected access to ModuleState
+            logger.warning(f"STTEngine.shutdown called when already in state: {self.state}")
+            return True
+ 
+        self.state = ModuleState.STOPPING
         success = True
 
         try:
@@ -1729,12 +1731,12 @@ class STTEngine:
             
             # Reset initialization flag and status
             self.initialized = False
-            self.status = ModuleState.STOPPED
+            self.state = ModuleState.STOPPED
             logger.info("STTEngine shutdown complete.")
             
         except Exception as e:
             logger.exception(f"STTEngine.shutdown: Error during shutdown: {e}")
-            self.status = ModuleState.ERROR # Mark as error state after failed shutdown
+            self.state = ModuleState.ERROR # Mark as error state after failed shutdown
             success = False
             
         return success
