@@ -206,14 +206,25 @@ def create_code_snapshot(project_dir, output_dir, max_size_kb=1024):
 
 if __name__ == "__main__":
     from datetime import datetime
-    default_project_dir = os.path.expanduser("~/tccc-project")
-    
+    # Determine project directory assuming the script is run from the project root or within tools/
+    script_path = Path(__file__).resolve()
+    # Go up one level if script is in tools/, otherwise assume current dir is project root
+    if script_path.parent.name == 'tools':
+        default_project_dir = str(script_path.parent.parent) # tccc-project/
+    else:
+        default_project_dir = str(Path.cwd()) # Assume run from project root
+
+    # Define the base directory for snapshots - one level above project dir (e.g., home dir)
+    snapshots_base_dir = str(Path(default_project_dir).parent / "tccc_snapshots")
+
     # Create a dated snapshot folder name
     current_date = datetime.now().strftime("%Y%m%d")
-    default_output_dir = os.path.join(default_project_dir, "codebase_snapshot_" + current_date)
+    # Create the specific output directory path within the base snapshots dir
+    default_output_dir = os.path.join(snapshots_base_dir, "snapshot_" + current_date)
 
     parser = argparse.ArgumentParser(description="Create a text snapshot of a project, respecting .gitignore.")
-    parser.add_argument("--project-dir", default=default_project_dir, help=f"Path to the project directory (default: {default_project_dir})")
+    # Update help texts to reflect new defaults
+    parser.add_argument("--project-dir", default=default_project_dir, help=f"Path to the project directory to snapshot (default: {default_project_dir})")
     parser.add_argument("--output-dir", default=default_output_dir, help=f"Path to the output directory for the snapshot (default: {default_output_dir})")
     parser.add_argument("--max-size", type=int, default=1024, help="Maximum individual file size in KB to include (default: 1024)")
     parser.add_argument("--add-sysinfo", action='store_true', help="Add a system_info.txt file to the snapshot root.")

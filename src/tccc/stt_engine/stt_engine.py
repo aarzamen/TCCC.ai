@@ -29,6 +29,12 @@ except ImportError:
     TORCH_AVAILABLE = False
 
 try:
+    from faster_whisper import WhisperModel
+    FASTER_WHISPER_AVAILABLE = True
+except ImportError:
+    FASTER_WHISPER_AVAILABLE = False
+
+try:
     import onnxruntime as ort
     ONNX_AVAILABLE = True
 except ImportError:
@@ -162,9 +168,23 @@ class ModelManager:
         
         try:
             with self.model_lock:
-                # First try PyTorch directly as it's more reliable
+                # First try faster-whisper as it's optimized for CUDA and more efficient
+                if self.model_type == 'faster-whisper':
+                    logger.info("Initializing with faster-whisper CUDA optimized version")
+                    result = self._initialize_faster_whisper()
+                    
+                    if result:
+                        self.initialized = True
+                        # Perform model warmup
+                        self._warmup_model()
+                        logger.info(f"Model '{self.model_type}-{self.model_size}' initialized successfully with faster-whisper")
+                        return True
+                    else:
+                        logger.warning("faster-whisper initialization failed, falling back to PyTorch Whisper")
+                
+                # Fall back to PyTorch Whisper
                 if self.model_type == 'whisper' and TORCH_AVAILABLE:
-                    logger.info("Initializing with PyTorch Whisper (more reliable)")
+                    logger.info("Initializing with PyTorch Whisper (standard)")
                     result = self._initialize_whisper_torch()
                     
                     # If PyTorch initialization succeeds, skip ONNX attempts
@@ -195,6 +215,58 @@ class ModelManager:
             logger.error(traceback.format_exc()) # Log traceback at ERROR level
             return False
     
+    def _initialize_faster_whisper(self) -> bool:
+        """
+        Initialize faster-whisper model with CUDA optimization.
+        This implementation uses CTranslate2 for faster inference.
+        
+        Returns:
+            Success status
+        """
+        try:
+            if not FASTER_WHISPER_AVAILABLE:
+                logger.error("faster-whisper package not available. Run 'pip install faster-whisper' to install it.")
+                return False
+                
+            # Set up compute type based on config
+            compute_type = self.config.get('compute_type', "float16" if self.mixed_precision else "float32")
+            device = self.config.get('device', "cuda" if torch.cuda.is_available() and self.enable_acceleration else "cpu")
+            num_workers = self.config.get('num_workers', 2)
+            cpu_threads = self.config.get('cpu_threads', 4)
+            
+            logger.info(f"Initializing faster-whisper with model size: {self.model_size}, compute type: {compute_type}, device: {device}")
+            
+            # Check CUDA availability
+            if device == "cuda" and not torch.cuda.is_available():
+                logger.warning("CUDA requested but not available. Falling back to CPU.")
+                device = "cpu"
+            
+            if device == "cuda":
+                # Get CUDA device properties
+                device_props = torch.cuda.get_device_properties(0)  # Assuming device 0
+                logger.info(f"Using CUDA device: {device_props.name} with {device_props.total_memory/1024**3:.2f} GB memory")
+            
+            # Create model directory if it doesn't exist
+            os.makedirs(os.path.dirname(self.model_path), exist_ok=True)
+            
+            # Create the faster-whisper model
+            self.model = WhisperModel(
+                model_size_or_path=self.model_size,
+                device=device,
+                compute_type=compute_type,
+                download_root=self.model_path,
+                cpu_threads=cpu_threads,
+                num_workers=num_workers
+            )
+            
+            logger.info(f"faster-whisper model '{self.model_size}' loaded successfully on {device}")
+            return True
+            
+        except Exception as e:
+            logger.error(f"Failed to initialize faster-whisper model: {e}")
+            logger.error(traceback.format_exc())  # Log the full traceback
+            return False
+            
     def _initialize_whisper_onnx(self) -> bool:
         """
         Initialize Whisper model with ONNX Runtime.
@@ -548,8 +620,12 @@ class ModelManager:
             return TranscriptionResult(text="", is_partial=False)
         
         try:
+            # Use faster-whisper model if available (preferred for CUDA optimization)
+            if self.model_type == 'faster-whisper' and hasattr(self, 'model') and self.model is not None:
+                return self._transcribe_with_faster_whisper(audio, config)
+            
             # Use the encoder-decoder model for ONNX inference
-            if hasattr(self, 'encoder_session') and hasattr(self, 'decoder_session'):
+            elif hasattr(self, 'encoder_session') and hasattr(self, 'decoder_session'):
                 return self._transcribe_with_onnx(audio, config)
             
             # Use the PyTorch model
@@ -646,6 +722,98 @@ class ModelManager:
             
         except Exception as e:
             logger.error(f"ONNX transcription error: {e}")
+            return TranscriptionResult(text="", is_partial=False)
+    
+    def _transcribe_with_faster_whisper(self, audio: np.ndarray, config: Optional[TranscriptionConfig] = None) -> TranscriptionResult:
+        """
+        Transcribe audio using faster-whisper with CUDA optimization.
+        
+        Args:
+            audio: Audio data as numpy array
+            config: Transcription configuration
+            
+        Returns:
+            TranscriptionResult object
+        """
+        # Process the config
+        if config is None:
+            # Create default config
+            config = TranscriptionConfig()
+            
+        try:
+            # Ensure audio is the right format (float32)
+            if audio.dtype != np.float32:
+                # If int16, explicitly convert to float32 and normalize
+                if audio.dtype == np.int16:
+                    audio = audio.astype(np.float32) / 32768.0
+                else:
+                    # For other types, convert to float32
+                    audio = audio.astype(np.float32)
+                
+                # Ensure values are within [-1.0, 1.0]
+                if np.abs(audio).max() > 1.0:
+                    audio = audio / np.abs(audio).max()
+            
+            # Log audio stats for debugging
+            logger.debug(f"Audio stats: min={audio.min():.6f}, max={audio.max():.6f}, mean={np.abs(audio).mean():.6f}, " 
+                         f"shape={audio.shape}, dtype={audio.dtype}")
+            
+            # Extract settings from the config
+            beam_size = config.beam_size if hasattr(config, 'beam_size') else 5
+            language = self.language  # Default to model's language
+            
+            # Run transcription with faster-whisper
+            logger.debug(f"Running faster-whisper transcription with beam_size={beam_size}, language={language}")
+            segments, info = self.model.transcribe(
+                audio=audio,
+                language=language,
+                task="transcribe",
+                beam_size=beam_size,
+                word_timestamps=config.word_timestamps,
+                vad_filter=True,
+                vad_parameters=dict(min_silence_duration_ms=500)
+            )
+            
+            # Convert segments to list for easier processing
+            segment_list = list(segments)
+            
+            # Create result object
+            result = TranscriptionResult(
+                text=" ".join(seg.text for seg in segment_list),
+                is_partial=False,
+                language=info.language
+            )
+            
+            # Create segments
+            for i, seg in enumerate(segment_list):
+                # Process words if available
+                words = []
+                if hasattr(seg, 'words') and seg.words:
+                    for word_data in seg.words:
+                        word = Word(
+                            text=word_data.word,
+                            start_time=word_data.start,
+                            end_time=word_data.end,
+                            confidence=word_data.probability
+                        )
+                        words.append(word)
+                
+                # Create segment
+                segment = TranscriptionSegment(
+                    text=seg.text,
+                    start_time=seg.start,
+                    end_time=seg.end,
+                    confidence=seg.avg_logprob,  # This is the log probability, not exactly confidence
+                    words=words
+                )
+                result.segments.append(segment)
+            
+            logger.debug(f"Transcription complete: {result.text[:100]}...")
+            return result
+            
+        except Exception as e:
+            logger.error(f"faster-whisper transcription error: {e}")
+            logger.error(traceback.format_exc())
             return TranscriptionResult(text="", is_partial=False)
     
     def _transcribe_with_torch(self, audio: np.ndarray, config: Optional[TranscriptionConfig] = None) -> TranscriptionResult:
@@ -1618,7 +1786,7 @@ class STTEngine:
                 model_status = self.model_manager.get_status()
                 status_details['model'] = model_status
                 # Update overall status if model manager is in error
-                if model_status.get('status') == ModuleState.ERROR and overall_status not in [ModuleState.STOPPING, ModuleState.STOPPED]:
+                if model_status.get('status') == ModuleState.ERROR and overall_status not in [ModuleState.STANDBY, ModuleState.SHUTDOWN]:
                     overall_status = ModuleState.ERROR
             else:
                 status_details['model'] = {'status': ModuleState.UNINITIALIZED.name}
@@ -1631,7 +1799,7 @@ class STTEngine:
             if self.diarizer:
                 diarizer_enabled = self.diarizer.enabled
                 diarizer_status = self.diarizer.status
-                if diarizer_status == ModuleState.ERROR and overall_status not in [ModuleState.STOPPING, ModuleState.STOPPED]:
+                if diarizer_status == ModuleState.ERROR and overall_status not in [ModuleState.STANDBY, ModuleState.SHUTDOWN]:
                     overall_status = ModuleState.WARNING # Diarizer error might not be fatal
 
             status_details['diarization'] = {
@@ -1670,11 +1838,11 @@ class STTEngine:
         """
         logger.info("STTEngine.shutdown: Beginning shutdown...")
         logger.debug(f"STTEngine.shutdown: Checking state before shutdown logic. Current state: {self.state}, Type: {type(self.state)}")
-        if self.state in [ModuleState.STOPPING, ModuleState.STOPPED]: # Corrected access to ModuleState
+        if self.state in [ModuleState.STANDBY, ModuleState.SHUTDOWN]: # Using correct ModuleState values
             logger.warning(f"STTEngine.shutdown called when already in state: {self.state}")
             return True
  
-        self.state = ModuleState.STOPPING
+        self.state = ModuleState.STANDBY
         success = True
 
         try:
@@ -1731,7 +1899,7 @@ class STTEngine:
             
             # Reset initialization flag and status
             self.initialized = False
-            self.state = ModuleState.STOPPED
+            self.state = ModuleState.SHUTDOWN
             logger.info("STTEngine shutdown complete.")
             
         except Exception as e:

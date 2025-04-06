@@ -1,0 +1,5 @@
+Device: default (index 31)
+Channels: 1
+Sample rate: 16000
+Max level recorded: 31152 (95.1%)
+Recording duration: 10.0 seconds

@@ -2441,23 +2441,74 @@ class LLMAnalysis:
                 "error": str(e)
             }
     
-    def shutdown(self):
-        """Shutdown the LLM analysis module and release resources."""
-        logger.info("Shutting down LLM Analysis module")
-        # In the future, add logic here to explicitly release LLM models,
-        # stop background threads, or clean up other resources.
-        if hasattr(self, 'llm_engine') and self.llm_engine and hasattr(self.llm_engine, 'shutdown'):
-            try:
-                self.llm_engine.shutdown()
-                logger.info("LLM engine shutdown successfully.")
-            except Exception as e:
-                logger.error(f"Error shutting down LLM engine: {e}")
-
-        if hasattr(self, 'document_library') and self.document_library and hasattr(self.document_library, 'shutdown'):
-            try:
-                self.document_library.shutdown()
-                logger.info("Document library shutdown successfully.")
-            except Exception as e:
-                logger.error(f"Error shutting down document library: {e}")
-                
-        logger.info("LLM Analysis module shutdown complete")
+    def shutdown(self) -> bool:
+        """Shutdown the LLM analysis module and release resources.
+        
+        Returns:
+            bool: True if shutdown was successful, False otherwise
+        """
+        logger.info(f"Shutting down LLM Analysis module. Current state: {self.state}")
+        success = True
+        
+        try:
+            # First set state to reflect we're stopping
+            prev_state = self.state
+            self.state = ModuleState.STANDBY
+            
+            # Shut down the LLM engine if present
+            if hasattr(self, 'llm_engine') and self.llm_engine:
+                try:
+                    if hasattr(self.llm_engine, 'shutdown'):
+                        logger.debug("Shutting down LLM engine...")
+                        self.llm_engine.shutdown()
+                        logger.info("LLM engine shutdown successfully.")
+                    else:
+                        # Alternative cleanup if no shutdown method
+                        logger.debug("LLM engine has no shutdown method, performing basic cleanup")
+                        # Clear any loaded models
+                        if hasattr(self.llm_engine, 'model'):
+                            self.llm_engine.model = None
+                except Exception as e:
+                    logger.error(f"Error shutting down LLM engine: {e}", exc_info=True)
+                    success = False
+                    # Continue shutdown despite errors
+            
+            # Shut down document library if present
+            if hasattr(self, 'document_library') and self.document_library:
+                try:
+                    if hasattr(self.document_library, 'shutdown'):
+                        logger.debug("Shutting down document library...")
+                        self.document_library.shutdown()
+                        logger.info("Document library shutdown successfully.")
+                except Exception as e:
+                    logger.error(f"Error shutting down document library: {e}", exc_info=True)
+                    success = False
+                    # Continue shutdown despite errors
+            
+            # Clear any worker threads if present
+            if hasattr(self, '_worker_thread') and self._worker_thread and self._worker_thread.is_alive():
+                try:
+                    logger.debug("Shutting down worker thread...")
+                    # Set stop flag if present
+                    if hasattr(self, '_stop_flag'):
+                        self._stop_flag = True
+                    
+                    # Try to join the thread with timeout
+                    self._worker_thread.join(timeout=3.0)
+                    if self._worker_thread.is_alive():
+                        logger.warning("Worker thread did not exit within timeout")
+                except Exception as e:
+                    logger.error(f"Error terminating worker thread: {e}", exc_info=True)
+                    success = False
+            
+            # Update final state
+            self.state = ModuleState.SHUTDOWN
+            self.initialized = False
+            
+            logger.info(f"LLM Analysis module shutdown complete. State changed from {prev_state} to {self.state}")
+            return success
+            
+        except Exception as e:
+            logger.error(f"Unexpected error during LLM Analysis shutdown: {e}", exc_info=True)
+            self.state = ModuleState.ERROR
+            return False

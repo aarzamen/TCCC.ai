@@ -14,6 +14,7 @@ import argparse
 import logging
 import atexit
 import traceback
+import numpy as np
 from typing import Dict, List, Optional, Any, Union, Callable, Tuple
 from enum import Enum
 from pathlib import Path
@@ -282,10 +283,31 @@ class TCCCSystem:
             logger.info("All modules initialized successfully.")
             self.state = SystemState.READY
             self.initialized = True
-            self.event_bus.fire_event("system_ready", {})
+            try:
+                self.event_bus.publish(BaseEvent(
+                    event_type="system_ready", 
+                    source="TCCCSystem", 
+                    data={}
+                ))
+            except Exception as e:
+                logger.error(f"Error publishing system_ready event: {e}")
             
             # Start the main event loop
             self._main_event_loop = asyncio.get_event_loop()
+            
+            # Pass system reference BEFORE initializing
+            self.audio_pipeline.set_system_reference(self) 
+            if self.audio_pipeline and self.audio_pipeline.initialized:
+                logger.info("Starting audio capture...")
+                capture_started = self.audio_pipeline.start_capture()
+                if capture_started:
+                    self.state = SystemState.CAPTURING # Update system state
+                    logger.info("Audio capture successfully started.")
+                else:
+                    logger.error("Failed to start audio capture after system initialization.")
+                    # Consider changing state to ERROR or taking other action
+            else:
+                logger.warning("Audio pipeline not available or not initialized, cannot start capture.")
             
             return True
         else:
@@ -604,8 +626,19 @@ class TCCCSystem:
                       # Store dtype as string representation
                       metadata["dtype"] = str(np.dtype(self.audio_pipeline.dtype))
 
-            logger.debug(f"Active audio source: {self.audio_pipeline.source.name} ({self.audio_pipeline.source.type})")
-            logger.debug(f"Active audio source: name={metadata.get('source_type')}, type={metadata.get('source_type')}")
+            # Safely access audio source information with error handling
+            try:
+                if hasattr(self.audio_pipeline, 'active_source') and self.audio_pipeline.active_source:
+                    source_name = self.audio_pipeline.active_source.name
+                    source_type = self.audio_pipeline.active_source.type
+                    logger.debug(f"Active audio source: {source_name} ({source_type})")
+                else:
+                    logger.debug(f"No active audio source found in pipeline")
+            except Exception as e:
+                logger.debug(f"Could not access audio source details: {e}")
+                
+            # Log metadata from the audio data
+            logger.debug(f"Audio metadata: sample_rate={metadata.get('sample_rate')}, channels={metadata.get('channels')}, type={metadata.get('source_type')}")
 
             # Put data onto STT Engine's queue for sequential processing
             try:
@@ -620,8 +653,10 @@ class TCCCSystem:
             except Exception as e:
                 logger.exception(f"Error enqueuing audio data for STT: {e}")
 
-            # Keep capturing state
-            self._update_system_state(SystemState.CAPTURING) # Maintain capturing state
+            # Update system state to maintain CAPTURING state
+            if self.state != SystemState.CAPTURING:
+                logger.debug(f"Setting system state to CAPTURING (was {self.state})")
+                self.state = SystemState.CAPTURING
 
         except Exception as e:
             # Log exception originating from within the callback itself
@@ -645,11 +680,11 @@ class TCCCSystem:
         try:
             logger.info("Attempting to stop audio pipeline...")
             # Stop audio capture using the pipeline's stop method
-            result = self.audio_pipeline.stop() # Use stop, not stop_capture
+            result = self.audio_pipeline.stop_capture() # Use stop_capture, not stop
 
             if result:
                 self.state = SystemState.READY
-                logger.info("Audio capture stopped successfully via pipeline stop method.")
+                logger.info("Audio capture stopped successfully via pipeline stop_capture method.")
                 return True
             else:
                 # Maybe it was already stopped? Check status if possible
@@ -658,11 +693,11 @@ class TCCCSystem:
                      was_running = self.audio_pipeline.is_running
                 
                 if not was_running:
-                     logger.warning("Audio pipeline stop method returned False, but pipeline was already not running.")
+                     logger.warning("Audio pipeline stop_capture method returned False, but pipeline was already not running.")
                      self.state = SystemState.READY # Ensure state is READY
                      return True # Consider this success
                 else:
-                     logger.error("Audio pipeline stop method returned False, and pipeline might still be running.")
+                     logger.error("Audio pipeline stop_capture method returned False, and pipeline might still be running.")
                      # Don't change state from CAPTURING if stop failed and it thinks it's running
                      return False
 
@@ -1174,55 +1209,105 @@ class TCCCSystem:
             logger.error(f"Error stopping TCCC System: {str(e)}")
             return False
     
-    def shutdown(self) -> bool:
-        """Shutdown the system.
-        
-        Returns:
-            True if shutdown was successful
-        """
+    async def shutdown(self) -> bool:
+        """Shutdown the system asynchronously."""
         if not self.initialized:
             logger.warning("System not initialized, nothing to shutdown")
             return True
         
+        logger.info("Shutting down TCCC System... Current system state: %s", self.state)
+        
         try:
-            logger.info("Shutting down TCCC System...")
-            
-            # Stop audio capture if running
+            # Stop audio capture if running - do this first to prevent new data entering the pipeline
             if self.state == SystemState.CAPTURING:
-                self.stop_audio_capture()
+                logger.debug("Audio capture is active, stopping first...")
+                try:
+                    success = self.stop_audio_capture()
+                    if not success:
+                        logger.warning("Failed to stop audio capture, continuing with shutdown anyway")
+                except Exception as audio_err:
+                    logger.error(f"Error stopping audio capture: {audio_err}", exc_info=True)
+                    # Continue shutdown despite errors
             
             # Shutdown modules - Reordered for potentially safer shutdown
             # Shutdown consumers first
             if self.stt_engine:
-                self.stt_engine.shutdown()
+                try:
+                    logger.debug("Shutting down STT Engine... Current state: %s", 
+                                 getattr(self.stt_engine, 'state', 'unknown'))
+                    self.stt_engine.shutdown()
+                    logger.debug("STT Engine shutdown complete")
+                except Exception as stt_err:
+                    logger.error(f"Error shutting down STT Engine: {stt_err}", exc_info=True)
+                    # Continue shutdown despite errors
 
             if self.llm_analysis:
-                self.llm_analysis.shutdown()
+                try:
+                    logger.debug("Shutting down LLM Analysis... Current state: %s", 
+                                 getattr(self.llm_analysis, 'state', 'unknown'))
+                    self.llm_analysis.shutdown()
+                    logger.debug("LLM Analysis shutdown complete")
+                except Exception as llm_err:
+                    logger.error(f"Error shutting down LLM Analysis: {llm_err}", exc_info=True)
+                    # Continue shutdown despite errors
 
             if self.processing_core:
-                self.processing_core.shutdown()
+                try:
+                    logger.debug("Shutting down Processing Core... Current state: %s", 
+                                 getattr(self.processing_core, 'state', 'unknown'))
+                    self.processing_core.shutdown()
+                    logger.debug("Processing Core shutdown complete")
+                except Exception as core_err:
+                    logger.error(f"Error shutting down Processing Core: {core_err}", exc_info=True)
+                    # Continue shutdown despite errors
             
-            # Shutdown producers/stores next
+            # Shutdown producers/stores next - after consumers are stopped
             if self.audio_pipeline:
-                self.audio_pipeline.shutdown()
+                try:
+                    logger.debug("Shutting down Audio Pipeline... Current state: %s", 
+                                 getattr(self.audio_pipeline, 'status', 'unknown'))
+                    self.audio_pipeline.shutdown()
+                    logger.debug("Audio Pipeline shutdown complete")
+                except Exception as audio_err:
+                    logger.error(f"Error shutting down Audio Pipeline: {audio_err}", exc_info=True)
+                    # Continue shutdown despite errors
 
-            if self.document_library and hasattr(self.document_library, 'shutdown'):
-                self.document_library.shutdown()
+            if self.document_library:
+                try:
+                    if hasattr(self.document_library, 'shutdown'):
+                        logger.debug("Shutting down Document Library...")
+                        self.document_library.shutdown()
+                        logger.debug("Document Library shutdown complete")
+                    else:
+                        logger.debug("Document Library has no shutdown method, skipping")
+                except Exception as doc_err:
+                    logger.error(f"Error shutting down Document Library: {doc_err}", exc_info=True)
+                    # Continue shutdown despite errors
 
+            # DataStore is currently disabled for MVP
             # if self.data_store:
-            #     self.data_store.shutdown()
+            #     try:
+            #         logger.debug("Shutting down Data Store...")
+            #         self.data_store.shutdown()
+            #         logger.debug("Data Store shutdown complete")
+            #     except Exception as ds_err:
+            #         logger.error(f"Error shutting down Data Store: {ds_err}", exc_info=True)
+            #         # Continue shutdown despite errors
             
-            # Update state
+            # Update system state
+            prev_state = self.state
             self.state = SystemState.SHUTDOWN
-            self.initialized = False
+            self.initialized = False  # Mark as uninitialized
             
-            logger.info("TCCC System shutdown complete")
+            logger.info("TCCC System shutdown complete (transitioned from %s to %s)", 
+                       prev_state, self.state)
             return True
             
         except Exception as e:
             self.state = SystemState.ERROR
             self.last_error = str(e)
-            logger.error(f"Error shutting down TCCC System: {str(e)}")
+            logger.error(f"Unhandled error during TCCC System shutdown: {e}") 
+            logger.error(traceback.format_exc())  # Add traceback for detail
             return False
 
 def _execute_sync_init(module_name: str, init_method: Callable, config: Dict[str, Any]) -> Tuple[bool, Optional[Any]]:

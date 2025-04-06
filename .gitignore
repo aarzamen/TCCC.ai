@@ -312,3 +312,11 @@ cython_debug/
 
 # PyPI configuration file
 .pypirc
+
+# Snapshot directories
+codebase_snapshot_*/
+tccc-project-snapshot/
+
+# Python cache
+__pycache__/
+*.pyc

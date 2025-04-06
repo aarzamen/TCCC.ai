@@ -119,6 +119,7 @@ class AudioSource:
         """
         Audio capture loop. Must be implemented by derived classes.
         """
+        logger.debug("_capture_loop: Entered function body.") # Log entry
         raise NotImplementedError("Audio source must implement _capture_loop")
     
     def get_info(self) -> Dict[str, Any]:
@@ -150,15 +151,30 @@ class MicrophoneSource(AudioSource):
             config: Microphone configuration
         """
         super().__init__(config)
-        # Correctly read 'device_index' from config, default to None (system default)
-        self.device_id = config.get('device_index', None) 
         
         # Import PyAudio here to avoid dependency for other sources
         try:
             import pyaudio
             self.pyaudio = pyaudio
             self.audio = pyaudio.PyAudio()
+            
+            # Enhanced device selection logic
+            self.device_id = self._select_audio_device(config)
+            self.devices_info = self._get_audio_devices_info()
+            
+            # Log all available audio devices to help with troubleshooting
+            self._log_available_devices()
+            
             logger.info(f"Initialized microphone source (device {self.device_id})")
+            
+            # Log selected device details
+            if self.device_id is not None:
+                try:
+                    device_info = self.audio.get_device_info_by_index(self.device_id)
+                    logger.info(f"Selected device details: {device_info['name']} (channels: {device_info['maxInputChannels']}, rate: {device_info['defaultSampleRate']})")
+                except Exception as e:
+                    logger.error(f"Failed to get detailed info for device {self.device_id}: {e}")
+            
         except ImportError:
             logger.error("PyAudio not installed. Microphone capture will not work.")
             self.audio = None
@@ -168,14 +184,146 @@ class MicrophoneSource(AudioSource):
             self.audio = None
             raise  # Re-raise the exception to signal failure clearly
     
+    def _select_audio_device(self, config: Dict[str, Any]) -> Optional[int]:
+        """
+        Select the appropriate audio device based on configuration and available devices.
+        
+        This handles several scenarios:
+        1. Explicit device_index in config
+        2. Explicit device_name in config (search by name)
+        3. Auto-detection of USB/webcam microphones
+        4. Fallback to default device (usually device 0)
+        
+        Args:
+            config: Audio configuration dictionary
+            
+        Returns:
+            Device index to use or None if default should be used
+        """
+        # First priority: explicit device_index
+        device_index = config.get('device_index')
+        if device_index is not None:
+            logger.info(f"Using explicitly configured device_index: {device_index}")
+            return device_index
+        
+        # Second priority: explicit device_name
+        device_name = config.get('device_name')
+        if device_name:
+            logger.info(f"Looking for device with name: {device_name}")
+            # Search for device by name
+            device_id = self._find_device_by_name(device_name)
+            if device_id is not None:
+                logger.info(f"Found device with name '{device_name}' at index {device_id}")
+                return device_id
+            logger.warning(f"Device with name '{device_name}' not found, falling back to auto-detection")
+        
+        # Third priority: auto-detect webcam/USB microphone for Jetson compatibility
+        logger.info("Attempting to auto-detect webcam/USB microphone...")
+        device_id = self._auto_detect_microphone()
+        if device_id is not None:
+            logger.info(f"Auto-detected microphone device at index {device_id}")
+            return device_id
+            
+        # Final fallback: use first available device (usually 0)
+        logger.info("No specific device configured or detected, falling back to first available device (index 0)")
+        return 0
+    
+    def _find_device_by_name(self, device_name: str) -> Optional[int]:
+        """
+        Find a device by its name (partial match).
+        
+        Args:
+            device_name: Name or partial name to match
+            
+        Returns:
+            Device index if found, None otherwise
+        """
+        try:
+            device_name = device_name.lower()  # Case-insensitive matching
+            for i in range(self.audio.get_device_count()):
+                device_info = self.audio.get_device_info_by_index(i)
+                if device_info['maxInputChannels'] > 0:  # Only consider input devices
+                    if device_name in device_info['name'].lower():
+                        return i
+            return None
+        except Exception as e:
+            logger.error(f"Error finding device by name: {e}")
+            return None
+    
+    def _auto_detect_microphone(self) -> Optional[int]:
+        """
+        Auto-detect a suitable microphone, prioritizing USB/webcam devices.
+        
+        Returns:
+            Device index if found, None otherwise
+        """
+        try:
+            # Keywords that might indicate a USB/webcam microphone
+            webcam_keywords = ['webcam', 'camera', 'usb', 'logitech', 'c920', 'c270', 'c310']
+            
+            for i in range(self.audio.get_device_count()):
+                device_info = self.audio.get_device_info_by_index(i)
+                if device_info['maxInputChannels'] > 0:  # Only consider input devices
+                    device_name = device_info['name'].lower()
+                    # Check if any keywords match
+                    if any(keyword in device_name for keyword in webcam_keywords):
+                        logger.info(f"Auto-detected likely webcam/USB microphone: {device_info['name']}")
+                        return i
+            
+            # If no webcam/USB device found, return first input device
+            for i in range(self.audio.get_device_count()):
+                device_info = self.audio.get_device_info_by_index(i)
+                if device_info['maxInputChannels'] > 0:  # Only consider input devices
+                    logger.info(f"Using first available input device: {device_info['name']}")
+                    return i
+                    
+            return None
+        except Exception as e:
+            logger.error(f"Error auto-detecting microphone: {e}")
+            return None
+            
+    def _get_audio_devices_info(self) -> List[Dict[str, Any]]:
+        """
+        Get information about all available audio devices.
+        
+        Returns:
+            List of device information dictionaries
+        """
+        try:
+            devices = []
+            for i in range(self.audio.get_device_count()):
+                device_info = self.audio.get_device_info_by_index(i)
+                # Only include devices with input channels
+                if device_info['maxInputChannels'] > 0:
+                    devices.append({
+                        'index': i,
+                        'name': device_info['name'],
+                        'channels': device_info['maxInputChannels'],
+                        'sample_rate': device_info['defaultSampleRate']
+                    })
+            return devices
+        except Exception as e:
+            logger.error(f"Error getting audio devices info: {e}")
+            return []
+    
+    def _log_available_devices(self):
+        """
+        Log information about all available audio input devices.
+        """
+        logger.info("Available audio input devices:")
+        for device in self.devices_info:
+            logger.info(f"  [{device['index']}] {device['name']} (channels: {device['channels']}, rate: {device['sample_rate']})")
+    
     def _capture_loop(self):
         """Microphone capture loop."""
         logger.info(f"Starting capture loop for microphone source (device {self.device_id})") # Add entry log
+        logger.debug("_capture_loop: Entered function body.") # Log entry
         if not self.audio:
             logger.error("Cannot start capture loop, PyAudio not initialized.")
             return
         
         try:
+            logger.debug("_capture_loop: Inside main try block, attempting to open stream.") # Log before open
             stream = self.audio.open(
                 format=self.audio.get_format_from_width(2),  # 16-bit
                 channels=self.channels,
@@ -185,17 +333,32 @@ class MicrophoneSource(AudioSource):
                 input_device_index=self.device_id, 
                 frames_per_buffer=self.chunk_size
             )
-            
             logger.info(f"Started microphone capture (device {self.device_id})")
+            logger.debug("_capture_loop: Stream opened, before while loop.") # Log after open, before while
             
             logger.debug(f"Capture loop starting for {self.name}. is_running: {self.is_running}") # ADDED
+            # Log audio device details before starting capture loop
+            logger.info(f"Starting audio capture with device {self.device_id} (HD Pro Webcam C920)")
+            current_device_info = self.audio.get_device_info_by_index(self.device_id) if self.device_id is not None else self.audio.get_default_input_device_info()
+            logger.info(f"Device info: {current_device_info}")
+            
             while self.is_running:
                 try:
-                    logger.debug(f"Attempting to read {self.chunk_size} frames...") # ADDED
                     # Read audio chunk
                     data = stream.read(self.chunk_size, exception_on_overflow=False)
-                    data_len = len(data) # ADDED
-                    logger.debug(f"Read {data_len} bytes of audio data.") # ADDED
+                    data_len = len(data)
+                    
+                    # Add more detailed debugging about the captured audio data
+                    if data_len > 0:
+                        # Log every 20th frame to avoid excessive logging
+                        if hasattr(self, '_frame_counter'):
+                            self._frame_counter += 1
+                        else:
+                            self._frame_counter = 0
+                            
+                        if self._frame_counter % 20 == 0:
+                            logger.debug(f"Audio data captured: {data_len} bytes, frame {self._frame_counter}")
+                    logger.debug(f"_capture_loop: stream.read returned {data_len} bytes.") # Log AFTER read
 
                     if data_len == 0: # ADDED Check for empty read
                         logger.warning("stream.read() returned 0 bytes. Sleeping briefly.") # ADDED
@@ -204,13 +367,23 @@ class MicrophoneSource(AudioSource):
                     
                     # Convert to numpy array
                     audio_data = np.frombuffer(data, dtype=self.dtype)
-                    logger.debug(f"Converted to numpy array shape: {audio_data.shape}") # ADDED
+                    
+                    # Calculate audio level (RMS) to help identify if audio is being captured
+                    audio_level = np.sqrt(np.mean(np.square(audio_data.astype(np.float32))))
+                    
+                    # Log audio level periodically
+                    if self._frame_counter % 20 == 0:
+                        logger.debug(f"Audio data shape: {audio_data.shape}, audio level: {audio_level:.6f}")
+                    
+                    # Check if audio is too quiet (might indicate capture issues)
+                    if audio_level < 0.0001 and self._frame_counter % 50 == 0:
+                        logger.warning(f"Very low audio level detected: {audio_level:.8f} - check microphone")
                     
                     # Pass to callback
                     if self.data_callback:
-                        logger.debug("Calling data callback...") # ADDED
                         self.data_callback(audio_data)
-                        logger.debug("Data callback returned.") # ADDED
+                        if self._frame_counter % 20 == 0:
+                            logger.debug("Audio data forwarded to callback")
                     else: # ADDED
                         logger.warning("No data callback registered for microphone source.") # ADDED
                         
@@ -1564,7 +1737,7 @@ class AudioPipeline:
                     try:
                         # Merge general audio config (like sample_rate, channels) with specific source config
                         # Source-specific config (like device_index, path) takes precedence
-                        merged_config = {**audio_config, **source_config}
+                        merged_config = {**config, **source_config}
                         # Pass the merged config to the source class constructor
                         source_instance = SourceClass(merged_config) 
                         
@@ -1614,29 +1787,180 @@ class AudioPipeline:
         """Check if the audio pipeline is currently running."""
         return self.running and self.audio_stream is not None and self.audio_stream.active
 
-    def shutdown(self):
-        """Gracefully shut down the audio pipeline."""
-        logger.info("Shutting down Audio Pipeline...")
-        # Stop the active source first
-        if hasattr(self, 'active_source') and self.active_source:
-            logger.info(f"Stopping active audio source: {self.active_source.name}")
+    def shutdown(self) -> bool:
+        """Gracefully shut down the audio pipeline.
+        
+        Returns:
+            bool: True if shutdown was successful, False otherwise
+        """
+        logger.info(f"Shutting down Audio Pipeline... Current status: {self.status}")
+        success = True
+        
+        try:
+            # First stop any active audio capture
+            if self.is_running:
+                logger.debug("Audio capture is running, stopping it first...")
+                try:
+                    self.stop_capture()
+                except Exception as e:
+                    logger.error(f"Error in stop_capture during shutdown: {e}", exc_info=True)
+                    success = False
+                    # Continue with shutdown despite errors
+            
+            # Stop the active source first
+            if hasattr(self, 'active_source') and self.active_source:
+                logger.info(f"Ensuring active audio source is stopped: {self.active_source.name}")
+                try:
+                    # Only try to stop if it's running
+                    if hasattr(self.active_source, 'is_running') and self.active_source.is_running:
+                        self.active_source.stop()
+                    else:
+                        logger.debug(f"Active source {self.active_source.name} is already stopped")
+                except Exception as e:
+                    logger.error(f"Error stopping active audio source {self.active_source.name}: {e}", exc_info=True)
+                    success = False
+                    # Continue with shutdown despite errors
+            
+            # Also stop any other managed sources just in case
+            if hasattr(self, 'sources'):
+                for source_name, source_instance in self.sources.items():
+                    if (source_instance != self.active_source and 
+                        hasattr(source_instance, 'is_running') and 
+                        source_instance.is_running):
+                        logger.info(f"Stopping inactive but running source: {source_name}")
+                        try:
+                            source_instance.stop()
+                        except Exception as e:
+                            logger.error(f"Error stopping source {source_name}: {e}", exc_info=True)
+                            success = False
+                            # Continue with shutdown despite errors
+            
+            # Clean up any worker threads if present
+            if hasattr(self, '_processing_thread') and self._processing_thread and self._processing_thread.is_alive():
+                logger.debug("Cleaning up processing thread...")
+                try:
+                    # Set stop flag if it exists
+                    if hasattr(self, '_stop_flag'):
+                        self._stop_flag = True
+                    
+                    # Wait for thread to terminate
+                    self._processing_thread.join(timeout=2.0)
+                    if self._processing_thread.is_alive():
+                        logger.warning("Processing thread did not terminate within timeout")
+                except Exception as e:
+                    logger.error(f"Error cleaning up processing thread: {e}", exc_info=True)
+                    success = False
+            
+            # Update state to reflect shutdown
+            prev_status = self.status
+            self.status = ModuleState.SHUTDOWN
+            self.is_running = False
+            self.initialized = False
+            
+            logger.info(f"Audio Pipeline shutdown complete. Status changed from {prev_status} to {self.status}")
+            return success
+            
+        except Exception as e:
+            logger.error(f"Unexpected error during Audio Pipeline shutdown: {e}", exc_info=True)
+            self.status = ModuleState.ERROR
+            self.is_running = False
+            return False
+
+    def set_system_reference(self, system):
+        """Set a reference to the main TCCCSystem for callbacks."""
+        self.system = system
+        logger.debug("AudioPipeline: TCCCSystem reference set.")
+
+    def _audio_data_handler(self, audio_data: np.ndarray):
+        """Callback function passed to the audio source to handle incoming data."""
+        # Process the audio data from the source
+        if not hasattr(self, '_frames_received'):
+            self._frames_received = 0
+        self._frames_received += 1
+        
+        # Periodically log audio statistics
+        if self._frames_received % 20 == 0:
+            # Calculate audio level for monitoring
+            audio_level = np.sqrt(np.mean(np.square(audio_data.astype(np.float32))))
+            logger.debug(f"Received audio chunk #{self._frames_received}: shape={audio_data.shape}, level={audio_level:.6f}")
+        
+        # Check system reference
+        if not self.system:
+            logger.error("Audio handler: TCCCSystem reference not set - audio data will not be processed")
+            return
+        
+        # Forward to the system for processing
+        try:
+            # Check if system has _process_audio_chunk (legacy) or enqueue_audio method
+            if hasattr(self.system, '_process_audio_chunk'):
+                self.system._process_audio_chunk(audio_data)
+                if self._frames_received % 20 == 0:
+                    logger.debug(f"Forwarded audio to system._process_audio_chunk, frame {self._frames_received}")
+            elif hasattr(self.system, 'enqueue_audio'):
+                self.system.enqueue_audio(audio_data)
+                if self._frames_received % 20 == 0:
+                    logger.debug(f"Forwarded audio to system.enqueue_audio, frame {self._frames_received}")
+            else:
+                logger.error("Neither _process_audio_chunk nor enqueue_audio method found on system reference")
+        except Exception as e:
+            logger.exception(f"Failed to forward audio data to system: {e}")
+
+    def start_capture(self) -> bool:
+        """Start capturing audio from the active source."""
+        if not self.initialized:
+            logger.error("Cannot start capture, AudioPipeline not initialized.")
+            return False
+        if not self.active_source:
+            logger.error("Cannot start capture, no active audio source.")
+            return False
+        if self.is_running:
+            logger.warning("Audio capture is already running.")
+            return False
+
+        logger.info(f"Starting audio capture from source: {self.active_source.name}")
+        # Start the active source, passing the internal handler method as the callback
+        success = self.active_source.start(self._audio_data_handler)
+        if success:
+            self.is_running = True
+            self.status = ModuleState.ACTIVE  # Set state to ACTIVE when capture is running
+            logger.info("Audio capture started successfully.")
+        else:
+            logger.error("Failed to start audio capture.")
+            
+        return success
+
+    def stop_capture(self):
+        """Stop capturing audio from the active source."""
+        logger.info(f"AudioPipeline: Attempting to stop capture on source: {self.active_source.name if self.active_source else 'None'}")
+        if self.active_source and self.active_source.is_running:
             try:
-                self.active_source.stop()
+                logger.debug(f"Stopping source '{self.active_source.name}'...")
+                success = self.active_source.stop()
+                if success:
+                    logger.info(f"Audio capture stopped successfully for source: {self.active_source.name}")
+                    self.is_running = False
+                    # Set status to READY after stopping
+                    if self.status != ModuleState.ERROR: # Don't override ERROR state
+                         self.status = ModuleState.READY
+                else:
+                    logger.error(f"Failed to stop audio capture for source: {self.active_source.name}")
+                    # Should we set status to ERROR here? Let's keep it RUNNING if stop fails?
+                    # Or maybe WARNING? Let's leave status as is for now if stop fails.
+
             except Exception as e:
-                logger.error(f"Error stopping active audio source {self.active_source.name}: {e}")
+                logger.exception(f"Exception during stop_capture for source {self.active_source.name}: {e}")
+                self.status = ModuleState.ERROR # If stop raises an exception, it's an error
+                self.is_running = False # Ensure running flag is false even on error
+        elif not self.active_source:
+            logger.warning("Cannot stop capture: No active audio source selected.")
+        elif not self.active_source.is_running:
+             logger.info(f"Capture already stopped for source: {self.active_source.name}")
         
-        # Also stop any other managed sources just in case
-        if hasattr(self, 'sources'):
-            for source_name, source_instance in self.sources.items():
-                if source_instance != self.active_source and hasattr(source_instance, 'is_running') and source_instance.is_running:
-                    logger.info(f"Stopping inactive but running source: {source_name}")
-                    try:
-                        source_instance.stop()
-                    except Exception as e:
-                        logger.error(f"Error stopping source {source_name}: {e}")
-        
-        # Add any other necessary cleanup (e.g., closing resources)
-        logger.info("Audio Pipeline shutdown complete.")
+        # Ensure is_running is false if no active source or source wasn't running
+        if not self.active_source or not self.active_source.is_running:
+            self.is_running = False
+            if self.status == ModuleState.ACTIVE: # If it thought it was running but isn't now
+                self.status = ModuleState.READY
 
 if __name__ == "__main__":
     # Example usage for testing
