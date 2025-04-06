@@ -407,7 +407,7 @@ class FileSource(AudioSource):
             logger.info("File playback stopped")
             
         except Exception as e:
-            logger.error(f"Failed to start file playback: {e}"
+            logger.error(f"Failed to start file playback: {e})")  # Added closing parenthesis
 
 
 class StreamBuffer:
